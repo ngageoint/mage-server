@@ -1,5 +1,5 @@
 import { InjectionToken } from '.'
-import { AttachmentStore, ObservationRepositoryForEvent } from '../entities/observations/entities.observations'
+import { AttachmentStore, ObservationRepositoryForEvent, ObservationSearchRepository } from '../entities/observations/entities.observations'
 
 
 /**
@@ -9,3 +9,4 @@ import { AttachmentStore, ObservationRepositoryForEvent } from '../entities/obse
  */
 export const ObservationRepositoryToken: InjectionToken<ObservationRepositoryForEvent> = Symbol('InjectObservationRepository')
 export const AttachmentStoreToken: InjectionToken<AttachmentStore> = Symbol('InjectAttachmentStore')
+export const ObservationSearchRepositoryToken: InjectionToken<ObservationSearchRepository> = Symbol('InjectObservationSearchRepository')

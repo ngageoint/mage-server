@@ -1,6 +1,7 @@
 import { InjectionToken } from '.'
 import { MageEventRepository } from '../entities/events/entities.events'
 import { UserLocationSavedDomainEvent } from '../entities/locations/entities.locations'
+import { ObservationEmitted, ObservationSavedDomainEvent } from '../entities/observations/entities.observations'
 
 export interface MageEventsPluginHooks {
   mageEvent?: {
@@ -11,10 +12,8 @@ export interface MageEventsPluginHooks {
     /**
      * MAGE calls this hook after persisting a valid observation, new or
      * updated.
-     *
-     * TODO: make it so
      */
-    // onObservation?: (event: MageEvent, observation: Observation) => any
+    onObservation?: (event: ObservationEmitted<ObservationSavedDomainEvent>) => any
   }
 }
 

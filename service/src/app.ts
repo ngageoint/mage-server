@@ -125,7 +125,8 @@ import {
 } from './adapters/observations/adapters.observations.attachment_store.file_system';
 import {
   AttachmentStoreToken,
-  ObservationRepositoryToken
+  ObservationRepositoryToken,
+  ObservationSearchRepositoryToken
 } from './plugins.api/plugins.api.observations';
 import {
   GetDbConnection,
@@ -314,6 +315,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
     [FeedRepositoryToken, repos.feeds.feedRepo],
     [MageEventRepositoryToken, repos.events.eventRepo],
     [ObservationRepositoryToken, repos.observations.obsRepoFactory],
+    [ObservationSearchRepositoryToken, repos.observations.searchRepo],
     [AttachmentStoreToken, repos.observations.attachmentStore],
     [StaticIconRepositoryToken, repos.icons.staticIconRepo],
     [UserRepositoryToken, repos.users.userRepo],

@@ -130,7 +130,7 @@ export class MongooseObservationRepository extends BaseMongooseRepository<legacy
   }
 
   async findLatest(): Promise<ObservationAttrs | null> {
-    const latest = await this.model.findOne({}, { lastModified: true }, { sort: { lastModified: -1 }, limit: 1 })
+    const latest = await this.model.findOne({}, {}, { sort: { lastModified: -1 }, limit: 1 })
     return latest ? this.entityForDocument(latest) : null
   }
 
