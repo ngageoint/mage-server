@@ -38,7 +38,7 @@
           <observation-edit-date class="edit-date" [formGroup]="formGroup.get('properties')" [definition]="timestampDefinition"></observation-edit-date>
 
           <observation-edit-geometry [formGroup]="formGroup" [definition]="geometryDefinition"
-            [featureId]="observation.id" [featureStyle]="geometryStyle" (onFeatureEdit)="onGeometryEdit($event)">
+            [featureId]="observation.id" [featureStyle]="geometryStyle" (featureEdit)="onGeometryEdit($event)">
           </observation-edit-geometry>
         </mat-card-content>
       </mat-card>

@@ -59,7 +59,7 @@
               [definition]="fieldDefinitions[fieldName]"
               featureId="{{formGroup.get('formId').value}}_{{fieldDefinitions[fieldName].id}}"
               [featureStyle]="geometryStyle"
-              (onFeatureEdit)="onGeometryEdit($event)">
+              (featureEdit)="onGeometryEdit($event)">
             </observation-edit-geometry>
           </div>
         </div>

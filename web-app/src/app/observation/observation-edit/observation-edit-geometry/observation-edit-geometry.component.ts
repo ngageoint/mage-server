@@ -20,7 +20,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
   @Input() featureId: string
   @Input() featureStyle: any
 
-  @Output() onFeatureEdit = new EventEmitter<GeometryEditEvent>()
+  @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
 
   @ViewChild('geometry', { static: true }) geometryElement: ElementRef<HTMLElement>
 
@@ -74,7 +74,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
       }
     }
 
-    this.onFeatureEdit.emit({
+    this.featureEdit.emit({
       action: 'edit',
       source: this.geometryElement
     })
@@ -87,7 +87,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
     // TODO normalize geometry
     this.formGroup.get(this.definition.name).setValue(this.normalizeGeometry(event.feature))
 
-    this.onFeatureEdit.emit({
+    this.featureEdit.emit({
       action: 'none',
       source: this.geometryElement
     })
@@ -96,7 +96,7 @@ export class ObservationEditGeometryComponent implements OnChanges {
   cancelGeometryEdit(): void {
     this.edit = false;
 
-    this.onFeatureEdit.emit({
+    this.featureEdit.emit({
       action: 'none'
     })
   }
