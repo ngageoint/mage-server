@@ -40,6 +40,8 @@ module.exports = function(app, security) {
           const newShowDisclaimer = !!req.body.show;
           const previousDisclaimerText = (existing && existing.settings && existing.settings.text) || '';
           const newDisclaimerText = req.body.text || '';
+          const previousContactInfo = (existing && existing.settings) || {};
+          const newContactInfo = req.body || {};
           return Setting.updateSettingByType(req.params.type, {settings: req.body}).then(setting => {
             if (req.params.type === 'banner' && newShowHeader !== previousShowHeader) {
               log.info('banner header visibility changed', {
@@ -68,6 +70,14 @@ module.exports = function(app, security) {
               log.info('disclaimer message text changed', {
                 text: newDisclaimerText,
                 previousText: previousDisclaimerText,
+                changedBy: req.user.username,
+                changedTime: new Date().toISOString()
+              });
+            }
+            if (req.params.type === 'contactinfo') {
+              log.info('contact info settings changed', {
+                previousContactInfo: previousContactInfo,
+                contactInfo: newContactInfo,
                 changedBy: req.user.username,
                 changedTime: new Date().toISOString()
               });
