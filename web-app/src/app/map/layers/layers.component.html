@@ -24,28 +24,28 @@
 
   @if (feedLayers().length) {
     <h3 class="header">Feeds</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feed', feedLayers())">
+      @for (layer of feedLayers(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
   }
-  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feed', feedLayers())">
-    @for (layer of feedLayers(); track layer) {
-      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
-    }
-  </div>
 
   @if (featureOverlays().length) {
     <h3 class="header">Feature Overlays</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feature', featureOverlays())">
+      @for (layer of featureOverlays(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
   }
-  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feature', featureOverlays())">
-    @for (layer of featureOverlays(); track layer) {
-      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
-    }
-  </div>
 
   @if (tileOverlays().length) {
     <h3 class="header">Tile Overlays</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays())">
+      @for (layer of tileOverlays(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
   }
-  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays())">
-    @for (layer of tileOverlays(); track layer) {
-      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
-    }
-  </div>
 </div>
