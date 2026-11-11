@@ -22,7 +22,7 @@
 
       <div class="form-header-actions">
         <button matIconButton (click)="expand = !expand">
-          <mat-icon [@rotate]="expand" class="form-header-actions__expand"
+          <mat-icon class="form-header-actions__expand" [class.form-header-actions__expand--open]="expand"
             [style.color]="formGroup.invalid && formGroup.touched ? 'var(--mat-sys-error)' : ''">expand_more</mat-icon>
         </button>
         <div class="form-header-actions__drag" #dragHandle>
@@ -31,42 +31,44 @@
       </div>
     </div>
 
-    <div *ngIf="expand" @expand class="form-content">
-      <div *ngFor="let fieldName of fieldNames">
-        <div [ngSwitch]="fieldDefinitions[fieldName].type">
-          <observation-edit-attachment *ngSwitchCase="'attachment'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]" [attachments]="observation?.attachments" [url]="attachmentUrl"></observation-edit-attachment>
-          <observation-edit-checkbox *ngSwitchCase="'checkbox'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-checkbox>
-          <observation-edit-date *ngSwitchCase="'date'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-date>
-          <observation-edit-dropdown *ngSwitchCase="'dropdown'"
-            [formGroup]="formGroup"
-            [definition]="fieldDefinitions[fieldName]"
-            [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
-          </observation-edit-dropdown>
-          <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'"
-            [formGroup]="formGroup"
-            [definition]="fieldDefinitions[fieldName]"
-            [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
-          </observation-edit-multiselect>
-          <observation-edit-email *ngSwitchCase="'email'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-email>
-          <observation-edit-number *ngSwitchCase="'numberfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-number>
-          <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>
-          <observation-edit-text *ngSwitchCase="'textfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-text>
-          <observation-edit-textarea *ngSwitchCase="'textarea'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-textarea>
-          <observation-edit-password *ngSwitchCase="'password'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-password>
-          <observation-edit-geometry *ngSwitchCase="'geometry'"
-            [formGroup]="formGroup"
-            [definition]="fieldDefinitions[fieldName]"
-            featureId="{{formGroup.get('formId').value}}_{{fieldDefinitions[fieldName].id}}"
-            [featureStyle]="geometryStyle"
-            (onFeatureEdit)="onGeometryEdit($event)">
-          </observation-edit-geometry>
+    <div *ngIf="expand" animate.enter="form-content--enter" animate.leave="form-content--leave" class="form-content">
+      <div class="form-content__body">
+        <div *ngFor="let fieldName of fieldNames">
+          <div [ngSwitch]="fieldDefinitions[fieldName].type">
+            <observation-edit-attachment *ngSwitchCase="'attachment'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]" [attachments]="observation?.attachments" [url]="attachmentUrl"></observation-edit-attachment>
+            <observation-edit-checkbox *ngSwitchCase="'checkbox'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-checkbox>
+            <observation-edit-date *ngSwitchCase="'date'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-date>
+            <observation-edit-dropdown *ngSwitchCase="'dropdown'"
+              [formGroup]="formGroup"
+              [definition]="fieldDefinitions[fieldName]"
+              [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
+            </observation-edit-dropdown>
+            <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'"
+              [formGroup]="formGroup"
+              [definition]="fieldDefinitions[fieldName]"
+              [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
+            </observation-edit-multiselect>
+            <observation-edit-email *ngSwitchCase="'email'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-email>
+            <observation-edit-number *ngSwitchCase="'numberfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-number>
+            <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>
+            <observation-edit-text *ngSwitchCase="'textfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-text>
+            <observation-edit-textarea *ngSwitchCase="'textarea'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-textarea>
+            <observation-edit-password *ngSwitchCase="'password'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-password>
+            <observation-edit-geometry *ngSwitchCase="'geometry'"
+              [formGroup]="formGroup"
+              [definition]="fieldDefinitions[fieldName]"
+              featureId="{{formGroup.get('formId').value}}_{{fieldDefinitions[fieldName].id}}"
+              [featureStyle]="geometryStyle"
+              (onFeatureEdit)="onGeometryEdit($event)">
+            </observation-edit-geometry>
+          </div>
         </div>
-      </div>
 
-      <div class="form-actions" *ngIf="deletable">
-        <mat-divider></mat-divider>
-        <div class="form-actions-content">
-          <button matButton class="delete-form-button" (click)="removeForm()">Delete Form</button>
+        <div class="form-actions" *ngIf="deletable">
+          <mat-divider></mat-divider>
+          <div class="form-actions-content">
+            <button matButton class="delete-form-button" (click)="removeForm()">Delete Form</button>
+          </div>
         </div>
       </div>
     </div>

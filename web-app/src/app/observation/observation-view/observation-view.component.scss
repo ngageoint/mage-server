@@ -148,7 +148,34 @@ mat-card-actions {
 }
 
 .important {
+  display: grid;
+  grid-template-rows: 1fr;
   margin-top: 16px;
+}
+
+.important__content {
+  min-height: 0;
+}
+
+.important--enter {
+  animation: important-expand 250ms ease-out;
+}
+
+.important--leave {
+  animation: important-expand 250ms ease-in reverse;
+}
+
+.important--enter .important__content,
+.important--leave .important__content {
+  overflow: hidden;
+}
+
+@keyframes important-expand {
+  from {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+  }
 }
 
 .important__text {

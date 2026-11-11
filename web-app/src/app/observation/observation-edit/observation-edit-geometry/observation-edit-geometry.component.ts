@@ -3,6 +3,10 @@ import { UntypedFormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
 
+export type GeometryEditEvent =
+  | { action: 'edit', source: ElementRef<HTMLElement> }
+  | { action: 'none', source?: ElementRef<HTMLElement> }
+
 @Component({
     selector: 'observation-edit-geometry',
     templateUrl: './observation-edit-geometry.component.html',
@@ -16,9 +20,9 @@ export class ObservationEditGeometryComponent implements OnChanges {
   @Input() featureId: string
   @Input() featureStyle: any
 
-  @Output() onFeatureEdit = new EventEmitter<any>()
+  @Output() onFeatureEdit = new EventEmitter<GeometryEditEvent>()
 
-  @ViewChild('geometry', { static: true }) geometryElement: ElementRef
+  @ViewChild('geometry', { static: true }) geometryElement: ElementRef<HTMLElement>
 
   edit = false
   mapFeature: any

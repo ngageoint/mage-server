@@ -11,10 +11,8 @@ export const ObservationStateName = Object.freeze({
 } as const)
 export type ObservationStateName = (typeof ObservationStateName)[keyof typeof ObservationStateName]
 
-export type FormProperties = {
+export type FormProperties = FormPropertiesDraft & {
   id: string
-  formId: number
-  [name: string]: any
 }
 
 export type ObservationMapFeature = GeoJSON.Feature<GeoJSON.Geometry, {
@@ -59,6 +57,18 @@ export type Observation = {
     timestamp?: Date
     userId?: string
     user?: Pick<User, 'id' | 'displayName'>
+  }
+}
+
+export type FormPropertiesDraft = {
+  id: string | null
+  formId: number
+  [name: string]: any
+}
+
+export type ObservationDraft = Pick<Observation, 'id' | 'eventId' | 'type' | 'geometry'> & {
+  properties: Omit<Observation['properties'], 'forms'> & {
+    forms: FormPropertiesDraft[]
   }
 }
 

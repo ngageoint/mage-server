@@ -3,7 +3,7 @@ import { SessionService } from "../http/session.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { BehaviorSubject, Observable, map, mergeMap } from "rxjs";
 import * as _ from "lodash";
-import { Attachment, Observation, ObservationId, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
+import { Attachment, Observation, ObservationDraft, ObservationId, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
 import { EventId, Form, FormStyle, MageEvent } from "../entities/event/entities.event";
 import { MapFeatureStyle, Style } from "../entities/map/entities.map";
 import { ObservationFieldFilter } from "../entities/observation/filter/entities.observation.filter";
@@ -45,7 +45,7 @@ export type ObservationMapViewResponse = Omit<ObservationMapFeature, 'properties
 }
 
 
-export type SaveableObservation = Partial<Observation> & { noGeometry?: boolean }
+export type SaveableObservation = Partial<Observation>
 
 export type PagingOptions = {
   page: number
@@ -152,13 +152,6 @@ export class ObservationService {
   }
 
   private saveObservation(event: MageEvent, observation: SaveableObservation): Observable<Observation> {
-    // If the noGemetry flag is set, override the geometry to a default point.
-    if (!!observation.noGeometry) {
-      observation.geometry = {
-        type: 'Point',
-        coordinates: [0, 0]
-      }
-    }
     if (observation.id) {
       return this.client.put<Observation>(
         `/api/events/${event.id}/observations/${observation.id}`,
@@ -307,7 +300,7 @@ export class ObservationService {
     }
   }
 
-  getObservationStyleForForm(observation: Pick<Observation, 'properties'>, event: Pick<MageEvent, 'id' | 'style'>, form?: Form): MapFeatureStyle {
+  getObservationStyleForForm(observation: Pick<ObservationDraft, 'properties'>, event: Pick<MageEvent, 'id' | 'style'>, form?: Form): MapFeatureStyle {
     let formId: number | null = null;
     let formStyle: FormStyle | null = null;
     let primaryField: string | null = null;
