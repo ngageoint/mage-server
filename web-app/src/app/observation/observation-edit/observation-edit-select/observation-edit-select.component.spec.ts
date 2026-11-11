@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { ChangeDetectionStrategy, Component, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, viewChild } from '@angular/core';
 
 import { ObservationEditSelectComponent } from './observation-edit-select.component';
 import { By } from '@angular/platform-browser';
@@ -23,7 +23,7 @@ import { MatSelectModule } from '@angular/material/select';
     [recentChoices]="recentChoices"
   ></observation-edit-dropdown>`,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    standalone: false
+    imports: [ObservationEditSelectComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -49,8 +49,7 @@ class TestHostComponent {
 
   recentChoices: string[] = [];
 
-  @ViewChild(ObservationEditSelectComponent)
-  component: ObservationEditSelectComponent;
+  component = viewChild.required(ObservationEditSelectComponent);
 }
 
 describe('ObservationEditSelectComponent', () => {
@@ -67,9 +66,10 @@ describe('ObservationEditSelectComponent', () => {
         NgxMatSelectSearchModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
-      ],
-      declarations: [ObservationEditSelectComponent, TestHostComponent]
+        MatSelectModule,
+        ObservationEditSelectComponent,
+        TestHostComponent
+      ]
     }).compileComponents();
   }));
 
@@ -77,7 +77,7 @@ describe('ObservationEditSelectComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component;
+    component = hostComponent.component();
   });
 
   it('should create', () => {
@@ -85,9 +85,9 @@ describe('ObservationEditSelectComponent', () => {
   });
 
   it('should not indicate required', async () => {
-    component.definition.required = false;
+    component.definition().required = false;
 
-    const control = component.formGroup.get('select');
+    const control = component.formGroup().get('select');
     control.clearValidators();
     control.updateValueAndValidity();
 
@@ -100,9 +100,9 @@ describe('ObservationEditSelectComponent', () => {
   });
 
   it('should indicate required', async () => {
-    component.definition.required = true;
+    component.definition().required = true;
 
-    const control = component.formGroup.get('select');
+    const control = component.formGroup().get('select');
     control.setValidators(Validators.required);
     control.updateValueAndValidity();
 
@@ -130,7 +130,7 @@ describe('ObservationEditSelectComponent', () => {
       freshHost.recentChoices = ['green', 'blue', 'red'];
       freshFixture.detectChanges();
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent.map(c => c.title)).toEqual(['green', 'blue', 'red']);
         done();
       });
@@ -145,7 +145,7 @@ describe('ObservationEditSelectComponent', () => {
       freshHost.recentChoices = ['red', 'not-a-real-choice'];
       freshFixture.detectChanges();
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent.map(c => c.title)).toEqual(['red']);
         done();
       });
@@ -161,7 +161,7 @@ describe('ObservationEditSelectComponent', () => {
       freshHost.recentChoices = ['green', 'blue', 'red'];
       freshFixture.detectChanges();
 
-      freshHost.component.recentChoices$.subscribe(recent => {
+      freshHost.component().recentChoices$.subscribe(recent => {
         expect(recent).toEqual([]);
         done();
       });

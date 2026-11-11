@@ -220,7 +220,6 @@ class AngularModule { }
 
     NavigationComponent,
     ObservationEditComponent,
-    ObservationEditDiscardComponent,
     ObservationEditFormPickerComponent,
     PasswordResetSuccessDialog,
     PollingIntervalComponent,
@@ -244,6 +243,7 @@ class AngularModule { }
     LayersComponent,
     LocationFilterDialogComponent,
     ObservationDeleteComponent,
+    ObservationEditDiscardComponent,
     ObservationFavoritesComponent,
     ObservationListComponent,
     ObservationListItemComponent,
