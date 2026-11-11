@@ -3,7 +3,7 @@ import { FeedTopic, FeedTopicContent } from '@ngageoint/mage.service/lib/entitie
 import { PluginResourceUrl } from '@ngageoint/mage.service/lib/entities/entities.global'
 import { Feature } from 'geojson'
 import { URL } from 'url'
-import { AtakAuth, AtakTransport } from '../atak'
+import { TakAuth, TakTransport } from '../tak'
 import { CotEvent, parseCotEvent } from '../cot/parse'
 
 /**
@@ -41,9 +41,9 @@ export interface CotEventsTopicParams {
 
 export const topicDescriptor: FeedTopic = {
   id: 'cot-events',
-  title: 'ATAK CoT Events',
-  summary: 'Live Cursor-on-Target events (unit positions, points of interest) from a connected ATAK/TAK server.',
-  icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.atak', 'icons/cot_feed_icon.png') },
+  title: 'TAK CoT Events',
+  summary: 'Live Cursor-on-Target events (unit positions, points of interest) from a connected TAK/TAK server.',
+  icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.tak', 'icons/cot_feed_icon.png') },
   paramsSchema: {
     type: 'object',
     properties: {
@@ -75,7 +75,7 @@ export const topicDescriptor: FeedTopic = {
   itemSecondaryProperty: 'uid',
   updateFrequencySeconds: 30,
   mapStyle: {
-    icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.atak', 'icons/cot_map_icon.png') }
+    icon: { sourceUrl: new PluginResourceUrl('@ngageoint/mage.tak', 'icons/cot_map_icon.png') }
   },
   /**
    * Limited to CoT fields confirmed present on a real sample event (see
@@ -139,7 +139,7 @@ interface ClientEndpointsResponse {
  * 2026-10-19), but not their current position - that requires a separate
  * per-uid request below.
  */
-const fetchClientEndpoints = async (transport: AtakTransport, baseUrl: URL, auth: AtakAuth | undefined): Promise<ClientEndpoint[]> => {
+const fetchClientEndpoints = async (transport: TakTransport, baseUrl: URL, auth: TakAuth | undefined): Promise<ClientEndpoint[]> => {
   const res = await transport.send({ method: 'get', path: '/Marti/api/clientEndPoints' }, baseUrl, auth)
   const body = res.body as unknown as ClientEndpointsResponse
   return Array.isArray(body?.data) ? body.data : []
@@ -150,14 +150,14 @@ const fetchClientEndpoints = async (transport: AtakTransport, baseUrl: URL, auth
  * plain text for that one device (confirmed live against OpenTAKServer, see
  * mage-notes/TRACKING.md, 2026-10-16).
  */
-const fetchDeviceEvent = async (transport: AtakTransport, baseUrl: URL, auth: AtakAuth | undefined, uid: string): Promise<CotEvent | null> => {
+const fetchDeviceEvent = async (transport: TakTransport, baseUrl: URL, auth: TakAuth | undefined, uid: string): Promise<CotEvent | null> => {
   const res = await transport.send({ method: 'get', path: `/Marti/api/cot/xml/${uid}` }, baseUrl, auth)
   if (typeof res.body !== 'string' || res.body.length === 0) {
     return null
   }
   const event = parseCotEvent(res.body)
   if (!event) {
-    console.warn('atak cot-events: skipping unparseable CoT event for uid', uid, res.body)
+    console.warn('tak cot-events: skipping unparseable CoT event for uid', uid, res.body)
     return null
   }
   return event
@@ -211,7 +211,7 @@ const matchesEventParams = (event: CotEvent, params: CotEventsTopicParams): bool
  * individually. A device whose position fetch fails or can't be parsed is
  * skipped rather than failing the whole topic fetch.
  */
-export const fetchContent = async (transport: AtakTransport, baseUrl: URL, auth: AtakAuth | undefined, params?: JsonObject): Promise<FeedTopicContent> => {
+export const fetchContent = async (transport: TakTransport, baseUrl: URL, auth: TakAuth | undefined, params?: JsonObject): Promise<FeedTopicContent> => {
   const topicParams = (params ?? {}) as CotEventsTopicParams
   const allEndpoints = await fetchClientEndpoints(transport, baseUrl, auth)
   const endpoints = allEndpoints.filter(x => matchesEndpointParams(x, topicParams))
@@ -224,7 +224,7 @@ export const fetchContent = async (transport: AtakTransport, baseUrl: URL, auth:
       features.push(geoJsonFromCotEvent(result.value))
     }
     else if (result.status === 'rejected') {
-      console.warn('atak cot-events: failed to fetch device position', result.reason)
+      console.warn('tak cot-events: failed to fetch device position', result.reason)
     }
   }
   return {

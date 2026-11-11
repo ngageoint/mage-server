@@ -30,6 +30,8 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Third-party sign-in no longer misses its result when another page or browser extension posts a message while the sign-in window is open
 
 ### Plugins
+#### Features
+* TAK plugin can now push Mage observations and user locations to a TAK Server as CoT events, with independent per-event toggles for each - see `plugins/tak/README.md`
 
 ## [6.7.1](https://github.com/ngageoint/mage-server/releases/tag/6.7.1)
 ### Service

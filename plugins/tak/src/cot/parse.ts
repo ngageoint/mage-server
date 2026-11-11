@@ -2,7 +2,7 @@ import { XMLParser } from 'fast-xml-parser'
 
 /**
  * Cursor-on-Target (CoT) is a standard XML event schema shared across the
- * TAK ecosystem (ATAK, WinTAK, TAK Server/Marti, FreeTAKServer,
+ * TAK ecosystem (TAK, WinTAK, TAK Server/Marti, FreeTAKServer,
  * OpenTAKServer). This module only knows how to read that schema - it has
  * no knowledge of MAGE, feeds, or which server/transport a given XML
  * string came from.

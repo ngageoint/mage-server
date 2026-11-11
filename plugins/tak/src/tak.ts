@@ -5,7 +5,7 @@ import * as CotEvents from './topics/cot-events'
 import { URL } from 'url'
 
 /**
- * ATAK devices exchange situational awareness data as Cursor-on-Target (CoT)
+ * TAK devices exchange situational awareness data as Cursor-on-Target (CoT)
  * events. This service type connects to a TAK Server's Marti API to pull
  * those events in as a MAGE feed. Both a real Gov TAK Server and an
  * OpenTAKServer instance (via its Marti-compatibility layer) speak the same
@@ -14,7 +14,7 @@ import { URL } from 'url'
  */
 export class TakServerServiceType implements FeedServiceType {
 
-  static readonly SERVICE_TYPE_ID = 'urn:mage:atak:feeds:service_type'
+  static readonly SERVICE_TYPE_ID = 'urn:mage:tak:feeds:service_type'
 
   readonly id: FeedServiceTypeId = FeedServiceTypeUnregistered
   readonly pluginServiceTypeId: string = TakServerServiceType.SERVICE_TYPE_ID
@@ -26,19 +26,20 @@ export class TakServerServiceType implements FeedServiceType {
     properties: {
       baseUrl: { type: 'string', title: 'Base URL', description: 'GovTAK or OpenTAK Server' },
       port: { type: 'integer', title: 'Port', description: 'Port for TAK Server' },
+      cotPort: { type: 'integer', title: 'CoT Port', description: 'TCP port for sending MAGE events to the TAK server' },
       username: { type: 'string', title: 'Username', description: 'Server username' },
       password: { type: 'string', title: 'Password', description: 'Server password' }
     },
     required: ['baseUrl']
   }
 
-  constructor(readonly transport: AtakTransport) { }
+  constructor(readonly transport: TakTransport) { }
 
   async validateServiceConfig(config: Json): Promise<null | InvalidServiceConfigError> {
     if (typeof config !== 'object' || config === null || Array.isArray(config)) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: [], config }, 'config must be an object')
     }
-    const { baseUrl, port } = config as unknown as AtakServiceConfig
+    const { baseUrl, port, cotPort } = config as unknown as TakServiceConfig
     if (typeof baseUrl !== 'string') {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'config.baseUrl must be a url string')
     }
@@ -48,45 +49,51 @@ export class TakServerServiceType implements FeedServiceType {
     catch (err) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['baseUrl'], config }, 'invalid service url')
     }
-    if (port !== undefined && (typeof port !== 'number' || !Number.isInteger(port) || port < 1 || port > 65535)) {
+    if (port !== undefined && !isValidPort(port)) {
       return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['port'], config }, 'config.port must be an integer between 1 and 65535')
+    }
+    if (cotPort !== undefined && !isValidPort(cotPort)) {
+      return new FeedsError(ErrInvalidServiceConfig, { invalidKeys: ['cotPort'], config }, 'config.cotPort must be an integer between 1 and 65535')
     }
     return null
   }
 
   redactServiceConfig(config: JsonObject): JsonObject {
-    const { password, ...rest } = config as unknown as AtakServiceConfig
+    const { password, ...rest } = config as unknown as TakServiceConfig
     return password ? { ...rest, password: '●●●●●●●●' } : rest
   }
 
   async createConnection(config: Json): Promise<FeedServiceConnection> {
-    return new AtakConnection(topics, config as unknown as AtakServiceConfig, this.transport)
+    return new TakConnection(topics, config as unknown as TakServiceConfig, this.transport)
   }
 }
 
-export interface AtakServiceConfig {
+const isValidPort = (port: number): boolean => Number.isInteger(port) && port >= 1 && port <= 65535
+
+export interface TakServiceConfig {
   baseUrl: string
   port?: number
+  cotPort?: number
   username?: string
   password?: string
 }
 
-export interface AtakAuth {
+export interface TakAuth {
   username: string
   password: string
 }
 
-const topics: Map<string, AtakTopicModule> = new Map<FeedTopicId, AtakTopicModule>([
+const topics: Map<string, TakTopicModule> = new Map<FeedTopicId, TakTopicModule>([
   [ CotEvents.topicDescriptor.id, CotEvents ]
 ])
 
-export class AtakConnection implements FeedServiceConnection {
+export class TakConnection implements FeedServiceConnection {
 
   readonly baseUrl: string
   readonly url: URL
-  readonly auth?: AtakAuth
+  readonly auth?: TakAuth
 
-  constructor(readonly topics: Map<FeedTopicId, AtakTopicModule>, config: AtakServiceConfig, readonly transport: AtakTransport) {
+  constructor(readonly topics: Map<FeedTopicId, TakTopicModule>, config: TakServiceConfig, readonly transport: TakTransport) {
     if (config.port) {
       const url = new URL(config.baseUrl)
       url.port = String(config.port)
@@ -128,24 +135,24 @@ export class AtakConnection implements FeedServiceConnection {
   }
 }
 
-export interface AtakRequest {
+export interface TakRequest {
   method: 'get'
   path: string
   queryParams?: Record<string, string>
 }
 
-export interface AtakResponse {
+export interface TakResponse {
   status: number
   body: Json
 }
 
-export interface AtakTransport {
-  send(req: AtakRequest, baseUrl: URL, auth?: AtakAuth): Promise<AtakResponse>
+export interface TakTransport {
+  send(req: TakRequest, baseUrl: URL, auth?: TakAuth): Promise<TakResponse>
 }
 
-export interface AtakTopicModule {
+export interface TakTopicModule {
   topicDescriptor: FeedTopic
-  createContentRequest?(params?: JsonObject): AtakRequest
-  transformResponse?(res: AtakResponse, req: AtakRequest): FeedTopicContent
-  fetchContent?(transport: AtakTransport, baseUrl: URL, auth: AtakAuth | undefined, params?: JsonObject): Promise<FeedTopicContent>
+  createContentRequest?(params?: JsonObject): TakRequest
+  transformResponse?(res: TakResponse, req: TakRequest): FeedTopicContent
+  fetchContent?(transport: TakTransport, baseUrl: URL, auth: TakAuth | undefined, params?: JsonObject): Promise<FeedTopicContent>
 }
