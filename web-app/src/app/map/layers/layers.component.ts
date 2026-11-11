@@ -1,12 +1,10 @@
 import { Component, input, output } from '@angular/core';
 import { CdkDragDrop, DragDropModule } from '@angular/cdk/drag-drop';
-import { MatExpansionModule } from '@angular/material/expansion';
-import { RenderedMapLayer } from '../entities.map-layer';
-import { LayerHeaderComponent } from './layer-header.component';
-import { LayerContentComponent } from './layer-content.component';
+import { MapLayerGroup, RenderedMapLayer } from '../entities.map-layer';
+import { LayerItemComponent } from './layer-item.component';
 
 export interface ReorderEvent {
-  group: 'mage' | 'feed' | 'feature' | 'tile';
+  group: Extract<MapLayerGroup, 'mage' | 'feed' | 'feature' | 'tile'>;
   layers: RenderedMapLayer[];
   currentIndex: number;
   previousIndex: number;
@@ -16,12 +14,9 @@ export interface ReorderEvent {
     selector: 'map-layers-panel',
     templateUrl: './layers.component.html',
     styleUrls: ['./layers.component.scss'],
-    standalone: true,
     imports: [
         DragDropModule,
-        MatExpansionModule,
-        LayerHeaderComponent,
-        LayerContentComponent
+        LayerItemComponent
     ]
 })
 export class LayersComponent {

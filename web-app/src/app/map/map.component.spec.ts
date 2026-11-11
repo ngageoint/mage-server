@@ -10,7 +10,7 @@ import { FilterService } from '../filter/filter.service';
 import { LocalStorageService } from '../http/local-storage.service';
 import { SessionService } from '../http/session.service';
 import { geoJSON, gridLayer, latLng, latLngBounds, tileLayer } from 'leaflet';
-import { RenderedMapLayer, RenderedRasterLayer } from './entities.map-layer';
+import { MapLayer, MapLayerGroup, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer';
 import { ReorderEvent } from './layers/layers.component';
 
 describe('MapComponent', () => {
@@ -146,24 +146,63 @@ describe('MapComponent', () => {
       expect(component.map.getPanes()['pane-one'].style.opacity).toEqual('0.25');
     });
 
-    const reorderGroups: [ReorderEvent['group'], number][] = [
-      ['mage', MapComponent.MAGE_PANE_Z_INDEX_OFFSET],
-      ['feed', MapComponent.MAGE_PANE_Z_INDEX_OFFSET],
-      ['feature', MapComponent.FEATURE_PANE_Z_INDEX_OFFSET],
-      ['tile', MapComponent.TILE_PANE_Z_INDEX_OFFSET]
-    ];
+    function mapLayer(group: MapLayerGroup, id: number): MapLayer {
+      return group === 'tile'
+        ? { type: 'Imagery', id: id, name: `Layer ${id}`, url: '', format: 'XYZ' }
+        : { type: 'vector', id: `${id}`, name: `Layer ${id}`, group: group as VectorLayer['group'], renderHooks: {} };
+    }
 
-    reorderGroups.forEach(([group, offset]) => {
-      it(`restacks ${group} panes within the ${group} group z-index range`, () => {
-        const layerOne = vectorLayer('pane-one');
-        const layerTwo = vectorLayer('pane-two');
+    function pane(id: number): HTMLElement {
+      return component.map.getPanes()[`pane-${id}`];
+    }
 
-        component.reorder({ group: group, layers: [layerOne, layerTwo], previousIndex: 0, currentIndex: 1 });
+    function groupPane(group: MapLayerGroup): HTMLElement {
+      return component.map.getPanes()[`${group}GroupPane`];
+    }
 
-        const top = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - 1;
-        expect(component.map.getPanes()['pane-two'].style.zIndex).toEqual(`${top}`);
-        expect(component.map.getPanes()['pane-one'].style.zIndex).toEqual(`${top - 1}`);
+    it('stacks group panes in order beneath popups', () => {
+      const order: MapLayerGroup[] = ['base', 'tile', 'grid', 'feature', 'feed', 'mage'];
+      const zIndexes = order.map(group => Number(groupPane(group).style.zIndex));
+
+      expect(zIndexes).toEqual([...zIndexes].sort((a, b) => a - b));
+      expect(new Set(zIndexes).size).toEqual(order.length);
+      expect(zIndexes[zIndexes.length - 1]).toBeLessThan(Number(component.map.getPanes().popupPane.style.zIndex));
+    });
+
+    it('nests each layer pane in its group pane', () => {
+      component.onLayersChanged({ added: [mapLayer('mage', 1), mapLayer('feed', 2)] });
+
+      expect(pane(1).parentElement).toBe(groupPane('mage'));
+      expect(pane(2).parentElement).toBe(groupPane('feed'));
+    });
+
+    it('stacks layers within a group in list order', () => {
+      component.onLayersChanged({ added: [mapLayer('mage', 1), mapLayer('mage', 2)] });
+
+      expect(pane(1).style.zIndex).toEqual('2');
+      expect(pane(2).style.zIndex).toEqual('1');
+    });
+
+    const reorderGroups: ReorderEvent['group'][] = ['mage', 'feed', 'feature', 'tile'];
+
+    reorderGroups.forEach(group => {
+      it(`restacks ${group} layers within their group pane when reordered`, () => {
+        component.onLayersChanged({ added: [mapLayer(group, 1), mapLayer(group, 2)] });
+
+        component.reorder({ group: group, layers: component.groups[group], previousIndex: 0, currentIndex: 1 });
+
+        expect(pane(2).style.zIndex).toEqual('2');
+        expect(pane(1).style.zIndex).toEqual('1');
+        expect(pane(1).parentElement).toBe(groupPane(group));
       });
+    });
+
+    it('removes a layer from its group', () => {
+      component.onLayersChanged({ added: [mapLayer('feed', 1), mapLayer('feed', 2)] });
+
+      component.removeLayer('1');
+
+      expect(component.groups.feed.map(layer => layer.id)).toEqual(['2']);
     });
 
     it('applies style only to GeoPackage layers', () => {
