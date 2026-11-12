@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
   , User = require('./user')
   , Token = require('./token')
   , AuthenticationConfiguration = require('./authenticationconfiguration')
-  , PasswordValidator = require('../utilities/passwordValidator');
+const { validatePasswordRequirements } = require('../local-idp/password-requirements')
 
 const Schema = mongoose.Schema;
 
@@ -88,13 +88,12 @@ LocalSchema.pre('save', function (next) {
     },
     function (policy, done) {
       const { password, previousPasswords } = authentication;
-      PasswordValidator.validate(policy, { password, previousPasswords }).then(validationStatus => {
+      validatePasswordRequirements(password, policy, previousPasswords).then(validationStatus => {
         if (!validationStatus.valid) {
-          const err = new Error(validationStatus.errorMsg);
+          const err = new Error(validationStatus.errorMessage);
           err.status = 400;
           return done(err);
         }
-
         done(null, policy);
       });
     },
