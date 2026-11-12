@@ -4,7 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { GeometryModule } from '../../geometry/geometry.module';
-import { FormField } from '../../entities/event/entities.event';
+import { activeFormFields, FormField } from '../../entities/event/entities.event';
 import { ObservationViewAttachmentComponent } from './observation-view-attachment/observation-view-attachment.component';
 import { ObservationViewCheckboxComponent } from './observation-view-checkbox/observation-view-checkbox.component';
 import { ObservationViewDateComponent } from './observation-view-date/observation-view-date.component';
@@ -74,16 +74,12 @@ export class ObservationViewFormComponent {
   }
 
   nonArchivedFields(fields: FormField[] | undefined): FormField[] {
-    return (fields ?? [])
-      .filter(field => !field.archived)
-      .sort((a, b) => a.id - b.id);
+    return activeFormFields(fields);
   }
 
   hasContent(): boolean {
     const form = this.form()
-    const fields: any[] = form?.fields ?? []
-    return fields
-      .filter(field => !field.archived)
+    return activeFormFields(form?.fields)
       .some(field => {
         if (field.type === 'attachment') {
           return this.attachments().filter(attachment => attachment.observationFormId === form?.remoteId).length

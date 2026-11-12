@@ -1,34 +1,19 @@
-import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { FormPreference } from 'core-lib-src/user'
+import { GeometryEditEvent } from './observation-edit-geometry/observation-edit-geometry.component'
+import { activeFormFields, Form, FormField } from '../../entities/event/entities.event'
 
 @Component({
     selector: 'observation-edit-form',
     templateUrl: './observation-edit-form.component.html',
     styleUrls: ['./observation-edit-form.component.scss'],
-    animations: [
-        trigger('expand', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('300ms', style({ height: '*', opacity: 1 })),
-            ]),
-            transition(':leave', [
-                animate('300ms', style({ height: 0, opacity: 0 }))
-            ])
-        ]),
-        trigger('rotate', [
-            state('true', style({ transform: 'rotate(180deg)' })),
-            state('false', style({ transform: 'rotate(0)' })),
-            transition('* <=> *', animate('300ms ease-out'))
-        ])
-    ],
     standalone: false
 })
 export class ObservationEditFormComponent implements OnInit {
   @Input() formGroup: UntypedFormGroup
   @Input() formPreferences: FormPreference
-  @Input() definition: any
+  @Input() definition: Form
   @Input() geometryStyle: any
   @Input() attachmentUrl: string
   @Input() observation: any
@@ -36,10 +21,10 @@ export class ObservationEditFormComponent implements OnInit {
   @Input() options: { expand: boolean, deletable: boolean }
 
   @Output() remove = new EventEmitter<UntypedFormGroup>()
-  @Output() featureEdit = new EventEmitter<any>()
+  @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
 
   fieldNames: string[]
-  fieldDefinitions: {}
+  fieldDefinitions: Record<string, FormField>
   primaryField: any = {}
   primaryFieldValue: any
   secondaryField: any = {}
@@ -50,26 +35,20 @@ export class ObservationEditFormComponent implements OnInit {
   ngOnInit(): void {
     this.expand = this.options.expand;
 
-    this.fieldDefinitions = this.definition.fields.reduce((map, field) => {
+    this.fieldDefinitions = this.definition.fields.reduce<Record<string, FormField>>((map, field) => {
       map[field.name] = field
       return map
     }, {})
 
     const controlNames = Object.keys(this.formGroup.controls)
-    this.fieldNames = this.definition.fields
-      .filter(field => !field.archived)
+    this.fieldNames = activeFormFields(this.definition.fields)
       .filter(field => controlNames.includes(field.name))
-      .sort((a, b) => a.id - b.id)
       .map(field => field.name)
 
     this.updateView()
   }
-  
-  nonArchivedFields(fields: any[]): any[] {
-    return fields.filter(field => !field.archived).sort((a: any, b: any) => a.id - b.id );
-  }
 
-  onGeometryEdit(event): void {
+  onGeometryEdit(event: GeometryEditEvent): void {
     this.featureEdit.emit(event)
   }
 
@@ -90,6 +69,6 @@ export class ObservationEditFormComponent implements OnInit {
   }
 
   private getValue(fieldName: string): any {
-    return this.formGroup.get(fieldName).value
+    return this.formGroup.get(fieldName)?.value
   }
 }

@@ -56,4 +56,17 @@ describe('ObservationEditFormComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('does not fail when the primary feed field is archived', () => {
+    const archivedFixture = TestBed.createComponent(TestHostComponent);
+    archivedFixture.componentInstance.definition = {
+      name: 'TestForm',
+      primaryFeedField: 'archived',
+      fields: [{ id: 1, name: 'archived', type: 'textfield', title: 'Archived', archived: true }]
+    } as any;
+
+    archivedFixture.detectChanges();
+
+    expect(archivedFixture.componentInstance.component.primaryFieldValue).toBeUndefined();
+  });
 });

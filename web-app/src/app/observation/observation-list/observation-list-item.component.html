@@ -59,18 +59,16 @@
         }
       </div>
 
-      @if (!observation()?.noGeometry) {
-        <div class="item-thumbnail">
-          @if (observation()?.style?.iconUrl) {
-            <img
-              [src]="observation()?.style?.iconUrl"
-              alt=""
-            />
-          } @else {
-            <mat-icon class="item-thumbnail__fallback">place</mat-icon>
-          }
-        </div>
-      }
+      <div class="item-thumbnail">
+        @if (observation()?.style?.iconUrl) {
+          <img
+            [src]="observation()?.style?.iconUrl"
+            alt=""
+          />
+        } @else {
+          <mat-icon class="item-thumbnail__fallback">place</mat-icon>
+        }
+      </div>
     </div>
 
     @if (attachments?.length) {
@@ -99,14 +97,12 @@
   }
 
   <mat-card-actions>
-    @if (!observation()?.noGeometry) {
-      <div class="actions-buttons">
-        <button matButton (click)="onObservationLocationClick()">
-          <mat-icon class="actions__location-icon">my_location</mat-icon>
-          <span>{{ observation()?.geometry | geometry : 5 }}</span>
-        </button>
-      </div>
-    }
+    <div class="actions-buttons">
+      <button matButton (click)="onObservationLocationClick()">
+        <mat-icon class="actions__location-icon">my_location</mat-icon>
+        <span>{{ observation()?.geometry | geometry : 5 }}</span>
+      </button>
+    </div>
 
     <div class="actions-icons">
       @if (canEditImportant) {

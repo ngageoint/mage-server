@@ -15,18 +15,20 @@
   <mat-progress-bar *ngIf="saving" mode="indeterminate" class="edit-progress"></mat-progress-bar>
 
   <div cdkScrollable #editContent class="edit-content" [ngClass]="{'edit-content--scroll-lock': mask}">
-    <div class="edit-banner mat-elevation-z4" *ngIf="error" @error>
-      <div class="edit-banner-container">
-        <div class="edit-banner-content">
-          <div class="edit-banner-content__title">
-            <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
-            Unable to save observation
+    <div class="edit-banner mat-elevation-z4" *ngIf="error" animate.enter="edit-banner--enter" animate.leave="edit-banner--leave">
+      <div class="edit-banner__body">
+        <div class="edit-banner-container">
+          <div class="edit-banner-content">
+            <div class="edit-banner-content__title">
+              <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
+              Unable to save observation
+            </div>
+            <div class="edit-banner-content__summary">{{error?.message}}</div>
           </div>
-          <div class="edit-banner-content__summary">{{error?.message}}</div>
         </div>
-      </div>
-      <div class="edit-banner-actions">
-        <button matButton (click)="error = null;">Dismiss</button>
+        <div class="edit-banner-actions">
+          <button matButton (click)="error = null;">Dismiss</button>
+        </div>
       </div>
     </div>
 
@@ -36,7 +38,7 @@
           <observation-edit-date class="edit-date" [formGroup]="formGroup.get('properties')" [definition]="timestampDefinition"></observation-edit-date>
 
           <observation-edit-geometry [formGroup]="formGroup" [definition]="geometryDefinition"
-            [featureId]="observation.id" [featureStyle]="geometryStyle" (onFeatureEdit)="onGeometryEdit($event)">
+            [featureId]="observation.id" [featureStyle]="geometryStyle" (featureEdit)="onGeometryEdit($event)">
           </observation-edit-geometry>
         </mat-card-content>
       </mat-card>
@@ -48,7 +50,7 @@
             <observation-edit-form [formGroup]="group" [definition]="formDefinitions[group.get('formId').value]"
               [formPreferences]="eventPreferences?.forms?.[group.get('formId')?.value]"
               [geometryStyle]="geometryStyle" [attachmentUrl]="attachmentUrl" [observation]="observation"
-              [options]="i === 0 ? {expand: true} : formOptions" (remove)="removeForm($event)"
+              [options]="{expand: true}" (remove)="removeForm($event)"
               (featureEdit)="onGeometryEdit($event)">
 
               <div *ngIf="formGroup?.get('properties')?.get('forms').length > 1" cdkDragHandle>
@@ -68,7 +70,7 @@
     </button>
   </div>
 
-  <div *ngIf="mask" @mask class="form-mask"></div>
+  <div *ngIf="mask" animate.enter="form-mask--enter" animate.leave="form-mask--leave" class="form-mask"></div>
 </div>
 
 <ng-template #empty>

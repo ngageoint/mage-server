@@ -1,6 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, computed, inject, input, output, signal, linkedSignal } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { Component, computed, inject, input, output, linkedSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -13,15 +12,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 import { SidebarService } from '../../sidebar/sidebar.service';
 import moment from 'moment';
-import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
+import { ObservationOption, ObservationOptionsComponent, ObservationOptionsData } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
-import { Form } from '../../entities/event/entities.event';
-import { FormProperties, Observation } from '../../entities/observation/entities.observation';
-import { SessionService } from 'mage-web-app/http/session.service';
+import { Form, MageEvent } from '../../entities/event/entities.event';
+import { FormProperties, FormPropertiesDraft, Observation, ObservationDraft } from '../../entities/observation/entities.observation';
+import { SessionService } from '../../http/session.service';
 import { GeometryModule } from '../../geometry/geometry.module';
 import { MomentModule } from '../../moment/moment.module';
 import { MapClipComponent } from '../../map/clip/clip.component';
@@ -31,17 +30,6 @@ import { ObservationViewFormComponent } from './observation-view-form.component'
     selector: 'observation-view',
     templateUrl: './observation-view.component.html',
     styleUrls: ['./observation-view.component.scss'],
-    animations: [
-        trigger('important', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('250ms', style({ height: '*', opacity: 1 })),
-            ]),
-            transition(':leave', [
-                animate('250ms', style({ height: 0, opacity: 0 }))
-            ])
-        ])
-    ],
     imports: [
         DecimalPipe,
         FormsModule,
@@ -60,45 +48,45 @@ import { ObservationViewFormComponent } from './observation-view-form.component'
     ]
 })
 export class ObservationViewComponent {
-  private dialog = inject(MatDialog)
-  private bottomSheet = inject(MatBottomSheet)
-  private mapService = inject(MapService)
-  private eventService = inject(EventService)
-  private sessionService = inject(SessionService)
-  private sidebarService = inject(SidebarService)
+  private readonly dialog = inject(MatDialog)
+  private readonly bottomSheet = inject(MatBottomSheet)
+  private readonly mapService = inject(MapService)
+  private readonly eventService = inject(EventService)
+  private readonly sessionService = inject(SessionService)
+  private readonly sidebarService = inject(SidebarService)
 
-  event = input<any>()
-  observation = input<any>()
+  event = input.required<MageEvent>()
+  observation = input.required<Observation>()
 
   closed = output<void>()
   delete = output<any>()
 
-  isUserFavorite = linkedSignal(() => Boolean(this.observation()?.favoriteUserIds?.includes(this.sessionService.user.id)))
-  importantEditorOpen = signal(false)
-  importantEditorDescription = linkedSignal<string | undefined>(() => this.observation()?.important?.description)
+  isUserFavorite = linkedSignal(() => this.observation().favoriteUserIds?.includes(this.sessionService.user.id) ?? false)
+  importantEditorOpen = linkedSignal({ source: this.observation, computation: () => false })
+  importantEditorDescription = linkedSignal<string | undefined>(() => this.observation().important?.description)
 
   canEdit = computed(() => {
-    if (!this.observation() || !this.event()) return false
     return this.sessionService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.sessionService.hasPermission('UPDATE_OBSERVATION_ALL')
   })
 
-  canEditImportant = computed(() => {
-    const event = this.event()
-    if (!this.observation() || !event) return false
-
-    const myAccess = event.acl[this.sessionService.user.id] || {}
-    const aclPermissions = myAccess.permissions || []
-    return this.sessionService.user.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
+  canClone = computed(() => {
+    return this.sessionService.hasPermission('CREATE_OBSERVATION') && this.eventService.isUserInEvent(this.sessionService.user, this.event())
   })
+
+  canEditImportant = computed(() => {
+    const aclPermissions = this.event().acl[this.sessionService.user?.id]?.permissions ?? []
+    return this.sessionService.hasPermission('UPDATE_EVENT') || aclPermissions.includes('update')
+  })
+
+  canDelete = computed(() => this.canEditImportant() || this.observation().userId === this.sessionService.user?.id)
 
   observationForm = computed<{
     geometryField: { title: string, type: string, value: Observation['geometry'] },
     timestampField: { title: string, type: string, value: Date },
     forms: Form[]
-  } | undefined>(() => {
+  }>(() => {
     const event = this.event()
     const observation = this.observation()
-    if (!observation || !event) return undefined
 
     const formMap = this.eventService.getFormsForEvent(event, {}).reduce<Record<number, Form>>((map, form) => {
       map[form.id] = form
@@ -177,9 +165,11 @@ export class ObservationViewComponent {
   }
 
   onOptions(): void {
+    const data: ObservationOptionsData = { canClone: this.canClone(), canDelete: this.canDelete() }
     this.bottomSheet.open(ObservationOptionsComponent, {
       panelClass: 'sidebar',
-      autoFocus: false
+      autoFocus: false,
+      data
     }).afterDismissed().subscribe((option: ObservationOption) => {
       switch(option) {
         case ObservationOption.DOWNLOAD:
@@ -187,6 +177,9 @@ export class ObservationViewComponent {
           break;
         case ObservationOption.DELETE:
           this.checkDelete()
+          break;
+        case ObservationOption.CLONE:
+          this.cloneObservation()
           break;
       }
     })
@@ -215,14 +208,36 @@ export class ObservationViewComponent {
     })
   }
 
+  cloneObservation(): void {
+    const observation = this.observation()
+    const activeFormIds = new Set(this.eventService.getFormsForEvent(this.event(), { archived: false }).map((form) => form.id))
+    const clonedForms = observation.properties.forms
+      .filter((form) => activeFormIds.has(form.formId))
+      .map((form): FormPropertiesDraft => ({
+        ...structuredClone(form),
+        id: null
+      }))
+    const clone: ObservationDraft = {
+      id: 'new',
+      eventId: observation.eventId,
+      type: observation.type,
+      geometry: structuredClone(observation.geometry),
+      properties: {
+        timestamp: new Date(),
+        forms: clonedForms
+      }
+    }
+    this.sidebarService.edit(clone)
+  }
+
   onObservationLocationClick(): void {
     this.mapService.zoomToFeatureInLayer(this.observation(), 'observations');
   }
 
   private feedField(key: 'primaryFeedField' | 'secondaryFeedField'): { field: any, value: any } | undefined {
     const observation = this.observation()
-    const forms = this.observationForm()?.forms
-    if (!observation || !forms || observation.properties.forms.length === 0) return undefined
+    const forms = this.observationForm().forms
+    if (observation.properties.forms.length === 0) return undefined
 
     const firstForm = observation.properties.forms[0]
     const observationForm = forms.find(form => form.id === firstForm.formId)
