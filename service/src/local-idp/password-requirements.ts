@@ -38,7 +38,7 @@ export type PasswordValidationResult = {
   errorMessage: string | null
 }
 
-export async function validatePasswordRequirements(password: string, policy: PasswordRequirements, previousPasswords: string[]): Promise<PasswordValidationResult> {
+export async function validatePasswordRequirements(password: string, policy: PasswordRequirements, previousPasswords: string[] = []): Promise<PasswordValidationResult> {
   if (!password) {
     return {
       valid: false,
