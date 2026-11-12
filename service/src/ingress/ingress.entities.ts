@@ -41,11 +41,10 @@ export type IdentityProvider = {
 }
 
 /**
- * A user ingress binding is the bridge between a Mage user and an identity provider account.  When a user attempts
- * to authenticate to Mage through an identity provider, a binding must exist between the Mage user account and the
- * identity provider for Mage to map the identity provider account to the Mage user account.
+ * A user identity maps a Mage user account to an identity provider account.  When a user attempts to authenticate
+ * to Mage through an identity provider, a binding must exist between the Mage user account and the identity provider.
  */
-export type UserIdentityProviderBinding = {
+export type UserIdentity = {
   idpId: IdentityProviderId
   created: Date
   updated: Date
@@ -55,16 +54,19 @@ export type UserIdentityProviderBinding = {
   /**
    * The identity provider account ID is the identifier of the account native to the owning identity provider.  This is
    * only necessary if the identifier differs from the Mage account's username, especially if a Mage account has
-   * multiple ingress bindings for different identity providers with different account identifiers.
+   * multiple bindings for different identity providers with different account identifiers.
    */
   idpAccountId?: string
   // TODO: unused for now
   // idpAccountAttrs?: Record<string, any>
 }
 
-export type UserIdpBindings = {
+/**
+ * A user authentication binding captures all the mappings a Mage user has to trusted identity provider identities.
+ */
+export type AuthenticationBinding = {
   userId: UserId
-  bindingsByIdpId: Map<IdentityProviderId, UserIdentityProviderBinding>
+  identities: Map<IdentityProviderId, UserIdentity>
 }
 
 export type IdentityProviderRepository = {
@@ -78,25 +80,25 @@ export type IdentityProviderRepository = {
   // deleteIdp(id: IdentityProviderId): Promise<IdentityProvider | null>
 }
 
-export type UserIdentityProviderBindingsRepository = {
+export type AuthenticationBindingRepository = {
   /**
    * Return null if the user has no persisted bindings entry.
    */
-  // readBindingsForUser(userId: UserId): Promise<UserIngressBindings>
-  // readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters): Promise<PageOf<UserIngressBindings>>
+  // readBindingForUser(userId: UserId): Promise<UserAuthenticationBinding>
+  // readAllBindingsForIdp(idpId: IdentityProviderId, paging?: PagingParameters): Promise<PageOf<AuthenticationBinding>>
   // /**
   //  * Save the given ingress binding to the bindings dictionary for the given user, creating or updating as necessary.
   //  * Return the modified ingress bindings.
   //  */
-  saveUserIdpBinding(userId: UserId, binding: UserIdentityProviderBinding): Promise<UserIdpBindings | Error>
+  saveBindingIdentity(userId: UserId, identity: UserIdentity): Promise<AuthenticationBinding | Error>
   /**
   //  * Return the binding that was deleted, or null if the user did not have a binding to the given IDP.
   //  */
-  // deleteBinding(userId: UserId, idpId: IdentityProviderId): Promise<UserIngressBinding | null>
+  // deleteBindingIdentity(userId: UserId, idpId: IdentityProviderId): Promise<UserAuthenticationBinding | null>
   // /**
-  //  * Return the bindings that were deleted for the given user, or null if the user had no ingress bindings.
+  //  * Return the deleted binding that for the given user, or null if the user had no authentication binding.
   //  */
-  // deleteBindingsForUser(userId: UserId): Promise<UserIngressBindings | null>
+  // deleteBindingForUser(userId: UserId): Promise<AuthenticationBinding | null>
   // /**
   //  * Return the number of deleted bindings.
   //  */
