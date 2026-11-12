@@ -45,7 +45,7 @@ describe('user account administration', function() {
         account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypatty' },
         context
       })
-      assert(enrollResult.success === undefined)
+      assert(enrollResult.success === null)
       expect(enrollResult.error.code).to.equal(ErrPermissionDenied)
       permissions.received(1).ensureCreateUserPermission(context)
     })
@@ -57,7 +57,7 @@ describe('user account administration', function() {
         account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypatty' },
         context
       })
-      assert(enrollResult.success === undefined)
+      assert(enrollResult.success === null)
       expect(enrollResult.error.code).to.equal(ErrEntityNotUnique)
     })
 

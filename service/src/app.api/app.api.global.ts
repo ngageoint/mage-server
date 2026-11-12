@@ -63,11 +63,11 @@ export type AnyMageError<KnownErrors> = KnownErrors extends MageError<infer Code
 
 export const AppResponse = Object.freeze({
   success<Success, KnownErrors>(result: Success, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<Success, AnyMageError<KnownErrors>> {
-    return Object.freeze({ success: result, error: undefined, contentLanguage })
+    return Object.freeze({ success: result, error: null, contentLanguage })
   },
 
   error<KnownErrors>(result: KnownErrors, contentLanguage?: LanguageTag[] | null | undefined): AppResponse<any, KnownErrors> {
-    return Object.freeze({ success: undefined, error: result, contentLanguage })
+    return Object.freeze({ success: null, error: result, contentLanguage })
   },
 
   async resultOf<Success, KnownErrors>(promise: Promise<Success | AnyMageError<KnownErrors>>): Promise<AppResponse<Success, AnyMageError<KnownErrors>>> {
@@ -79,8 +79,8 @@ export const AppResponse = Object.freeze({
   }
 } as const)
 
-export type AppResponseSuccess<Success> = { success: Success, error: undefined }
-export type AppResponseError<KnownErrors> = { success: undefined, error: KnownErrors }
+export type AppResponseSuccess<Success> = { success: Success, error: null }
+export type AppResponseError<KnownErrors> = { success: null, error: KnownErrors }
 export type AppResponse<Success, KnownErrors> = (AppResponseSuccess<Success> | AppResponseError<KnownErrors>) & {
   contentLanguage?: LanguageTag[] | null | undefined
 }
