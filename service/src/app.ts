@@ -1,4 +1,14 @@
 import environment from './environment/env';
+import { MongooseIdentityProviderRepository, MongooseAuthenticationBindingRepository } from './ingress/ingress.adapters.db.mongoose'
+import { IdentityProviderRepository, AuthenticationBindingRepository } from './ingress/ingress.entities'
+import {
+  createLocalIdpModels,
+  LocalIdpAccountModel,
+  LocalIdpSecurityPolicyModel,
+  MongooseLocalIdpRepository
+} from './local-idp/local-idp.adapters.db.mongoose'
+import { LocalIdpRepository } from './local-idp/local-idp.entities'
+import { createLocalIdentityProviderService } from './local-idp/local-idp.services.impl'
 import log from './logger';
 import { Logger } from './entities/entities.logging';
 import {
@@ -190,8 +200,6 @@ import { FileSystemUserIconContentStore } from './adapters/users/adapters.users.
 import { UserIconContentStore } from './entities/users/entities.users';
 import { GeoJsonExportTransform } from './app.impl/exports/app.impl.exports.geojson';
 import { GeoPackageExportTransform } from './app.impl/exports/app.impl.exports.geopackage';
-
-// Attachment imports
 import { AttachmentHook, setAttachmentHooks } from './plugins.api/plugins.api.attachments';
 import { startAttachmentProcessing } from './main.impl/main.impl.attachment_processing';
 
@@ -228,6 +236,9 @@ export type BootConfig = {
     webUIPlugins?: string[]
   }
 }
+
+const DomainEvents = new EventEmitter({ captureRejections: true })
+  .on('error', (err: unknown) => console.error('uncaught error in domain event handler:', err))
 
 let service: MageService | null = null
 
@@ -413,8 +424,12 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
 type DatabaseLayer = {
   conn: mongoose.Connection
   connectionFactoryForPlugin: (pluginId: string) => GetDbConnection
+  localIdp: {
+    securityPolicy: LocalIdpSecurityPolicyModel
+    account: LocalIdpAccountModel
+  }
   devices: {
-    device: DeviceModel;
+    device: DeviceModel
   }
   feeds: {
     feedServiceTypeIdentity: FeedServiceTypeIdentityModel
@@ -428,7 +443,7 @@ type DatabaseLayer = {
     event: MageEventModel
   }
   exports: {
-    export: ExportModel;
+    export: ExportModel
   }
   icons: {
     staticIcon: StaticIconModel
@@ -570,6 +585,7 @@ async function initDatabase(): Promise<DatabaseLayer> {
   return {
     conn,
     connectionFactoryForPlugin: PluginConnectionFactory,
+    localIdp: createLocalIdpModels(conn),
     devices: {
       device: DeviceModel(conn)
     },
@@ -638,6 +654,11 @@ type Repositories = {
   icons: {
     staticIconRepo: StaticIconRepository
   }
+  ingress: {
+    idpRepo: IdentityProviderRepository
+    authBindingRepo: AuthenticationBindingRepository
+  }
+  localIdpRepo: LocalIdpRepository
   users: {
     userRepo: UserRepository
     preferenceRepo: UserPreferenceRepository
@@ -667,14 +688,7 @@ const jsonSchemaService: JsonSchemaService = {
       validate: async () => null
     };
   }
-};
-
-const DomainEvents = new EventEmitter({ captureRejections: true }).on(
-  'error',
-  (err: unknown) => {
-    console.error('uncaught error in domain event handler:', err);
-  }
-);
+}
 
 async function initRepositories(
   models: DatabaseLayer,
@@ -731,13 +745,11 @@ async function initRepositories(
     models.users.preference
   );
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
-  const attachmentStore = await initializeAttachmentStore(
-    environment.attachmentBaseDirectory
-  );
-  const systemInfoService = new EnvironmentServiceImpl(models.conn);
+  const attachmentStore = await initializeAttachmentStore(environment.attachmentBaseDirectory)
+  const systemInfoService = new EnvironmentServiceImpl(models.conn)
 
   if (attachmentStore instanceof FileSystemAttachmentStoreInitError) {
-    throw attachmentStore;
+    throw attachmentStore
   }
 
   return {
@@ -770,6 +782,11 @@ async function initRepositories(
     icons: {
       staticIconRepo
     },
+    ingress: {
+      idpRepo: new MongooseIdentityProviderRepository(),
+      authBindingRepo: new MongooseAuthenticationBindingRepository()
+    },
+    localIdpRepo: new MongooseLocalIdpRepository(models.localIdp.securityPolicy, models.localIdp.account),
     users: {
       userRepo,
       preferenceRepo: userPreferenceRepo,
@@ -980,11 +997,10 @@ async function initExportsAppLayer(
   };
 }
 
-async function initUsersAppLayer(
-  repos: Repositories
-): Promise<AppLayer['users']> {
+async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']> {
+  const localIdpService = createLocalIdentityProviderService(repos.localIdpRepo)
   const usersPermissions = new RoleBasedUsersPermissionService()
-  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, usersPermissions)
+  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, repos.ingress.idpRepo, repos.ingress.authBindingRepo, localIdpService, usersPermissions)
   const searchUsers = createSearchUsersOperation(repos.users.userRepo, usersPermissions)
   return {
     enrollLocalUserByProxy,
