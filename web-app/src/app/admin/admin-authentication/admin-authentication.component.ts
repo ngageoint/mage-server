@@ -9,7 +9,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
-import { Strategy } from '../admin-authentication/admin-settings.model';
+import { Strategy, loginButtonError } from '../admin-authentication/admin-settings.model';
 import { MatDialog } from '@angular/material/dialog';
 import { AuthenticationDeleteComponent } from './admin-authentication-delete/admin-authentication-delete.component';
 import { AdminSettingsUnsavedComponent } from '../admin-settings/admin-settings-unsaved/admin-settings-unsaved.component';
@@ -19,6 +19,7 @@ import { AuthenticationConfigurationService } from '../services/admin-authentica
 import { Team, TeamService } from '@ngageoint/mage.web-core-lib/team'
 import { AdminEventsService } from '../services/admin-events.service';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { authenticationButtonText } from '../../api/api.entity';
 
 export interface CanComponentDeactivate {
   canDeactivate: () => boolean | Promise<boolean>;
@@ -136,6 +137,10 @@ export class AdminAuthenticationComponent
       if (strategy.icon) {
         strategy.icon = 'data:image/png;base64,' + strategy.icon;
       }
+
+      if (strategy.type !== 'local' && !strategy.buttonText?.trim()) {
+        strategy.buttonText = authenticationButtonText(strategy.title);
+      }
     });
 
     this.strategies.set(strategies);
@@ -170,6 +175,14 @@ export class AdminAuthenticationComponent
   }
 
   async save(): Promise<void> {
+    for (const strategy of this.strategies()) {
+      const error = strategy.isDirty && strategy.type !== 'local' ? loginButtonError(strategy) : undefined;
+      if (error) {
+        this.snackBar.open(`${error} for ${strategy.title}`, undefined, { duration: 2000 });
+        return;
+      }
+    }
+
     try {
       const dirty = this.strategies().filter((s) => s.isDirty);
       await Promise.all(

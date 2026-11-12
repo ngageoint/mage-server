@@ -3,12 +3,13 @@ import { SessionService } from "../http/session.service";
 import { HttpClient, HttpParams } from "@angular/common/http";
 import { BehaviorSubject, Observable, map, mergeMap } from "rxjs";
 import * as _ from "lodash";
-import { Attachment, Observation, ObservationId, ObservationStateName, ObservationStyle } from "../entities/observation/entities.observation";
+import { Attachment, Observation, ObservationDraft, ObservationId, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
 import { EventId, Form, FormStyle, MageEvent } from "../entities/event/entities.event";
-import { Style } from "../entities/map/entities.map";
+import { MapFeatureStyle, Style } from "../entities/map/entities.map";
 import { ObservationFieldFilter } from "../entities/observation/filter/entities.observation.filter";
 
 export type ObservationsRequestOptions = {
+  view?: 'summary' | 'map'
   states?: ObservationStateName
   populate?: boolean
   sort?: string
@@ -37,8 +38,14 @@ export type ObservationsPage = {
   links: { next: number | null, prev: number | null }
 }
 
+export type ObservationMapViewResponse = Omit<ObservationMapFeature, 'properties' | 'style'> & {
+  properties: ObservationMapFeature['properties'] & {
+    style: Partial<Style> & { iconUrl: string }
+  }
+}
 
-export type SaveableObservation = Partial<Observation> & { noGeometry?: boolean }
+
+export type SaveableObservation = Partial<Observation>
 
 export type PagingOptions = {
   page: number
@@ -83,8 +90,38 @@ export class ObservationService {
     );
   }
 
-  getObservationsForMap(event: MageEvent, options: ObservationsRequestOptions): Observable<Observation[]> {
-    return this.fetchObservations(event, options, (observations: Observation[]) => this.transformObservations(observations, event));
+  getObservationsForMap(event: MageEvent, options: ObservationsRequestOptions): Observable<ObservationMapFeature[]> {
+    return this.fetchObservations(event, { ...options, view: 'map' }, (views: ObservationMapViewResponse[]) => views.map(view => this.mapFeatureForView(view)));
+  }
+
+  mapFeatureForView(view: ObservationMapViewResponse): ObservationMapFeature {
+    const { style, ...properties } = view.properties;
+    this.minimizeGeometry(view.geometry);
+    return {
+      id: view.id,
+      type: view.type,
+      geometry: view.geometry,
+      properties,
+      style: {
+        ...this.leafletStyle(style),
+        iconUrl: this.withAccessToken(style.iconUrl)
+      }
+    };
+  }
+
+  mapFeatureForObservation(observation: Observation): ObservationMapFeature {
+    return {
+      id: observation.id,
+      type: observation.type,
+      geometry: observation.geometry,
+      properties: {
+        eventId: observation.eventId,
+        lastModified: observation.lastModified,
+        state: observation.state?.name,
+        accuracy: observation.properties.accuracy
+      },
+      style: observation.style
+    };
   }
 
   getObservationsPage(event: MageEvent, options: ObservationsPageRequestOptions): Observable<ObservationsPage> {
@@ -115,13 +152,6 @@ export class ObservationService {
   }
 
   private saveObservation(event: MageEvent, observation: SaveableObservation): Observable<Observation> {
-    // If the noGemetry flag is set, override the geometry to a default point.
-    if (!!observation.noGeometry) {
-      observation.geometry = {
-        type: 'Point',
-        coordinates: [0, 0]
-      }
-    }
     if (observation.id) {
       return this.client.put<Observation>(
         `/api/events/${event.id}/observations/${observation.id}`,
@@ -233,15 +263,18 @@ export class ObservationService {
         event,
         form
       );
-      const { geometry } = observation;
-      if (geometry.type === "Polygon") {
-        this.minimizePolygon(geometry.coordinates);
-      } else if (geometry.type === "LineString") {
-        this.minimizeLineString(geometry.coordinates);
-      }
+      this.minimizeGeometry(observation.geometry);
     });
 
     return list;
+  }
+
+  minimizeGeometry(geometry: GeoJSON.Geometry) {
+    if (geometry.type === "Polygon") {
+      this.minimizePolygon(geometry.coordinates);
+    } else if (geometry.type === "LineString") {
+      this.minimizeLineString(geometry.coordinates);
+    }
   }
 
   minimizePolygon(polygon: number[][][]) {
@@ -267,7 +300,7 @@ export class ObservationService {
     }
   }
 
-  getObservationStyleForForm(observation: Pick<Observation, 'properties'>, event: Pick<MageEvent, 'id' | 'style'>, form?: Form): ObservationStyle {
+  getObservationStyleForForm(observation: Pick<ObservationDraft, 'properties'>, event: Pick<MageEvent, 'id' | 'style'>, form?: Form): MapFeatureStyle {
     let formId: number | null = null;
     let formStyle: FormStyle | null = null;
     let primaryField: string | null = null;
@@ -297,7 +330,7 @@ export class ObservationService {
     };
   }
 
-  getObservationStyle(eventStyle: Style, formStyle: FormStyle | null, primary: string | null, variant: string | null): Omit<ObservationStyle, 'iconUrl'> {
+  getObservationStyle(eventStyle: Style, formStyle: FormStyle | null, primary: string | null, variant: string | null): Omit<MapFeatureStyle, 'iconUrl'> {
     let style: Partial<Style> = eventStyle || {};
     if (formStyle) {
       if (
@@ -314,6 +347,10 @@ export class ObservationService {
       }
     }
 
+    return this.leafletStyle(style);
+  }
+
+  leafletStyle(style: Partial<Style>): Omit<MapFeatureStyle, 'iconUrl'> {
     return {
       color: style.stroke,
       fillColor: style.fill,
@@ -328,13 +365,17 @@ export class ObservationService {
     if (formId) {
       url += `/${formId}`;
       if (primary) {
-        url += `/${primary}`;
+        url += `/${encodeURIComponent(primary)}`;
         if (variant) {
-          url += `/${variant}`;
+          url += `/${encodeURIComponent(variant)}`;
         }
       }
     }
 
+    return this.withAccessToken(url);
+  }
+
+  private withAccessToken(url: string): string {
     const params = new HttpParams().append("access_token", this.sessionService.getToken() ?? "");
     return `${url}?${params.toString()}`
   }

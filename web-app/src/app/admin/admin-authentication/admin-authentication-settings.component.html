@@ -89,4 +89,9 @@
       </admin-authentication-saml>
     }
   }
+
+  @if (strategy().type !== 'local') {
+    <h3 class="section-title">Login Button</h3>
+    <button-preview [strategy]="strategy()" (changed)="setDirty(true)"></button-preview>
+  }
 }

@@ -44,13 +44,8 @@ module.exports = function(app, security) {
 
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
-    const options = {};
-    if (req.query) {
-      for (let [key, value] of Object.entries(req.query)) {
-        options[key] = value;
-      }
-    }
-    Team.getTeamById(teamId, options, function(err, team) {
+    const populate = req.query.populate == null || req.query.populate === 'true';
+    Team.getTeamById(teamId, { populate }, function(err, team) {
       if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();
@@ -101,9 +96,7 @@ module.exports = function(app, security) {
         return next(err);
       }
       if (!observation) {
-        return res
-          .status(404)
-          .send(`Observation ID ${observationId} not found`);
+        return res.status(404).send('Observation not found');
       }
       req.observation = observation;
       next();

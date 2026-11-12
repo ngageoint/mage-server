@@ -1,9 +1,8 @@
-import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { Component, input } from '@angular/core';
+import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatRadioModule } from '@angular/material/radio';
 
-/**
- * TODO: move to forms model module (which doesn't exist yet)
- */
 interface RadioField {
   title: string,
   name: string,
@@ -15,9 +14,9 @@ interface RadioField {
     selector: 'observation-edit-radio',
     templateUrl: './observation-edit-radio.component.html',
     styleUrls: ['./observation-edit-radio.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatFormFieldModule, MatRadioModule]
 })
 export class ObservationEditRadioComponent {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: RadioField
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<RadioField>()
 }

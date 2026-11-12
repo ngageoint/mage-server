@@ -31,15 +31,17 @@ function observation(overrides: any = {}) {
   }
 }
 
-function mapObservation(overrides: any = {}) {
+function mapObservation(overrides: { id?: string, lastModified?: string, state?: string } = {}): any {
   return {
-    id: 'obs1',
+    id: overrides.id ?? 'obs1',
     type: 'Feature',
     geometry: { type: 'Point', coordinates: [0, 0] },
-    lastModified: '2024-01-01T00:00:00Z',
-    state: { id: 'state1', name: 'active' },
-    properties: { forms: [] },
-    ...overrides
+    properties: {
+      eventId: 1,
+      lastModified: overrides.lastModified ?? '2024-01-01T00:00:00Z',
+      state: overrides.state ?? 'active'
+    },
+    style: { iconUrl: '/api/events/1/icons' }
   }
 }
 
@@ -61,6 +63,7 @@ class MockObservationService {
   pagingSubject = new BehaviorSubject<any>(null)
   paging$ = this.pagingSubject.asObservable()
   getObservationsForMap = jasmine.createSpy('getObservationsForMap').and.returnValue(of([]))
+  mapFeatureForObservation = jasmine.createSpy('mapFeatureForObservation').and.callFake((o: any) => mapObservation({ id: o.id, lastModified: o.lastModified, state: o.state?.name }))
   getObservationsPage = jasmine.createSpy('getObservationsPage').and.returnValue(of({ items: [], totalCount: 0, pageIndex: 0, pageSize: 50 }))
   getPagingOptions = jasmine.createSpy('getPagingOptions').and.returnValue(null)
   setPagingOptions = jasmine.createSpy('setPagingOptions')
@@ -464,7 +467,7 @@ describe('EventService', () => {
       const obs = mapObservation()
       service.parseMapObservations([obs])
 
-      const updated = { ...obs, lastModified: '2024-01-02T00:00:00Z' }
+      const updated = mapObservation({ lastModified: '2024-01-02T00:00:00Z' })
       const emissions: any[][] = []
       service.mapObservations$.subscribe(v => { if (v) emissions.push(v) })
       const countBefore = emissions.length
@@ -473,7 +476,7 @@ describe('EventService', () => {
 
       expect(emissions.length).toBeGreaterThan(countBefore)
       const latest = emissions[emissions.length - 1]
-      expect(latest.find((o: any) => o.lastModified === updated.lastModified)).toBeDefined()
+      expect(latest.find((o: any) => o.properties.lastModified === updated.properties.lastModified)).toBeDefined()
     })
 
     it('emits empty array when fetch returns no results', () => {
@@ -507,7 +510,7 @@ describe('EventService', () => {
       const latest: any[] = []
       service.mapObservations$.subscribe(v => { if (v) latest.splice(0, latest.length, ...v) })
 
-      service.parseMapObservations([{ ...obs, state: { ...obs.state, name: 'archive' } }])
+      service.parseMapObservations([mapObservation({ state: 'archive' })])
 
       expect(latest.find(o => o.id === obs.id)).toBeUndefined()
     })
@@ -517,7 +520,7 @@ describe('EventService', () => {
       service.mapObservations$.subscribe(v => { if (v) emissions.push(v) })
       const countBefore = emissions.length
 
-      service.parseMapObservations([mapObservation({ state: { id: 'state1', name: 'archive' } })])
+      service.parseMapObservations([mapObservation({ state: 'archive' })])
 
       expect(emissions.length).toBe(countBefore)
     })
@@ -643,6 +646,13 @@ describe('EventService', () => {
     beforeEach(() => {
       initWithEvent()
       observationService.getObservationsForMap.calls.reset()
+    })
+
+    it('does not populate user names for map observations', () => {
+      service.fetchMapObservations().subscribe()
+
+      const params = observationService.getObservationsForMap.calls.mostRecent().args[1]
+      expect(params.populate).toBeUndefined()
     })
 
     it('uses states=active on initial fetch before any observations are loaded', () => {
@@ -1034,7 +1044,7 @@ describe('EventService', () => {
       obs = observation()
       initWithEvent()
       service.onEventChanged(null, mockEvent as any)
-      service.parseMapObservations([obs])
+      service.parseMapObservations([mapObservation({ id: obs.id })])
       observationService.getPagingOptions.and.returnValue({ page: 0, page_size: 50 })
       observationService.getObservationsPage.calls.reset()
     })
@@ -1055,6 +1065,56 @@ describe('EventService', () => {
     })
   })
 
+  describe('addObservationFavorite', () => {
+    let obs: any
+
+    beforeEach(() => {
+      obs = observation()
+      initWithEvent()
+      service.onEventChanged(null, mockEvent as any)
+      service.parseMapObservations([mapObservation({ id: obs.id })])
+    })
+
+    it('stores the map feature for the updated observation', () => {
+      const update = { ...obs, favoriteUserIds: ['current-user'] }
+      const feature = mapObservation({ id: obs.id, lastModified: '2030-01-01T00:00:00Z' })
+      observationService.addObservationFavorite.and.returnValue(of(update))
+      observationService.mapFeatureForObservation.and.returnValue(feature)
+      const latest: any[] = []
+      service.mapObservations$.subscribe(v => { if (v) latest.splice(0, latest.length, ...v) })
+
+      service.addObservationFavorite(obs).subscribe()
+
+      expect(observationService.mapFeatureForObservation).toHaveBeenCalledWith(update)
+      expect(latest.find(o => o.id === obs.id)).toBe(feature)
+    })
+  })
+
+  describe('markObservationAsImportant', () => {
+    let obs: any
+
+    beforeEach(() => {
+      obs = observation()
+      initWithEvent()
+      service.onEventChanged(null, mockEvent as any)
+      service.parseMapObservations([mapObservation({ id: obs.id })])
+    })
+
+    it('stores the map feature for the updated observation', () => {
+      const update = { ...obs, important: { userId: 'current-user', description: 'look here' } }
+      const feature = mapObservation({ id: obs.id, lastModified: '2030-01-01T00:00:00Z' })
+      observationService.markObservationAsImportantForEvent.and.returnValue(of(update))
+      observationService.mapFeatureForObservation.and.returnValue(feature)
+      const latest: any[] = []
+      service.mapObservations$.subscribe(v => { if (v) latest.splice(0, latest.length, ...v) })
+
+      service.markObservationAsImportant(obs, { description: 'look here' }).subscribe()
+
+      expect(observationService.mapFeatureForObservation).toHaveBeenCalledWith(update)
+      expect(latest.find(o => o.id === obs.id)).toBe(feature)
+    })
+  })
+
   describe('removeObservationFavorite', () => {
     let obs: any
 
@@ -1062,7 +1122,7 @@ describe('EventService', () => {
       obs = observation({ favoriteUserIds: ['current-user'] })
       initWithEvent()
       service.onEventChanged(null, mockEvent as any)
-      service.parseMapObservations([obs])
+      service.parseMapObservations([mapObservation({ id: obs.id })])
       observationService.removeObservationFavorite.and.returnValue(of({ ...obs, favoriteUserIds: [] }))
       observationService.getObservationsForMap.calls.reset()
     })
@@ -1079,12 +1139,14 @@ describe('EventService', () => {
 
     it('keeps observation in list when isUserFavorite filter is not active', () => {
       filterService.getObservationFilter.and.returnValue(null)
+      const feature = mapObservation({ id: obs.id, lastModified: '2030-01-01T00:00:00Z' })
+      observationService.mapFeatureForObservation.and.returnValue(feature)
       const latest: any[] = []
       service.mapObservations$.subscribe(v => { if (v) latest.splice(0, latest.length, ...v) })
 
       service.removeObservationFavorite(obs).subscribe()
 
-      expect(latest.find(o => o.id === obs.id)).toBeDefined()
+      expect(latest.find(o => o.id === obs.id)).toBe(feature)
     })
 
     it('refreshes the paginated observation list when removed from the filtered map results', () => {
@@ -1115,7 +1177,7 @@ describe('EventService', () => {
       obs = observation()
       initWithEvent()
       service.onEventChanged(null, mockEvent as any)
-      service.parseMapObservations([obs])
+      service.parseMapObservations([mapObservation({ id: obs.id })])
       observationService.clearObservationAsImportantForEvent.and.returnValue(of(obs))
       observationService.getObservationsForMap.calls.reset()
     })
@@ -1132,12 +1194,14 @@ describe('EventService', () => {
 
     it('keeps observation in list when isFlaggedImportant filter is not active', () => {
       filterService.getObservationFilter.and.returnValue(null)
+      const feature = mapObservation({ id: obs.id, lastModified: '2030-01-01T00:00:00Z' })
+      observationService.mapFeatureForObservation.and.returnValue(feature)
       const latest: any[] = []
       service.mapObservations$.subscribe(v => { if (v) latest.splice(0, latest.length, ...v) })
 
       service.clearObservationAsImportant(obs).subscribe()
 
-      expect(latest.find(o => o.id === obs.id)).toBeDefined()
+      expect(latest.find(o => o.id === obs.id)).toBe(feature)
     })
 
     it('refreshes the paginated observation list when removed from the filtered map results', () => {
@@ -1237,7 +1301,7 @@ describe('EventService', () => {
       obs = observation({ attachments: [attachment] })
       initWithEvent()
       service.onEventChanged(null, mockEvent as any)
-      service.parseMapObservations([obs])
+      service.parseMapObservations([mapObservation({ id: obs.id })])
     })
 
     it('removes observation when hasAttachments filter is active and last attachment is deleted', () => {
@@ -1300,7 +1364,7 @@ describe('EventService', () => {
       obs = observation()
       initWithEvent()
       service.onEventChanged(null, mockEvent as any)
-      service.parseMapObservations([obs])
+      service.parseMapObservations([mapObservation({ id: obs.id })])
       observationService.saveObservationForEvent.and.returnValue(of(obs))
       observationService.getObservationsForMap.calls.reset()
     })

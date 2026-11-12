@@ -2,7 +2,6 @@
 
 const mongoose = require('mongoose');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const AuthenticationConfigurationSchema = new Schema(
@@ -12,6 +11,7 @@ const AuthenticationConfigurationSchema = new Schema(
     title: { type: String, required: false },
     textColor: { type: String, required: false },
     buttonColor: { type: String, required: false },
+    buttonText: { type: String, required: false },
     icon: { type: Buffer, required: false },
     enabled: { type: Boolean, default: true },
     settings: Schema.Types.Mixed
@@ -29,7 +29,7 @@ const AuthenticationConfigurationSchema = new Schema(
 
 AuthenticationConfigurationSchema.index({ name: 1, type: 1 }, { unique: true });
 
-const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'icon'];
+const whitelist = ['name', 'type', 'title', 'textColor', 'buttonColor', 'buttonText', 'icon'];
 const blacklist = ['clientsecret', 'bindcredentials', 'privatecert', 'decryptionpvk'];
 const secureMask = '*****';
 

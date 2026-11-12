@@ -1,97 +1,134 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { animate, style, transition, trigger } from '@angular/animations';
+import { DecimalPipe } from '@angular/common';
+import { Component, computed, inject, input, output, linkedSignal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ObservationFavoritesComponent } from '../observation-favorites/observation-favorites.component';
 import { SidebarService } from '../../sidebar/sidebar.service';
 import moment from 'moment';
-import { ObservationOption, ObservationOptionsComponent } from './observation-options.component';
+import { ObservationOption, ObservationOptionsComponent, ObservationOptionsData } from './observation-options.component';
 import { ObservationDeleteComponent } from '../observation-delete/observation-delete.component';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
-import { Form } from '../../entities/event/entities.event';
-import { FormProperties, Observation } from '../../entities/observation/entities.observation';
-import { SessionService } from 'mage-web-app/http/session.service';
+import { Form, MageEvent } from '../../entities/event/entities.event';
+import { FormProperties, FormPropertiesDraft, Observation, ObservationDraft } from '../../entities/observation/entities.observation';
+import { SessionService } from '../../http/session.service';
+import { GeometryModule } from '../../geometry/geometry.module';
+import { MomentModule } from '../../moment/moment.module';
+import { MapClipComponent } from '../../map/clip/clip.component';
+import { ObservationViewFormComponent } from './observation-view-form.component';
 
 @Component({
     selector: 'observation-view',
     templateUrl: './observation-view.component.html',
     styleUrls: ['./observation-view.component.scss'],
-    animations: [
-        trigger('important', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('250ms', style({ height: '*', opacity: 1 })),
-            ]),
-            transition(':leave', [
-                animate('250ms', style({ height: 0, opacity: 0 }))
-            ])
-        ])
-    ],
-    standalone: false
+    imports: [
+        DecimalPipe,
+        FormsModule,
+        MatButtonModule,
+        MatCardModule,
+        MatDividerModule,
+        MatFormFieldModule,
+        MatIconModule,
+        MatInputModule,
+        MatToolbarModule,
+        MatTooltipModule,
+        GeometryModule,
+        MomentModule,
+        MapClipComponent,
+        ObservationViewFormComponent
+    ]
 })
-export class ObservationViewComponent implements OnChanges {
-  @Input() event: any
-  @Input() observation: any
+export class ObservationViewComponent {
+  private readonly dialog = inject(MatDialog)
+  private readonly bottomSheet = inject(MatBottomSheet)
+  private readonly mapService = inject(MapService)
+  private readonly eventService = inject(EventService)
+  private readonly sessionService = inject(SessionService)
+  private readonly sidebarService = inject(SidebarService)
 
-  @Output() close = new EventEmitter<void>()
-  @Output() delete = new EventEmitter<any>()
+  event = input.required<MageEvent>()
+  observation = input.required<Observation>()
 
-  edit = false
-  canEdit = false
-  canEditImportant = false
+  closed = output<void>()
+  delete = output<any>()
 
-  favorites = 0
-  isUserFavorite = false
+  isUserFavorite = linkedSignal(() => this.observation().favoriteUserIds?.includes(this.sessionService.user.id) ?? false)
+  importantEditorOpen = linkedSignal({ source: this.observation, computation: () => false })
+  importantEditorDescription = linkedSignal<string | undefined>(() => this.observation().important?.description)
 
-  importantEditor: {
-    open: boolean,
-    description?: string
-  } = { open: false }
+  canEdit = computed(() => {
+    return this.sessionService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.sessionService.hasPermission('UPDATE_OBSERVATION_ALL')
+  })
 
-  observationForm?: {
+  canClone = computed(() => {
+    return this.sessionService.hasPermission('CREATE_OBSERVATION') && this.eventService.isUserInEvent(this.sessionService.user, this.event())
+  })
+
+  canEditImportant = computed(() => {
+    const aclPermissions = this.event().acl[this.sessionService.user?.id]?.permissions ?? []
+    return this.sessionService.hasPermission('UPDATE_EVENT') || aclPermissions.includes('update')
+  })
+
+  canDelete = computed(() => this.canEditImportant() || this.observation().userId === this.sessionService.user?.id)
+
+  observationForm = computed<{
     geometryField: { title: string, type: string, value: Observation['geometry'] },
     timestampField: { title: string, type: string, value: Date },
     forms: Form[]
-  }
-  primaryFeedField: any = {}
-  secondaryFeedField: any = {}
+  }>(() => {
+    const event = this.event()
+    const observation = this.observation()
 
-  constructor(
-    private dialog: MatDialog,
-    private bottomSheet: MatBottomSheet,
-    private mapService: MapService,
-    private eventService: EventService,
-    private sessionService: SessionService,
-    private sidebarService: SidebarService
-  ) { }
+    const formMap = this.eventService.getFormsForEvent(event, {}).reduce<Record<number, Form>>((map, form) => {
+      map[form.id] = form
+      return map
+    }, {})
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // TODO why did this not change after edit?
-    if (changes.event || changes.observation) {
-      this.updateObservation()
+    const forms: Form[] = observation.properties.forms.map((propertyForm: FormProperties) => {
+      return this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
+    })
+
+    return {
+      geometryField: {
+        title: 'Location',
+        type: 'geometry',
+        value: observation.geometry
+      },
+      timestampField: {
+        title: '',
+        type: 'date',
+        value: moment(observation.properties.timestamp).toDate()
+      },
+      forms
     }
+  })
 
-    if (changes.observation) {
-      this.updateFavorites()
-      this.importantEditor.description = this.observation.important?.description ?? undefined
-    }
-  }
+  primaryFeedField = computed(() => this.feedField('primaryFeedField'))
+  secondaryFeedField = computed(() => this.feedField('secondaryFeedField'))
 
   onClose(): void {
-    this.close.emit()
+    this.closed.emit()
   }
 
   toggleFavorite(): void {
-    if (this.isUserFavorite) {
-      this.eventService.removeObservationFavorite(this.observation).subscribe(observation => {
-        this.observation.favoriteUserIds = observation.favoriteUserIds
-        this.isUserFavorite = false
+    if (this.isUserFavorite()) {
+      this.eventService.removeObservationFavorite(this.observation()).subscribe(observation => {
+        this.observation().favoriteUserIds = observation.favoriteUserIds
+        this.isUserFavorite.set(false)
       });
     } else {
-      this.eventService.addObservationFavorite(this.observation).subscribe(observation => {
-        this.observation.favoriteUserIds = observation.favoriteUserIds
-        this.isUserFavorite = true
+      this.eventService.addObservationFavorite(this.observation()).subscribe(observation => {
+        this.observation().favoriteUserIds = observation.favoriteUserIds
+        this.isUserFavorite.set(true)
       })
     }
   }
@@ -100,37 +137,39 @@ export class ObservationViewComponent implements OnChanges {
     this.dialog.open(ObservationFavoritesComponent, {
       width: '500px',
       data: {
-        event: this.event,
-        form: this.observationForm,
-        userIds: this.observation.favoriteUserIds || []
+        event: this.event(),
+        form: this.observationForm(),
+        userIds: this.observation().favoriteUserIds || []
       },
       autoFocus: false
     })
   }
 
   onFlagAsImportant(): void {
-    this.importantEditor.open = true
+    this.importantEditorOpen.set(true)
   }
 
   markAsImportant(): void {
-    this.eventService.markObservationAsImportant(this.observation, { description: this.importantEditor.description }).subscribe(observation => {
-      this.observation.important = observation.important
-      this.importantEditor.open = false
+    this.eventService.markObservationAsImportant(this.observation(), { description: this.importantEditorDescription() }).subscribe(observation => {
+      this.observation().important = observation.important
+      this.importantEditorOpen.set(false)
     })
   }
 
   clearImportant(): void {
-    this.eventService.clearObservationAsImportant(this.observation).subscribe(observation => {
-      this.observation.important = observation.important
-      this.importantEditor.open = false
-      delete this.importantEditor.description
+    this.eventService.clearObservationAsImportant(this.observation()).subscribe(observation => {
+      this.observation().important = observation.important
+      this.importantEditorOpen.set(false)
+      this.importantEditorDescription.set(undefined)
     })
   }
 
   onOptions(): void {
+    const data: ObservationOptionsData = { canClone: this.canClone(), canDelete: this.canDelete() }
     this.bottomSheet.open(ObservationOptionsComponent, {
       panelClass: 'sidebar',
-      autoFocus: false
+      autoFocus: false,
+      data
     }).afterDismissed().subscribe((option: ObservationOption) => {
       switch(option) {
         case ObservationOption.DOWNLOAD:
@@ -139,100 +178,77 @@ export class ObservationViewComponent implements OnChanges {
         case ObservationOption.DELETE:
           this.checkDelete()
           break;
+        case ObservationOption.CLONE:
+          this.cloneObservation()
+          break;
       }
     })
   }
 
   editObservation(): void {
     this.onObservationLocationClick();
-    this.sidebarService.edit(this.observation)
+    this.sidebarService.edit(this.observation())
   }
 
   downloadObservation(): void {
-    window.location.href = `/api/events/${this.observation.eventId}/observations/${this.observation.id}.zip?access_token=${this.sessionService.getToken()}`;
+    window.location.href = `/api/events/${this.observation().eventId}/observations/${this.observation().id}.zip?access_token=${this.sessionService.getToken()}`;
   }
 
   checkDelete(): void {
     this.dialog.open(ObservationDeleteComponent, {
       width: '500px',
-      data: this.observation,
+      data: this.observation(),
       autoFocus: false
     }).afterClosed().subscribe(result => {
       if (result === 'delete') {
         this.delete.emit({
-          observation: this.observation
+          observation: this.observation()
         })
       }
     })
   }
 
+  cloneObservation(): void {
+    const observation = this.observation()
+    const activeFormIds = new Set(this.eventService.getFormsForEvent(this.event(), { archived: false }).map((form) => form.id))
+    const clonedForms = observation.properties.forms
+      .filter((form) => activeFormIds.has(form.formId))
+      .map((form): FormPropertiesDraft => ({
+        ...structuredClone(form),
+        id: null
+      }))
+    const clone: ObservationDraft = {
+      id: 'new',
+      eventId: observation.eventId,
+      type: observation.type,
+      geometry: structuredClone(observation.geometry),
+      properties: {
+        timestamp: new Date(),
+        forms: clonedForms
+      }
+    }
+    this.sidebarService.edit(clone)
+  }
+
   onObservationLocationClick(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'observations');
+    this.mapService.zoomToFeatureInLayer(this.observation(), 'observations');
   }
 
-  updateObservation(): void {
-    if (!this.observation || !this.event) return;
+  private feedField(key: 'primaryFeedField' | 'secondaryFeedField'): { field: any, value: any } | undefined {
+    const observation = this.observation()
+    const forms = this.observationForm().forms
+    if (observation.properties.forms.length === 0) return undefined
 
-    this.isUserFavorite = this.observation.favoriteUserIds.includes(this.sessionService.user.id)
-    this.canEdit = this.sessionService.hasPermission('UPDATE_OBSERVATION_EVENT') || this.sessionService.hasPermission('UPDATE_OBSERVATION_ALL')
+    const firstForm = observation.properties.forms[0]
+    const observationForm = forms.find(form => form.id === firstForm.formId)
 
-    const myAccess = this.event.acl[this.sessionService.user.id] || {}
-    const aclPermissions = myAccess.permissions || []
-    this.canEditImportant = this.sessionService.user.role.permissions.includes('UPDATE_EVENT') || aclPermissions.includes('update')
-
-    const formMap = this.eventService.getFormsForEvent(this.event, {}).reduce<Record<number, Form>>((map, form) => {
-      map[form.id] = form
-      return map
-    }, {})
-
-    const forms: Form[] = this.observation.properties.forms.map((propertyForm: FormProperties) => {
-      return this.eventService.createForm(propertyForm, formMap[propertyForm.formId])
-    })
-
-    this.observationForm = {
-      geometryField: {
-        title: 'Location',
-        type: 'geometry',
-        value: this.observation.geometry
-      },
-      timestampField: {
-        title: '',
-        type: 'date',
-        value: moment(this.observation.properties.timestamp).toDate()
-      },
-      forms
-    }
-
-    this.primaryFeedField = {}
-    this.secondaryFeedField = {}
-
-    if (this.observation.properties.forms.length > 0) {
-      const firstForm = this.observation.properties.forms[0]
-      const observationForm = forms.find(observationForm => {
-        return observationForm.id === firstForm.formId
-      })
-
-      if (observationForm?.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.primaryFeedField)
-        this.primaryFeedField = {
-          field: field,
-          value: firstForm[observationForm.primaryFeedField]
-        }
-      }
-
-      if (observationForm?.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.secondaryFeedField)
-        this.secondaryFeedField = {
-          field: field,
-          value: firstForm[observationForm.secondaryFeedField]
-        }
+    if (observationForm?.[key] && firstForm[observationForm[key]]) {
+      const field = observationForm.fields.find(field => field.name === observationForm[key])
+      return {
+        field: field,
+        value: firstForm[observationForm[key]]
       }
     }
-
-    this.isUserFavorite = this.observation.favoriteUserIds.includes(this.sessionService.user.id)
-  }
-
-  updateFavorites(): void {
-    this.favorites = this.observation.favoriteUserIds.length
+    return undefined
   }
 }

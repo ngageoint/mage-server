@@ -1,4 +1,4 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import {
   UntypedFormControl,
@@ -10,9 +10,6 @@ import {
 import { MatCheckbox, MatCheckboxModule } from '@angular/material/checkbox';
 import { MatError, MatFormFieldModule } from '@angular/material/form-field';
 import { By } from '@angular/platform-browser';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
-import { MatCheckboxHarness } from '@angular/material/checkbox/testing';
 import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.component';
 
 @Component({
@@ -21,7 +18,7 @@ import { ObservationEditCheckboxComponent } from './observation-edit-checkbox.co
     [definition]="definition"
     [formGroup]="formGroup"
   ></observation-edit-checkbox>`,
-    standalone: false
+    imports: [ObservationEditCheckboxComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({
@@ -35,11 +32,8 @@ class TestHostComponent {
     value: true
   };
 
-  @ViewChild(ObservationEditCheckboxComponent)
-  component: ObservationEditCheckboxComponent;
+  component = viewChild.required(ObservationEditCheckboxComponent);
 }
-
-let loader: HarnessLoader;
 
 describe('ObservationEditCheckboxComponent', () => {
   let component: ObservationEditCheckboxComponent;
@@ -52,18 +46,18 @@ describe('ObservationEditCheckboxComponent', () => {
         FormsModule,
         ReactiveFormsModule,
         MatFormFieldModule,
-        MatCheckboxModule
-      ],
-      declarations: [ObservationEditCheckboxComponent, TestHostComponent]
+        MatCheckboxModule,
+        ObservationEditCheckboxComponent,
+        TestHostComponent
+      ]
     }).compileComponents();
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(TestHostComponent);
-    loader = TestbedHarnessEnvironment.loader(fixture);
     hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component;
+    component = hostComponent.component();
   });
 
   it('should create', () => {
@@ -71,7 +65,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should not indicate required', () => {
-    component.definition.required = false;
+    component.definition().required = false;
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
@@ -80,7 +74,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should indicate required', () => {
-    component.definition.required = true;
+    component.definition().required = true;
     fixture.detectChanges();
 
     const text = fixture.nativeElement.textContent;
@@ -88,7 +82,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should be not checked', async () => {
-    component.definition.value = false;
+    component.definition().value = false;
     fixture.detectChanges();
 
     await fixture.whenStable();
@@ -105,7 +99,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should be checked', async () => {
-    component.definition.value = true;
+    component.definition().value = true;
     fixture.detectChanges();
 
     await fixture.whenStable();
@@ -122,7 +116,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should show error on invalid and touched', async () => {
-    const control = hostComponent.formGroup.get(component.definition.name);
+    const control = hostComponent.formGroup.get(component.definition().name);
     control?.setValue(false);
     control?.markAsTouched();
     control?.setErrors({ required: true });
@@ -138,7 +132,7 @@ describe('ObservationEditCheckboxComponent', () => {
   });
 
   it('should not show error on invalid if not touched', async () => {
-    const control = hostComponent.formGroup.get(component.definition.name);
+    const control = hostComponent.formGroup.get(component.definition().name);
     control?.setValue(false);
     control?.setErrors({ required: true });
     control?.markAsUntouched();

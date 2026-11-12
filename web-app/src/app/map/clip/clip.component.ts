@@ -1,4 +1,4 @@
-import { Component, Input, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, ViewChild } from '@angular/core'
+import { Component, input, ElementRef, OnDestroy, OnChanges, SimpleChanges, OnInit, viewChild } from '@angular/core'
 import { Feature } from 'geojson'
 import { Map, GeoJSON, PathOptions, Layer, control, TileLayer, WMSOptions, Circle, LatLng } from 'leaflet'
 import { MapService } from '../map.service'
@@ -20,14 +20,13 @@ export interface PointAccuracy {
 @Component({
     selector: 'map-clip',
     templateUrl: './clip.component.html',
-    styleUrls: ['./clip.component.scss'],
-    standalone: false
+    styleUrls: ['./clip.component.scss']
 })
 export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() feature: Feature
-  @Input() accuracy: PointAccuracy
+  feature = input<Feature>()
+  accuracy = input<PointAccuracy>()
 
-  @ViewChild('map', { static: true }) mapElement: ElementRef
+  mapElement = viewChild.required<ElementRef>('map')
 
   map: Map
   layer: GeoJSON
@@ -46,7 +45,7 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
   ngOnInit(): void {
     const mapPosition = this.localStorageService.getMapPosition();
 
-    this.map = new Map(this.mapElement.nativeElement, {
+    this.map = new Map(this.mapElement().nativeElement, {
       center: mapPosition.center,
       zoom: 15,
       minZoom: 0,
@@ -109,13 +108,13 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
       this.map.removeLayer(this.layer)
     }
 
-    if (!this.feature || !this.feature.geometry) {
+    if (!this.feature() || !this.feature().geometry) {
       const mapPosition = this.localStorageService.getMapPosition()
       this.map.setView(mapPosition.center, 1)
       return
     }
 
-    this.layer = new GeoJSON(this.feature, {
+    this.layer = new GeoJSON(this.feature(), {
       pointToLayer: function (feature: FeatureWithStyle, latlng): Layer {
         return fixedWidthMarker(latlng, {
           iconUrl: feature.style ? feature.style.iconUrl : ''
@@ -127,17 +126,17 @@ export class MapClipComponent implements OnInit, OnChanges, OnDestroy {
     })
 
     let bounds = this.layer.getBounds()
-    if (this.accuracy && this.accuracy.radius > 0) {
-      this.accuracyLayer = new Circle(this.accuracy.latlng, {
-        radius: this.accuracy.radius,
-        color: this.accuracy.color,
-        fillColor: this.accuracy.color,
+    if (this.accuracy() && this.accuracy().radius > 0) {
+      this.accuracyLayer = new Circle(this.accuracy().latlng, {
+        radius: this.accuracy().radius,
+        color: this.accuracy().color,
+        fillColor: this.accuracy().color,
         fillOpacity: 0.15,
         weight: 2,
         opacity: 0.5
       }).addTo(this.map)
 
-      if (this.accuracy.zoomTo) {
+      if (this.accuracy().zoomTo) {
         bounds = this.accuracyLayer.getBounds()
       }
     }

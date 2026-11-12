@@ -1,0 +1,173 @@
+name: SonarQube
+
+on:
+  push:
+    branches:
+      - develop
+      - master
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The tag, branch, or commit to scan, defaults to the branch this runs from
+        type: string
+        required: false
+  workflow_call:
+    inputs:
+      version:
+        description: The release version to name the report after
+        type: string
+        required: false
+
+env:
+  SONAR_API: https://sonarcloud.io/api
+  SONAR_ORGANIZATION: ${{ github.repository_owner }}
+  SONAR_PROJECT: ${{ github.repository_owner }}_${{ github.event.repository.name }}
+  SONAR_BRANCH: ${{ inputs.ref || github.ref_name }}
+  SONAR_TEST_FILES: '**/test/**,**/functionalTests/**,**/spec/**,**/e2e/**,**/*.spec.ts,**/*.spec.js,**/*.test.ts,**/*.test.js,**/*.mock.ts,**/*.spec-helper.ts,**/src/test.ts,**/karma.conf.js,**/.mocharc*.js,**/test_ts-node.js'
+
+jobs:
+  sonarqube:
+    name: sonarqube scan
+    # pull requests from forks get no secrets, sonarqube.fork-scan.yaml scans those
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    concurrency: sonarqube-${{ github.ref }}
+    steps:
+      - name: checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          # full history for accurate blame and new code detection
+          fetch-depth: 0
+      - name: branch args
+        id: branch
+        if: github.event_name != 'pull_request'
+        env:
+          REF: ${{ inputs.ref }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          if [[ ! "${SONAR_BRANCH}" =~ ^[A-Za-z0-9._/-]+$ ]]
+          then
+            echo "ERROR: invalid ref ${SONAR_BRANCH}"
+            exit 1
+          fi
+          commit=$(git rev-parse HEAD)
+          name=${VERSION:-${REF:-${commit}}}
+          {
+            echo "COMMIT=${commit}"
+            echo "REPORT_FILE=mage-${name//\//-}-sonarqube.json"
+          } >> "${GITHUB_ENV}"
+          echo "args=-Dsonar.branch.name=${SONAR_BRANCH}" >> "${GITHUB_OUTPUT}"
+      - name: scan
+        uses: SonarSource/sonarqube-scan-action@4d1dc0c91ee400dcf8a6dddf2f705ac36542e304 # v8.4.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.organization=${{ env.SONAR_ORGANIZATION }}
+            -Dsonar.projectKey=${{ env.SONAR_PROJECT }}
+            -Dsonar.sources=.
+            -Dsonar.exclusions=${{ env.SONAR_TEST_FILES }}
+            -Dsonar.tests=.
+            -Dsonar.test.inclusions=${{ env.SONAR_TEST_FILES }}
+            -Dsonar.coverage.exclusions=**
+            ${{ steps.branch.outputs.args }}
+      - name: wait for analysis
+        id: analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          task_url=$(sed -n 's/^ceTaskUrl=//p' .scannerwork/report-task.txt)
+          for attempt in $(seq 1 60)
+          do
+            curl -sf -u "${SONAR_TOKEN}:" "${task_url}" > task.json
+            status=$(jq -r .task.status task.json)
+            [[ "${status}" = "SUCCESS" ]] && break
+            if [[ "${status}" = "FAILED" || "${status}" = "CANCELED" ]]
+            then
+              echo "ERROR: sonarqube analysis ${status}: $(jq -r '.task.errorMessage // ""' task.json)"
+              exit 1
+            fi
+            sleep 5
+          done
+          if [[ "${status}" != "SUCCESS" ]]
+          then
+            echo "ERROR: sonarqube analysis did not finish"
+            exit 1
+          fi
+          echo "id=$(jq -r .task.analysisId task.json)" >> "${GITHUB_OUTPUT}"
+      - name: download quality gate
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          curl -sf -u "${SONAR_TOKEN}:" "${SONAR_API}/qualitygates/project_status?analysisId=${{ steps.analysis.outputs.id }}" > quality_gate.json
+      # pushes and pull requests only check the quality gate, manual runs and releases also produce the full report
+      - name: download results
+        if: github.event_name != 'push' && github.event_name != 'pull_request'
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          query="branch=${SONAR_BRANCH}"
+          curl -sf -u "${SONAR_TOKEN}:" "${SONAR_API}/measures/component?component=${SONAR_PROJECT}&${query}&metricKeys=bugs,vulnerabilities,security_hotspots,code_smells,ncloc" > measures.json
+          page=1
+          while
+            curl -sf -u "${SONAR_TOKEN}:" "${SONAR_API}/issues/search?componentKeys=${SONAR_PROJECT}&${query}&resolved=false&ps=500&p=${page}" > "issues-${page}.json"
+            (( page * 500 < $(jq .paging.total "issues-${page}.json") && page < 20 ))
+          do
+            page=$((page + 1))
+          done
+          page=1
+          while
+            curl -sf -u "${SONAR_TOKEN}:" "${SONAR_API}/hotspots/search?projectKey=${SONAR_PROJECT}&${query}&ps=500&p=${page}" > "hotspots-${page}.json"
+            (( page * 500 < $(jq .paging.total "hotspots-${page}.json") && page < 20 ))
+          do
+            page=$((page + 1))
+          done
+      - name: build report
+        if: github.event_name != 'push' && github.event_name != 'pull_request'
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          jq -n \
+            --arg version "${VERSION}" \
+            --arg commit "${COMMIT}" \
+            --arg branch "${SONAR_BRANCH}" \
+            --arg dashboard "https://sonarcloud.io/dashboard?id=${SONAR_PROJECT}&branch=${SONAR_BRANCH}" \
+            --slurpfile quality_gate quality_gate.json \
+            --slurpfile measures measures.json \
+            --slurpfile issues <(jq -s '[.[].issues[]]' issues-*.json) \
+            --slurpfile hotspots <(jq -s '[.[].hotspots[]]' hotspots-*.json) \
+            '{
+              version: $version,
+              commit: $commit,
+              branch: $branch,
+              dashboard: $dashboard,
+              qualityGate: $quality_gate[0].projectStatus,
+              measures: $measures[0].component.measures,
+              issues: $issues[0],
+              hotspots: $hotspots[0]
+            }' > "${REPORT_FILE}"
+          jq '{qualityGate: .qualityGate.status, issues: (.issues | length), hotspots: (.hotspots | length)}' "${REPORT_FILE}"
+      - name: upload report
+        if: github.event_name != 'push' && github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v7
+        with:
+          name: sonarqube-report
+          path: ${{ env.REPORT_FILE }}
+          retention-days: 90
+      - name: check quality gate
+        run: |
+          status=$(jq -r .projectStatus.status quality_gate.json)
+          echo "quality gate: ${status}"
+          if [[ "${status}" = "ERROR" ]]
+          then
+            if [[ "${{ github.event_name }}" != "push" && "${{ github.event_name }}" != "pull_request" ]]
+            then
+              echo "::warning::SonarQube quality gate failed"
+              exit 0
+            fi
+            echo "::error::SonarQube quality gate failed"
+            exit 1
+          fi

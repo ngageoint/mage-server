@@ -57,7 +57,7 @@ describe('ObservationFilterDialogComponent', () => {
       expect(component.isFlaggedImportant()).toBe(false);
       expect(component.isUserFavorite()).toBe(false);
       expect(component.condition()).toBeUndefined();
-      expect(component.intervalChoice()).toEqual(INTERVAL_CHOICES[1]);
+      expect(component.intervalChoice()).toEqual(INTERVAL_CHOICES[0]);
       expect(component.timeZone()).toBe('local');
     });
 

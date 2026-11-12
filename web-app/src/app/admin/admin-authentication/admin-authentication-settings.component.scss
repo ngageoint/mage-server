@@ -7,3 +7,10 @@ mat-form-field {
   color: var(--mat-sys-on-surface-variant);
   margin: 0 0 4px;
 }
+
+.section-title {
+  font-size: var(--mat-sys-title-small-size);
+  font-weight: var(--mat-sys-title-small-weight);
+  color: var(--mat-sys-on-surface);
+  margin: 24px 0 12px;
+}

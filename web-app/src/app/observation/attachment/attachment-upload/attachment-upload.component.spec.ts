@@ -11,8 +11,7 @@ describe('AttachUploadComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [AttachUploadComponent],
-    imports: [MatProgressSpinnerModule],
+    imports: [MatProgressSpinnerModule, AttachUploadComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 })
     .compileComponents();

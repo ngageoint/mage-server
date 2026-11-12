@@ -115,7 +115,7 @@
         <button-preview [strategy]="strategy"></button-preview>
         <div>
           <button matButton matStepperPrevious>Back</button>
-          <button matButton matStepperNext>Next</button>
+          <button matButton matStepperNext [disabled]="!isLoginButtonValid()">Next</button>
         </div>
       </div>
     </mat-step>

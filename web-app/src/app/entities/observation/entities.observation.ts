@@ -1,6 +1,7 @@
 import { User } from "@ngageoint/mage.web-core-lib/user"
 import { AttachmentAction } from "../../observation/observation-edit/observation-edit-attachment/observation-edit-attachment-action"
 import { EventId } from "../event/entities.event"
+import { MapFeatureStyle } from "../map/entities.map"
 
 export type ObservationId = string
 
@@ -10,19 +11,18 @@ export const ObservationStateName = Object.freeze({
 } as const)
 export type ObservationStateName = (typeof ObservationStateName)[keyof typeof ObservationStateName]
 
-export type FormProperties = {
+export type FormProperties = FormPropertiesDraft & {
   id: string
-  formId: number
-  [name: string]: any
 }
 
-export type ObservationStyle = {
-  color?: string
-  fillColor?: string
-  fillOpacity?: number
-  opacity?: number
-  weight?: number
-  iconUrl: string
+export type ObservationMapFeature = GeoJSON.Feature<GeoJSON.Geometry, {
+  eventId: EventId
+  lastModified: string
+  state?: ObservationStateName
+  accuracy?: number
+}> & {
+  id: ObservationId
+  style: MapFeatureStyle
 }
 
 export type Observation = {
@@ -37,7 +37,7 @@ export type Observation = {
   deviceId?: string
   createdAt: Date
   lastModified: string
-  style: ObservationStyle
+  style: MapFeatureStyle
   favoriteUserIds: string[]
   properties: {
     forms: FormProperties[]
@@ -57,6 +57,18 @@ export type Observation = {
     timestamp?: Date
     userId?: string
     user?: Pick<User, 'id' | 'displayName'>
+  }
+}
+
+export type FormPropertiesDraft = {
+  id: string | null
+  formId: number
+  [name: string]: any
+}
+
+export type ObservationDraft = Pick<Observation, 'id' | 'eventId' | 'type' | 'geometry'> & {
+  properties: Omit<Observation['properties'], 'forms'> & {
+    forms: FormPropertiesDraft[]
   }
 }
 

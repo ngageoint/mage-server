@@ -1,24 +1,25 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
+import { GeometryModule } from '../../../geometry/geometry.module';
+import { MapClipComponent } from '../../../map/clip/clip.component';
 
 @Component({
     selector: 'observation-view-geometry',
     templateUrl: './observation-view-geometry.component.html',
     styleUrls: ['./observation-view-geometry.component.scss'],
-    standalone: false
+    imports: [GeometryModule, MapClipComponent]
 })
-export class ObservationViewGeometryComponent implements OnChanges {
-  @Input() field: any
-  @Input() featureStyle: any
+export class ObservationViewGeometryComponent {
+  field = input<any>()
+  featureStyle = input<any>()
 
-  feature: any
+  feature = computed(() => {
+    const field = this.field()
+    if (!field?.value) return undefined
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.field && this.field && this.field.value) {
-      this.feature = {
-        type: 'Feature',
-        geometry: this.field.value,
-        style: { ...this.featureStyle }
-      }
+    return {
+      type: 'Feature',
+      geometry: field.value,
+      style: { ...this.featureStyle() }
     }
-  }
+  })
 }

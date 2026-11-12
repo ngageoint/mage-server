@@ -374,6 +374,16 @@ describe('FilterService', () => {
       expect(result).toEqual({})
     })
 
+    it('treats a missing choice as "all"', () => {
+      expect(service.getEffectiveTimeInterval(undefined)).toEqual({})
+      expect(service.getEffectiveTimeInterval({})).toEqual({})
+    })
+
+    it('defaults observation and location filters to "all"', () => {
+      expect(DEFAULT_OBSERVATION_FILTER.timeInterval.choice?.filter).toBe('all')
+      expect(DEFAULT_LOCATION_FILTER.timeInterval.choice?.filter).toBe('all')
+    })
+
     it('returns start/end of today for "today"', () => {
       const result = service.getEffectiveTimeInterval({ choice: { filter: 'today', label: 'Today' } })
 
@@ -415,14 +425,6 @@ describe('FilterService', () => {
       const result = service.getEffectiveTimeInterval({ choice: { filter: 'custom', label: 'Custom' } })
       expect(result.start).toBeUndefined()
       expect(result.end).toBeUndefined()
-    })
-
-    it('defaults to "today" when timeInterval is undefined', () => {
-      const result = service.getEffectiveTimeInterval(undefined)
-
-      expect(result.start).toBeDefined()
-      expect(result.end).toBeDefined()
-      expect(result.start.getHours()).toBe(0)
     })
   })
 })

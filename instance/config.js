@@ -42,11 +42,13 @@ module.exports = {
         '@ngageoint/mage.image.service',
         '@ngageoint/mage.arcgis.service',
         '@ngageoint/mage.sftp.service',
-        '@ngageoint/mage.nga-msi'
+        '@ngageoint/mage.nga-msi',
+        '@ngageoint/mage.tak'
       ],
       webUIPlugins: [
         '@ngageoint/mage.arcgis.web-app',
-        '@ngageoint/mage.sftp.web'
+        '@ngageoint/mage.sftp.web',
+        '@ngageoint/mage.tak.web'
       ],
     },
   }

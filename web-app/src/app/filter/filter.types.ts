@@ -50,7 +50,7 @@ export type EventLocationFilter = {
 }
 
 const DEFAULT_TIME_INTERVAL: Interval = {
-  choice: INTERVAL_CHOICES[1]
+  choice: INTERVAL_CHOICES[0]
 }
 
 export const DEFAULT_OBSERVATION_FILTER: EventObservationFilter = {

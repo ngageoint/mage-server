@@ -212,19 +212,26 @@ describe('MongooseRecentUserLocationsRepository', function() {
 
   describe('findLocations with populate', function() {
 
-    it('maps user fields to plain values', async function() {
+    async function createUserWithLocation(attrs: Record<string, unknown>) {
       const userDoc = await UserModel.create({
-        username: 'populateuser',
-        displayName: 'Populate User',
         roleId: new mongoose.Types.ObjectId(),
         authenticationId: new mongoose.Types.ObjectId(),
         active: true,
         enabled: true,
+        ...attrs,
       })
       await repo.addLocations({
         userId: userDoc._id.toHexString(),
         eventId,
         locations: [createLocation(userDoc._id, new Date())],
+      })
+      return userDoc
+    }
+
+    it('maps user fields to plain values', async function() {
+      const userDoc = await createUserWithLocation({
+        username: 'populateuser',
+        displayName: 'Populate User',
       })
 
       const results = await repo.findLocations({ where: { eventId }, populate: true })
@@ -236,20 +243,28 @@ describe('MongooseRecentUserLocationsRepository', function() {
       expect(user!.displayName).to.equal('Populate User')
     })
 
+    it('maps email, phones, and avatar to plain values', async function() {
+      await createUserWithLocation({
+        username: 'contactuser',
+        displayName: 'Contact User',
+        email: 'contactuser@example.com',
+        phones: [{ type: 'Main', number: '555-0100' }],
+        avatar: { contentType: 'image/png', size: 100, relativePath: 'avatars/contactuser.png' },
+      })
+
+      const results = await repo.findLocations({ where: { eventId }, populate: true })
+      const { user } = results[0]
+      expect(user!.email).to.equal('contactuser@example.com')
+      expect(user!.phones).to.deep.equal([{ type: 'Main', number: '555-0100' }])
+      expect(user!.avatar!.relativePath).to.equal('avatars/contactuser.png')
+      expect(user!.avatar).to.not.have.property('toObject')
+    })
+
     it('sets icon when user has an uploaded icon with a relativePath', async function() {
-      const userDoc = await UserModel.create({
+      await createUserWithLocation({
         username: 'iconuser',
         displayName: 'Icon User',
         icon: { type: 'upload', text: '', color: '', relativePath: 'icons/iconuser.png' },
-        roleId: new mongoose.Types.ObjectId(),
-        authenticationId: new mongoose.Types.ObjectId(),
-        active: true,
-        enabled: true,
-      })
-      await repo.addLocations({
-        userId: userDoc._id.toHexString(),
-        eventId,
-        locations: [createLocation(userDoc._id, new Date())],
       })
 
       const results = await repo.findLocations({ where: { eventId }, populate: true })
@@ -259,19 +274,10 @@ describe('MongooseRecentUserLocationsRepository', function() {
     })
 
     it('icon is a plain object, not a Mongoose document', async function() {
-      const userDoc = await UserModel.create({
+      await createUserWithLocation({
         username: 'iconplainuser',
         displayName: 'Icon Plain User',
         icon: { type: 'upload', text: '', color: '', relativePath: 'icons/plain.png' },
-        roleId: new mongoose.Types.ObjectId(),
-        authenticationId: new mongoose.Types.ObjectId(),
-        active: true,
-        enabled: true,
-      })
-      await repo.addLocations({
-        userId: userDoc._id.toHexString(),
-        eventId,
-        locations: [createLocation(userDoc._id, new Date())],
       })
 
       const results = await repo.findLocations({ where: { eventId }, populate: true })
@@ -279,19 +285,10 @@ describe('MongooseRecentUserLocationsRepository', function() {
     })
 
     it('icon is undefined when user has no icon relativePath', async function() {
-      const userDoc = await UserModel.create({
+      await createUserWithLocation({
         username: 'noiconuser',
         displayName: 'No Icon User',
         icon: { type: 'none', text: '', color: '' },
-        roleId: new mongoose.Types.ObjectId(),
-        authenticationId: new mongoose.Types.ObjectId(),
-        active: true,
-        enabled: true,
-      })
-      await repo.addLocations({
-        userId: userDoc._id.toHexString(),
-        eventId,
-        locations: [createLocation(userDoc._id, new Date())],
       })
 
       const results = await repo.findLocations({ where: { eventId }, populate: true })
@@ -299,18 +296,9 @@ describe('MongooseRecentUserLocationsRepository', function() {
     })
 
     it('user is undefined when populate is omitted', async function() {
-      const userDoc = await UserModel.create({
+      await createUserWithLocation({
         username: 'nopopulateuser',
         displayName: 'No Populate User',
-        roleId: new mongoose.Types.ObjectId(),
-        authenticationId: new mongoose.Types.ObjectId(),
-        active: true,
-        enabled: true,
-      })
-      await repo.addLocations({
-        userId: userDoc._id.toHexString(),
-        eventId,
-        locations: [createLocation(userDoc._id, new Date())],
       })
 
       const results = await repo.findLocations({ where: { eventId } })

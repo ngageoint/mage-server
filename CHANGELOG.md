@@ -8,15 +8,30 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 ## Pending on [`develop`](https://github.com/ngageoint/mage-server/tree/develop)
 ### Service
 #### Features
+* Authentication configurations have an optional `buttonText` field, exposed in the public `/api` strategies, for the full sign-in button label; `apiVersion` is now 6.8.0
+* `GET /api/events/:eventId/observations` and `POST /api/events/:eventId/observations/search` accept `view=map`, which returns lightweight GeoJSON features (geometry, last modified time, state, accuracy, and the resolved map style with an icon URL) instead of full observations
+* `GET /api/events/:eventId/observations/:observationId` returns the same JSON as the observation list, with the creator's and important flagger's names populated; the legacy `fields` parameter is no longer supported
 #### Bug Fixes
 * Re-indexing a single event's observation search (`POST /api/search-index/events/:eventId`) no longer always fails with 403, even for admins; an unknown event now returns 404
 #### Security
 
 ### Web App
 #### Features
+* Admins can set the full text of a third-party sign-in button (e.g. "Continue to sign in"); it defaults to `Sign in with <title>`
+* The admin Authentication page has a Login Button section for editing an existing third-party authentication's button text, colors, and icon, with a preview that is the actual sign-in button
+* Button colors can be typed as hex as well as picked, and an uploaded button icon can be removed
+* Third-party (OAuth/SAML/OIDC) sign-in opens in a small window centered over Mage instead of a new browser tab, and clicking the button again re-focuses an open sign-in window
+* Observation and location time filters default to All instead of Today
+* The map loads a lightweight view of observations and fetches the full observation when a marker is clicked, so the map no longer downloads every observation's form data and attachments
 #### Bug Fixes
+* Observation icons now load when the form's primary or variant field value contains a character such as `/`
+* Third-party sign-in now tells the user when the browser blocks the sign-in window, instead of silently doing nothing
+* Clicking a third-party sign-in button again while its sign-in window is open no longer handles the sign-in twice, and abandoned sign-in attempts stop listening for a result
+* Third-party sign-in no longer misses its result when another page or browser extension posts a message while the sign-in window is open
 
 ### Plugins
+#### Features
+* TAK plugin can now push Mage observations and user locations to a TAK Server as CoT events, with independent per-event toggles for each - see `plugins/tak/README.md`
 
 ## [6.7.1](https://github.com/ngageoint/mage-server/releases/tag/6.7.1)
 ### Service

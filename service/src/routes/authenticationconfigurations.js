@@ -93,6 +93,7 @@ module.exports = function (app, security) {
         title: req.body.title,
         textColor: req.body.textColor,
         buttonColor: req.body.buttonColor,
+        buttonText: req.body.buttonText,
         icon: req.body.icon,
         enabled: JSON.parse(req.body.enabled),
         settings: {}
@@ -176,6 +177,7 @@ module.exports = function (app, security) {
         title: req.body.title,
         textColor: req.body.textColor,
         buttonColor: req.body.buttonColor,
+        buttonText: req.body.buttonText,
         icon: req.body.icon,
         enabled: JSON.parse(req.body.enabled),
         settings: {}

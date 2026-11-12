@@ -1,5 +1,6 @@
-import { Component, DestroyRef, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, EventEmitter, Input, NgZone, OnInit, Output, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { take } from 'rxjs/operators';
 import { FormsModule, ReactiveFormsModule, UntypedFormControl } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -28,6 +29,8 @@ import { JsonSchemaFormWithServiceComponent } from '../../../json-schema/json-sc
 export class AdminServiceEditComponent implements OnInit {
   private readonly feedService: FeedService = inject(FeedService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly ngZone: NgZone = inject(NgZone);
 
   @Input() expanded = false;
   @Output() serviceCreated = new EventEmitter<Service>();
@@ -85,6 +88,11 @@ export class AdminServiceEditComponent implements OnInit {
       }
     };
     this.serviceFormReady = true;
+
+    // WORKAROUND: ajsf fields don't paint until something forces a recheck.
+    this.ngZone.onStable.pipe(take(5)).subscribe(() => {
+      this.cdr.detectChanges();
+    });
   }
 
   serviceTitleSummaryChanged($event: any): void {

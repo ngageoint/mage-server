@@ -68,7 +68,7 @@ import { EventMemberFilterComponent } from '../event/event-member-filter.compone
 import { LocationFilterDialogComponent } from '../user/location/location-filter.component';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 
-import { MapClipModule } from '../map/clip/map-clip.module';
+import { MapClipComponent } from '../map/clip/clip.component';
 import { GeometryModule } from '../geometry/geometry.module';
 import { ObservationDeleteComponent } from '../observation/observation-delete/observation-delete.component';
 import { ObservationListItemComponent } from '../observation/observation-list/observation-list-item.component';
@@ -105,7 +105,6 @@ import { FeedItemComponent } from '../feed/feed-item/feed-item.component';
 import { FeedItemMapPopupComponent } from '../feed/feed-item/feed-item-map/feed-item-map-popup.component';
 import { FeedItemSummaryModule } from '../feed/feed-item/feed-item-summary/feed-item-summary.module';
 import { SidebarTabComponent } from '../sidebar/sidebar-tab.component';
-import { ObservationPopupComponent } from '../observation/observation-popup/observation-popup.component';
 import { UserPopupComponent } from '../user/user-popup/user-popup.component';
 import { StaticIconModule } from '@ngageoint/mage.web-core-lib/static-icon'
 import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon'
@@ -220,26 +219,8 @@ class AngularModule { }
     MGRSValidatorDirective,
 
     NavigationComponent,
-    ObservationDeleteComponent,
     ObservationEditComponent,
-    ObservationEditDiscardComponent,
     ObservationEditFormPickerComponent,
-    ObservationFavoritesComponent,
-    ObservationListComponent,
-    ObservationListItemComponent,
-    ObservationOptionsComponent,
-    ObservationPopupComponent,
-    ObservationViewAttachmentComponent,
-    ObservationViewCheckboxComponent,
-    ObservationViewComponent,
-    ObservationViewDateComponent,
-    ObservationViewFormComponent,
-    ObservationViewGeometryComponent,
-    ObservationViewMultiselectdropdownComponent,
-    ObservationViewPasswordComponent,
-    ObservationViewTextareaComponent,
-    ObservationViewTextComponent,
-    PasswordPipe,
     PasswordResetSuccessDialog,
     PollingIntervalComponent,
     PreferencesComponent,
@@ -261,13 +242,30 @@ class AngularModule { }
     EventMemberFilterComponent,
     LayersComponent,
     LocationFilterDialogComponent,
+    ObservationDeleteComponent,
+    ObservationEditDiscardComponent,
+    ObservationFavoritesComponent,
+    ObservationListComponent,
+    ObservationListItemComponent,
+    ObservationViewCheckboxComponent,
+    ObservationViewDateComponent,
+    ObservationViewGeometryComponent,
+    ObservationViewAttachmentComponent,
+    ObservationOptionsComponent,
+    ObservationViewComponent,
+    ObservationViewFormComponent,
+    ObservationViewMultiselectdropdownComponent,
+    ObservationViewPasswordComponent,
+    ObservationViewTextComponent,
+    ObservationViewTextareaComponent,
+    PasswordPipe,
     ObservationFieldFilterComponent,
     ObservationFilterDialogComponent,
     SearchBarComponent,
     FeedIconModule,
     FeedItemSummaryModule,
     GeometryModule,
-    MapClipModule,
+    MapClipComponent,
     IngressModule,
     MomentModule,
     ObservationAttachmentModule,

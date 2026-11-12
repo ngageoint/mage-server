@@ -1,10 +1,4 @@
-@if (strategy().icon) {
-  <img [src]="strategy().icon" style="width:32px; height:32px">
-}
-
-<div class="icon-actions">
-  <button matButton="outlined" (click)="file.click()">
-    Upload an Icon
-  </button>
-  <input [hidden]="true" type="file" #file accept="image/*" (change)="onImageChange($event)">
-</div>
+<button matButton="outlined" type="button" (click)="file.click()">
+  {{ strategy().icon ? 'Change' : 'Upload' }}
+</button>
+<input [hidden]="true" type="file" #file accept="image/*" (change)="onImageChange($event)">

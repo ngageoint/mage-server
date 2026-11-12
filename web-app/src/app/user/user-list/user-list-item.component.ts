@@ -3,6 +3,7 @@ import { MatRipple } from '@angular/material/core';
 import { MapService } from '../../map/map.service';
 import { SessionService } from '../../http/session.service';
 import { SidebarService } from '../../sidebar/sidebar.service';
+import { UserLocation, UserWithLocation } from '../../entities/user/entities.user-location';
 
 @Component({
     selector: 'user-list-item',
@@ -11,7 +12,7 @@ import { SidebarService } from '../../sidebar/sidebar.service';
     standalone: false
 })
 export class UserListItemComponent implements OnChanges {
-  @Input() userWithLocation: any
+  @Input() userWithLocation: UserWithLocation
 
   @Output() click = new EventEmitter<any>()
 
@@ -20,8 +21,8 @@ export class UserListItemComponent implements OnChanges {
   token: string | null
   followingUser: any
 
-  user: any
-  location: any
+  user: UserWithLocation['user']
+  location: UserLocation
 
   constructor(
     private sidebarService: SidebarService,
@@ -48,7 +49,7 @@ export class UserListItemComponent implements OnChanges {
 
   viewUser(): void {
     this.onUserLocation()
-    this.sidebarService.viewUser(this.user)
+    this.sidebarService.viewUser(this.userWithLocation)
   }
 
   onRipple(): void {

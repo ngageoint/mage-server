@@ -44,22 +44,61 @@ describe('ObservationService', () => {
       req.flush([])
     })
 
-    it('does not send a view param, the server has no map view', () => {
+    it('requests the map view', () => {
       service.getObservationsForMap(mockEvent, {}).subscribe()
 
       const req = httpTestingController.expectOne(r => r.method === 'GET')
-      expect(req.request.params.has('view')).toBeFalse()
+      expect(req.request.params.get('view')).toBe('map')
       req.flush([])
     })
 
-    it('transforms the observations so the map gets their style and icon', () => {
+    it('converts the server style to map style and adds the access token to the icon url', () => {
       let result: any[] = []
-      service.getObservationsForMap(mockEvent, {}).subscribe(observations => result = observations)
+      service.getObservationsForMap(mockEvent, {}).subscribe(features => result = features)
 
       const req = httpTestingController.expectOne(r => r.method === 'GET')
-      req.flush([{ id: 'o1', type: 'Feature', geometry: { type: 'Point', coordinates: [0, 0] }, properties: { forms: [] } }])
+      req.flush([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: {
+          eventId: 1,
+          lastModified: '2024-01-01T00:00:00Z',
+          state: 'active',
+          accuracy: 10,
+          style: { stroke: '#111111', strokeOpacity: 0.5, strokeWidth: 2, fill: '#222222', fillOpacity: 0.25, iconUrl: '/api/events/1/icons/5/a' }
+        }
+      }])
 
-      expect(result[0].style.iconUrl).toBe('/api/events/1/icons?access_token=test-token')
+      expect(result).toEqual([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', state: 'active', accuracy: 10 },
+        style: {
+          color: '#111111',
+          opacity: 0.5,
+          weight: 2,
+          fillColor: '#222222',
+          fillOpacity: 0.25,
+          iconUrl: '/api/events/1/icons/5/a?access_token=test-token'
+        }
+      }])
+    })
+
+    it('unwraps line strings that cross the antimeridian', () => {
+      let result: any[] = []
+      service.getObservationsForMap(mockEvent, {}).subscribe(features => result = features)
+
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      req.flush([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [[179, 0], [-179, 0]] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', style: { iconUrl: '/api/events/1/icons' } }
+      }])
+
+      expect((result[0].geometry as any).coordinates).toEqual([[179, 0], [181, 0]])
     })
 
     it('uses GET when filter is empty object', () => {
@@ -158,6 +197,36 @@ describe('ObservationService', () => {
     it('drops a segment that has no preceding segment, since the route is positional', () => {
       expect(iconUrl(5, null, 'b')).toBe('/api/events/1/icons/5?access_token=test-token')
       expect(iconUrl(null, 'a', 'b')).toBe('/api/events/1/icons?access_token=test-token')
+    })
+
+    it('encodes the primary and variant values', () => {
+      expect(iconUrl(5, 'Fire Truck', 'Red/Blue')).toBe('/api/events/1/icons/5/Fire%20Truck/Red%2FBlue?access_token=test-token')
+    })
+  })
+
+  describe('mapFeatureForObservation', () => {
+    it('keeps only the map properties and the resolved style', () => {
+      const style = { color: '#111111', iconUrl: '/api/events/1/icons?access_token=test-token' }
+      const observation: any = {
+        id: 'o1',
+        eventId: 1,
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        lastModified: '2024-01-01T00:00:00Z',
+        state: { id: 's1', name: 'active', url: '' },
+        properties: { timestamp: new Date(), accuracy: 10, forms: [{ id: 'f1', formId: 5, notes: 'not for the map' }] },
+        attachments: [],
+        favoriteUserIds: [],
+        style
+      }
+
+      expect(service.mapFeatureForObservation(observation)).toEqual({
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', state: 'active', accuracy: 10 },
+        style
+      })
     })
   })
 })

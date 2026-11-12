@@ -45,12 +45,38 @@ mat-toolbar {
 
 .edit-banner {
   background: var(--mat-sys-surface-container-low);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.edit-banner__body {
+  display: flex;
+  flex-direction: column;
   max-height: 240px;
+  min-height: 0;
+}
+
+.edit-banner--enter {
+  animation: edit-banner-expand 250ms ease-out;
+}
+
+.edit-banner--leave {
+  animation: edit-banner-expand 250ms ease-in reverse;
+}
+
+.edit-banner--enter .edit-banner__body,
+.edit-banner--leave .edit-banner__body {
+  overflow: hidden;
+}
+
+@keyframes edit-banner-expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
 }
 
 .edit-banner-container {
@@ -106,6 +132,20 @@ mat-toolbar {
   right: 0;
   left: 0;
   opacity: .2;
+}
+
+.form-mask--enter {
+  animation: form-mask-fade 250ms ease-out;
+}
+
+.form-mask--leave {
+  animation: form-mask-fade 250ms ease-in reverse;
+}
+
+@keyframes form-mask-fade {
+  from {
+    opacity: 0;
+  }
 }
 
 .add-form {

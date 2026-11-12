@@ -1,10 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { UntypedFormGroup } from '@angular/forms';
+import { Component, input } from '@angular/core';
+import { ReactiveFormsModule, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 interface EmailField {
   title: string,
   name: string,
-  value: string,
   required: boolean
 }
 
@@ -12,9 +13,9 @@ interface EmailField {
     selector: 'observation-edit-email',
     templateUrl: './observation-edit-email.component.html',
     styleUrls: ['./observation-edit-email.component.scss'],
-    standalone: false
+    imports: [ReactiveFormsModule, MatFormFieldModule, MatInputModule]
 })
 export class ObservationEditEmailComponent {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: EmailField
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<EmailField>()
 }

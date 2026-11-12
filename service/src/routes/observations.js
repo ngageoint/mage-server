@@ -5,15 +5,11 @@ module.exports = function (app, security) {
     archiver = require("archiver"),
     path = require("path"),
     environment = require("../environment/env"),
-    moment = require("moment"),
     Team = require("../models/team"),
     { default: turfCentroid } = require("@turf/centroid"),
-    geometryFormat = require("../format/geoJsonFormat"),
     observationXform = require("../transformers/observation"),
     { userRoleHasPermission } = require('../permissions/permissions.role-based.base'),
     { defaultEventPermissionsService: eventPermissions} = require("../permissions/permissions.events");
-
-  const sortColumnWhitelist = ["lastModified"];
 
   function transformOptions(req) {
     return {
@@ -153,91 +149,6 @@ module.exports = function (app, security) {
     });
   }
 
-  function parseQueryParams(req, res, next) {
-    // setup defaults
-    const parameters = {
-      filter: {},
-    };
-
-    const fields = req.query.fields;
-    if (fields) {
-      parameters.fields = JSON.parse(fields);
-    }
-
-    const startDate = req.query.startDate;
-    if (startDate) {
-      parameters.filter.startDate = moment(startDate).utc().toDate();
-    }
-
-    const endDate = req.query.endDate;
-    if (endDate) {
-      parameters.filter.endDate = moment(endDate).utc().toDate();
-    }
-
-    const observationStartDate = req.query.observationStartDate;
-    if (observationStartDate) {
-      parameters.filter.observationStartDate = moment(observationStartDate)
-        .utc()
-        .toDate();
-    }
-
-    const observationEndDate = req.query.observationEndDate;
-    if (observationEndDate) {
-      parameters.filter.observationEndDate = moment(observationEndDate)
-        .utc()
-        .toDate();
-    }
-
-    const bbox = req.query.bbox;
-    if (bbox) {
-      parameters.filter.geometries = geometryFormat.parse("bbox", bbox);
-    }
-
-    const geometry = req.query.geometry;
-    if (geometry) {
-      try {
-        parameters.filter.geometries = geometryFormat.parse("geometry", geometry);
-      } catch (err) {
-        return res.status(400).send(err.message);
-      }
-    }
-
-    const states = req.query.states;
-    if (states) {
-      parameters.filter.states = states.split(",");
-    }
-
-    const sort = req.query.sort;
-    if (sort) {
-      const columns = {};
-      let err = null;
-      sort.split(",").every(function (column) {
-        const sortParams = column.split("+");
-        // Check sort column is in whitelist
-        if (sortColumnWhitelist.indexOf(sortParams[0]) === -1) {
-          err = `Cannot sort on column '${sortParams[0]}'`;
-          return false; // break
-        }
-        // Order can be nothing (ASC by default) or ASC, DESC
-        let direction = 1; // ASC
-        if (sortParams.length > 1 && sortParams[1] === "DESC") {
-          direction = -1; // DESC
-        }
-        columns[sortParams[0]] = direction;
-      });
-      if (err) {
-        return res.status(400).send(err);
-      }
-      parameters.sort = columns;
-    }
-
-    parameters.populate = req.query.populate === "true";
-
-    req.parameters = parameters;
-
-    next();
-  }
-
   app.get(
     "/api/events/:eventId/observations/(:observationId).zip",
     security.authentication.bearerAuthentication,
@@ -256,6 +167,7 @@ module.exports = function (app, security) {
         formMap[form.id] = form;
       });
 
+      res.attachment(req.observation._id + ".zip");
       const archive = archiver("zip");
       archive.pipe(res);
 
@@ -296,33 +208,6 @@ module.exports = function (app, security) {
           }
 
           archive.finalize();
-        }
-      );
-    }
-  );
-
-  app.get(
-    "/api/events/:eventId/observations/:observationIdInPath",
-    security.authentication.bearerAuthentication,
-    validateObservationReadAccess,
-    parseQueryParams,
-    function (req, res, next) {
-      const options = { fields: req.parameters.fields };
-      new api.Observation(req.event).getById(
-        req.params.observationIdInPath,
-        options,
-        function (err, observation) {
-          if (err) {
-            return next(err);
-          }
-          if (!observation) {
-            return res.sendStatus(404);
-          }
-          const response = observationXform.transform(
-            observation,
-            transformOptions(req)
-          );
-          res.json(response);
         }
       );
     }

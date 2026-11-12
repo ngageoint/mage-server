@@ -1,33 +1,59 @@
-@if (editable()) {
-   <div>
-      <div class="button-option">
-         <p class="field-label">Text Color</p>
-         <color-picker [hexColor]="strategy().textColor" (onColorChanged)="colorChanged($event, 'textColor')">
-         </color-picker>
-      </div>
-      <div class="button-option">
-         <p class="field-label">Button Color</p>
-         <color-picker [hexColor]="strategy().buttonColor" (onColorChanged)="colorChanged($event, 'buttonColor')">
-         </color-picker>
-      </div>
-      <div class="button-option">
-         <p class="field-label">Button Icon</p>
-         <icon-upload [strategy]="strategy()" (iconChange)="iconChanged($event)"></icon-upload>
-      </div>
+<div class="login-button">
+   <p class="field-label">Preview</p>
+   <div class="preview" inert>
+      <authentication-button
+         [text]="strategy().title"
+         [buttonText]="strategy().buttonText"
+         [textColor]="strategy().textColor"
+         [color]="strategy().buttonColor"
+         [icon]="iconBase64()">
+      </authentication-button>
    </div>
-}
-<div class="preview-button">
-   <div class="auth-button-preview"
-      [style.color]="strategy().textColor" [style.background-color]="strategy().buttonColor">
-      <span class="third-party-logo" [style.color]="strategy().buttonColor">
-         @if (strategy().icon) {
-            <img [src]="strategy().icon" style="width:32px; height:32px">
-         } @else {
-            <mat-icon>security</mat-icon>
-         }
-      </span>
-      <span class="third-party-button-text" [style.color]="strategy().textColor">
-         Sign In With {{strategy().title}}
-      </span>
-   </div>
+
+   @if (editable()) {
+      <div class="button-fields">
+         <mat-form-field appearance="fill">
+            <mat-label>Button Text</mat-label>
+            <input matInput required [(ngModel)]="strategy().buttonText" (ngModelChange)="changed.emit()" [placeholder]="defaultButtonText()">
+            <mat-hint>Shown on the Mage sign in page</mat-hint>
+            <mat-error>Button text is required</mat-error>
+         </mat-form-field>
+         <div class="swatch-field">
+            <input type="color" class="swatch" aria-label="Text color"
+               [ngModel]="swatchColor(strategy().textColor)" (ngModelChange)="colorChanged('textColor', $event)">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic" class="swatch-field__control">
+               <mat-label>Text Color</mat-label>
+               <input matInput [pattern]="hexColorPattern"
+                  [ngModel]="strategy().textColor" (ngModelChange)="colorChanged('textColor', $event)">
+               <mat-error>Use a hex color like #FFFFFF</mat-error>
+            </mat-form-field>
+         </div>
+         <div class="swatch-field">
+            <input type="color" class="swatch" aria-label="Button color"
+               [ngModel]="swatchColor(strategy().buttonColor)" (ngModelChange)="colorChanged('buttonColor', $event)">
+            <mat-form-field appearance="fill" subscriptSizing="dynamic" class="swatch-field__control">
+               <mat-label>Button Color</mat-label>
+               <input matInput [pattern]="hexColorPattern"
+                  [ngModel]="strategy().buttonColor" (ngModelChange)="colorChanged('buttonColor', $event)">
+               <mat-error>Use a hex color like #005CBB</mat-error>
+            </mat-form-field>
+         </div>
+         <div class="swatch-field">
+            <div class="swatch icon-thumbnail">
+               @if (strategy().icon) {
+                  <img [src]="strategy().icon" alt="Button icon">
+               } @else {
+                  <mat-icon class="icon-thumbnail__empty" aria-hidden="true">image</mat-icon>
+               }
+            </div>
+            <div class="icon-actions">
+               <span class="icon-actions__label">Icon</span>
+               <icon-upload [strategy]="strategy()" (iconChange)="iconChanged($event)"></icon-upload>
+               @if (strategy().icon) {
+                  <button matButton type="button" (click)="removeIcon()">Remove</button>
+               }
+            </div>
+         </div>
+      </div>
+   }
 </div>

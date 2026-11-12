@@ -1,5 +1,6 @@
 :host {
   width: 100%;
+  min-width: 0;
 }
 
 .item-container {
@@ -11,7 +12,13 @@
 
 .item-content {
   flex: 1;
-  padding: 12px 0;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.item-name {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
