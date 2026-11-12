@@ -1,7 +1,10 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, effect, ElementRef, EventEmitter, inject, input, Output, signal, viewChild } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
+import { ObservationEditGeometryMapComponent } from './observation-edit-geometry-map.component'
+import { ObservationEditGeometryFormComponent } from './observation-edit-geometry-form.component'
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module'
 
 export type GeometryEditEvent =
   | { action: 'edit', source: ElementRef<HTMLElement> }
@@ -11,85 +14,81 @@ export type GeometryEditEvent =
     selector: 'observation-edit-geometry',
     templateUrl: './observation-edit-geometry.component.html',
     styleUrls: ['./observation-edit-geometry.component.scss'],
-    standalone: false
+   imports: [
+      ObservationEditGeometryMapComponent,
+      ObservationEditGeometryFormComponent,
+      GeometryModule
+   ]
 })
-export class ObservationEditGeometryComponent implements OnChanges {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: any
+export class ObservationEditGeometryComponent {
+  private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
 
-  @Input() featureId: string
-  @Input() featureStyle: any
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<any>()
+
+  featureId = input.required<string>()
+  featureStyle = input<any>()
 
   @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
 
-  @ViewChild('geometry', { static: true }) geometryElement: ElementRef<HTMLElement>
+  geometryElement = viewChild.required<ElementRef<HTMLElement>>('geometry')
 
   edit = false
-  mapFeature: any
-  editFeature: any
+  mapFeature = signal<any>(null)
+  editFeature = signal<any>(null)
 
-  constructor(
-    private localStorageService: LocalStorageService
-  ) {}
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.formGroup && changes.formGroup.currentValue) {
-      this.mapFeature = {
-        id: this.featureId,
+  constructor() {
+    effect(() => {
+      const formGroup = this.formGroup()
+      const definition = this.definition()
+      const featureStyle = this.featureStyle()
+      this.mapFeature.set({
+        id: this.featureId(),
         type: 'Feature',
-        geometry: changes.formGroup.currentValue.get(this.definition.name).value
-      }
-    }
-
-    if (changes.featureStyle && changes.featureStyle.currentValue) {
-      this.mapFeature = {
-        id: this.featureId,
-        type: 'Feature',
-        geometry: this.formGroup.get(this.definition.name).value,
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
-    }
+        geometry: formGroup.get(definition.name).value,
+        style: featureStyle ? JSON.parse(JSON.stringify(featureStyle)) : null
+      })
+    })
   }
 
   startGeometryEdit(): void {
     this.edit = true;
 
-    const value = this.formGroup.get(this.definition.name).value
+    const value = this.formGroup().get(this.definition().name).value
     if (value) {
-      this.editFeature = {
-        id: this.featureId,
+      this.editFeature.set({
+        id: this.featureId(),
         type: 'Feature',
         geometry: value,
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
+        style: this.featureStyle() ? JSON.parse(JSON.stringify(this.featureStyle())) : null
+      })
     } else {
       const mapPosition = this.localStorageService.getMapPosition();
-      this.editFeature = {
+      this.editFeature.set({
         type: 'Feature',
         geometry: {
           type: 'Point',
           coordinates: [mapPosition.center.lng, mapPosition.center.lat]
         },
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
+        style: this.featureStyle() ? JSON.parse(JSON.stringify(this.featureStyle())) : null
+      })
     }
 
     this.featureEdit.emit({
       action: 'edit',
-      source: this.geometryElement
+      source: this.geometryElement()
     })
   }
 
   saveGeometryEdit(event: any): void {
     this.edit = false
-    this.mapFeature = event.feature
+    this.mapFeature.set(event.feature)
 
-    // TODO normalize geometry
-    this.formGroup.get(this.definition.name).setValue(this.normalizeGeometry(event.feature))
+    this.formGroup().get(this.definition().name).setValue(this.normalizeGeometry(event.feature))
 
     this.featureEdit.emit({
       action: 'none',
-      source: this.geometryElement
+      source: this.geometryElement()
     })
   }
 

@@ -1,11 +1,17 @@
 import {
   Component,
-  Input,
-  OnChanges,
-  SimpleChanges,
-  ViewChild
+  effect,
+  inject,
+  input,
+  signal,
+  viewChild
 } from '@angular/core';
-import { UntypedFormGroup, NgModel } from '@angular/forms';
+import { FormsModule, NgModel, UntypedFormGroup } from '@angular/forms';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { MatTimepickerModule } from '@angular/material/timepicker';
 import moment from 'moment';
 import { LocalStorageService } from '../../../http/local-storage.service';
 
@@ -13,84 +19,86 @@ import { LocalStorageService } from '../../../http/local-storage.service';
     selector: 'observation-edit-date',
     templateUrl: './observation-edit-date.component.html',
     styleUrls: ['./observation-edit-date.component.scss'],
-    standalone: false
+    imports: [FormsModule, MatDatepickerModule, MatFormFieldModule, MatInputModule, MatMomentDateModule, MatTimepickerModule]
 })
-export class ObservationEditDateComponent implements OnChanges {
-  @Input() formGroup: UntypedFormGroup;
-  @Input() definition: any;
+export class ObservationEditDateComponent {
+  private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
 
-  @ViewChild('dateModel') dateModel: NgModel;
+  formGroup = input<UntypedFormGroup>()
+  definition = input<any>()
 
-  date: moment.Moment | null = null;
-  timeValue: moment.Moment | null = null;
-  timeZone: string;
-  second = 0;
+  dateModel = viewChild.required<NgModel>('dateModel')
 
-  constructor(localStorageService: LocalStorageService) {
-    this.timeZone = localStorageService.getTimeZoneEdit();
-  }
+  date = signal<moment.Moment | null>(null)
+  timeValue = signal<moment.Moment | null>(null)
+  timeZone: string
+  second = 0
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.formGroup && changes.formGroup.currentValue) {
-      const timestamp = this.formGroup.get(this.definition.name)?.value;
+  constructor() {
+    this.timeZone = this.localStorageService.getTimeZoneEdit()
+
+    effect(() => {
+      const formGroup = this.formGroup()
+      const definition = this.definition()
+      if (!formGroup) return
+
+      const timestamp = formGroup.get(definition?.name)?.value
 
       if (timestamp) {
         const m =
           this.timeZone === 'gmt'
             ? moment.utc(timestamp)
-            : moment(timestamp).local();
-        this.date = m.clone();
-        this.second = m.second();
-        this.timeValue = m.clone();
+            : moment(timestamp).local()
+        this.date.set(m.clone())
+        this.second = m.second()
+        this.timeValue.set(m.clone())
       } else {
-        this.date = null;
-        this.timeValue = null;
-        this.second = 0;
+        this.date.set(null)
+        this.timeValue.set(null)
+        this.second = 0
       }
-    }
+    })
   }
 
   onDate(): void {
-    if (!this.date) {
-      this.timeValue = null;
-      return;
+    if (!this.date()) {
+      this.timeValue.set(null)
+      return
     }
 
-    if (!this.dateModel?.invalid) {
-      this.setValue(true);
+    if (!this.dateModel().invalid) {
+      this.setValue(true)
     }
   }
 
   onTime(): void {
-    if (this.timeValue && this.date && !this.dateModel?.invalid) {
-      this.setValue(false);
+    if (this.timeValue() && this.date() && !this.dateModel().invalid) {
+      this.setValue(false)
     }
-  }
-
-  toggleTimeZone(): void {
-    this.timeZone = this.timeZone === 'gmt' ? 'local' : 'gmt';
   }
 
   private setValue(preserveSeconds: boolean): void {
-    if (!this.date || !this.timeValue) {
-      return;
+    const date = this.date()
+    const timeValue = this.timeValue()
+    if (!date || !timeValue) {
+      return
     }
 
-    const date = this.date.clone().set({
-      hour: this.timeValue.hours(),
-      minute: this.timeValue.minutes(),
+    const updated = date.clone().set({
+      hour: timeValue.hours(),
+      minute: timeValue.minutes(),
       second: preserveSeconds ? this.second : 0
-    });
+    })
 
     if (this.timeZone === 'gmt') {
-      date.add(date.utcOffset(), 'minutes');
+      updated.add(updated.utcOffset(), 'minutes')
     }
 
-    const control = this.formGroup?.get(this.definition.name);
+    const control = this.formGroup()?.get(this.definition()?.name)
     if (!control) {
-      return;
+      return
     }
 
-    control.setValue(date.toDate());
+    control.setValue(updated.toDate())
   }
 }

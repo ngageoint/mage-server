@@ -14,8 +14,8 @@
   <user-view *ngIf="viewUser" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [class.reselected]="userReselected" (animationend)="userReselected = false" [user]="viewUser" (close)="onUserViewClose()"></user-view>
 
   <observation-view *ngIf="viewObservation" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [class.reselected]="observationReselected" (animationend)="observationReselected = false" [event]="event" [observation]="viewObservation" (closed)="onObservationViewClose()" (delete)="onObservationDelete($event)"></observation-view>
-  <observation-edit *ngIf="editObservation" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [observation]="editObservation" (close)="onObservationEditClose($event)"></observation-edit>
-  <observation-edit *ngIf="newObservation" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [observation]="newObservation" (close)="onObservationEditClose($event)"></observation-edit>
+  <observation-edit *ngIf="editObservation" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [observation]="editObservation" (closed)="onObservationEditClose($event)"></observation-edit>
+  <observation-edit *ngIf="newObservation" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [observation]="newObservation" (closed)="onObservationEditClose($event)"></observation-edit>
 
   <feed-item *ngIf="feedItem" animate.enter="component__view--enter" animate.leave="component__view--leave" class="component__view" [item]="feedItem.item" [feed]="feedItem.feed"></feed-item>
 

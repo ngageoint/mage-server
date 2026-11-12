@@ -1,5 +1,10 @@
-import { Component, Directive, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild, ViewContainerRef } from '@angular/core'
-import { AbstractControl, FormControl, FormGroup, NgModel, NG_VALIDATORS, ValidationErrors, Validator } from '@angular/forms'
+import { Component, Directive, effect, EventEmitter, inject, input, OnInit, Output, signal, viewChild } from '@angular/core'
+import { AbstractControl, FormControl, FormGroup, FormsModule, NgModel, NG_VALIDATORS, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms'
+import { InputMaskModule } from '@ngneat/input-mask'
+import { MatButtonModule } from '@angular/material/button'
+import { MatChipsModule } from '@angular/material/chips'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatInputModule } from '@angular/material/input'
 import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar'
 import mgrs from 'mgrs'
 import { Dimension, DimensionKey, DMSCoordinate, DMSParseError } from 'src/app/geometry/geometry-dms'
@@ -11,8 +16,7 @@ import { GeometryService } from '../../../geometry/geometry.service'
 
 @Directive({
     selector: '[mgrs][formControlName],[mgrs][formControl],[mgrs][ngModel]',
-    providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }],
-    standalone: false
+    providers: [{ provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true }]
 })
 export class MGRSValidatorDirective implements Validator {
 
@@ -33,18 +37,16 @@ export class MGRSValidatorDirective implements Validator {
 
 @Directive({
     selector: '[dmsValidation][formControlName],[dmsValidation][formControl],[dmsValidation][ngModel]',
-    providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }],
-    standalone: false
+    providers: [{ provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }]
 })
 export class DMSValidatorDirective implements Validator {
 
-  @Input()
-  dmsValidation: 'latitude' | 'longitude'
+  dmsValidation = input<'latitude' | 'longitude'>()
 
   validate(control: AbstractControl): ValidationErrors | null {
-    if (this.dmsValidation === 'latitude' && DMS.validateLatitude(control.value)) {
+    if (this.dmsValidation() === 'latitude' && DMS.validateLatitude(control.value)) {
       return null
-    } else if (this.dmsValidation === 'longitude' && DMS.validateLongitude(control.value)) {
+    } else if (this.dmsValidation() === 'longitude' && DMS.validateLongitude(control.value)) {
       return null
     }
     const error: ValidationErrors | null = {
@@ -67,25 +69,30 @@ type DMSFormValue = Partial<{ [DimensionKey.Latitude]: string, [DimensionKey.Lon
         { provide: NG_VALIDATORS, useExisting: MGRSValidatorDirective, multi: true },
         { provide: NG_VALIDATORS, useExisting: DMSValidatorDirective, multi: true }
     ],
-    standalone: false
+    imports: [FormsModule, ReactiveFormsModule, InputMaskModule, MatButtonModule, MatChipsModule, MatFormFieldModule, MatInputModule, MGRSValidatorDirective, DMSValidatorDirective]
 })
-export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
+export class ObservationEditGeometryFormComponent implements OnInit {
+  private readonly mapService: MapService = inject(MapService)
+  private readonly geometryService: GeometryService = inject(GeometryService)
+  private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar)
 
-  @Input() feature: any
+  feature = input<any>()
   @Output() save = new EventEmitter<any>()
   @Output() cancel = new EventEmitter<any>()
 
-  @ViewChild('mgrsModel') mgrsModel: NgModel;
-  @ViewChild('snackbarContainer', { read: ViewContainerRef }) snackBarContainer: ViewContainerRef;
+  mgrsModel = viewChild.required<NgModel>('mgrsModel')
+
+  currentFeature = signal<any>(null)
 
   selectedShapeType = 'Point'
   coordinateSystem = 'wgs84'
   coordinateEditSource: CoordinateSystemKey | null = null
   selectedVertexIndex: number
   featureEdit?: FeatureEdit
-  latitude: number
-  longitude: number
-  mgrs: string
+  latitude = signal<number | null>(null)
+  longitude = signal<number | null>(null)
+  mgrs = signal<string | null>(null)
   readonly DMSDimensionKey = DimensionKey
   readonly dmsForm = new FormGroup({
     [DimensionKey.Latitude]: new FormControl(''),
@@ -98,47 +105,46 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     mask: `999° 99' 99" (E|W)`,
   })
 
-  constructor(
-    private mapService: MapService,
-    private geometryService: GeometryService,
-    private localStorageService: LocalStorageService,
-    private snackBar: MatSnackBar)
-  {
+  constructor() {
     this.coordinateSystem = this.localStorageService.getCoordinateSystemEdit()
+
+    effect(() => {
+      const feature = this.feature()
+      if (feature) {
+        const cloned = { ...feature }
+        this.currentFeature.set(cloned)
+        this.featureEdit = this.mapService.createFeature(cloned, {
+          geometryChanged: geometry => {
+            this.geometryChanged(geometry)
+          },
+          vertexClick: vertex => {
+            this.vertexClick(vertex)
+          }
+        });
+        this.selectedVertexIndex = 0;
+        this.updateCoordinates()
+      }
+      if (this.currentFeature()?.geometry?.coordinates) {
+        this.dmsForm.enable({emitEvent: false})
+      }
+      else {
+        this.dmsForm.disable({emitEvent: false})
+      }
+    })
   }
 
   ngOnInit(): void {
     this.dmsForm.valueChanges.subscribe(dms => {
-      if (this.feature?.geometry?.coordinates) {
+      if (this.currentFeature()?.geometry?.coordinates) {
         this.onDmsChange({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '', ...dms })
       }
     })
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (this.feature) {
-      this.feature = { ...this.feature }
-      this.featureEdit = this.mapService.createFeature(this.feature, {
-        geometryChanged: geometry => {
-          this.geometryChanged(geometry)
-        },
-        vertexClick: vertex => {
-          this.vertexClick(vertex)
-        }
-      });
-      this.selectedVertexIndex = 0;
-      this.updateCoordinates()
-    }
-    if (this.feature?.geometry?.coordinates) {
-      this.dmsForm.enable({emitEvent: false})
-    }
-    else {
-      this.dmsForm.disable({emitEvent: false})
-    }
-  }
-
   geometryChanged(geometry): void {
-    this.feature.geometry = geometry;
+    const feature = this.currentFeature()
+    feature.geometry = geometry;
+    this.currentFeature.set({ ...feature })
     this.updateCoordinates()
   }
 
@@ -148,17 +154,18 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   }
 
   onSave(): void {
-    if (this.feature.geometry.type) {
-      if (this.geometryService.featureHasIntersections(this.feature)) {
+    const feature = this.currentFeature()
+    if (feature.geometry.type) {
+      if (this.geometryService.featureHasIntersections(feature)) {
         this.snackBar.open('Invalid geometry, polygons cannot intersect.', null, {
           duration: 2000
         })
         return
       }
       this.featureEdit?.save()
-      this.save.emit({ feature: this.feature })
+      this.save.emit({ feature })
     } else {
-      this.mapService.removeFeatureFromLayer({ id: this.feature.id }, 'observations')
+      this.mapService.removeFeatureFromLayer({ id: feature.id }, 'observations')
       this.featureEdit?.cancel()
       this.save.emit({})
     }
@@ -173,7 +180,7 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
     this.localStorageService.setCoordinateSystemEdit(coordinateSystem)
     this.coordinateSystem = coordinateSystem
     if (coordinateSystem === 'mgrs') {
-      this.mgrs = this.toMgrs(this.feature)
+      this.mgrs.set(this.toMgrs(this.currentFeature()))
     }
   }
 
@@ -247,14 +254,14 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
   }
 
   onLatLngChange(): void {
-    this.editCurrentCoordinates('wgs84', this.latitude, this.longitude)
+    this.editCurrentCoordinates('wgs84', this.latitude(), this.longitude())
   }
 
   onMgrsChange(): void {
-    if (this.mgrsModel.control.invalid) {
+    if (this.mgrsModel().control.invalid) {
       return
     }
-    const [ lon, lat ] = mgrs.toPoint(this.mgrs)
+    const [ lon, lat ] = mgrs.toPoint(this.mgrs())
     this.editCurrentCoordinates('mgrs', lat, lon)
   }
 
@@ -267,82 +274,87 @@ export class ObservationEditGeometryFormComponent implements OnChanges, OnInit {
 
   shapeTypeChanged(shapeType?: string): void {
     this.selectedShapeType = shapeType
+    const feature = this.currentFeature()
     switch (shapeType) {
       case 'Point':
-        this.feature.geometry.coordinates = []
-        this.feature.geometry.type = 'Point'
+        feature.geometry.coordinates = []
+        feature.geometry.type = 'Point'
         break;
       case 'LineString':
-        this.feature.geometry.coordinates = []
-        this.feature.geometry.type = 'LineString'
+        feature.geometry.coordinates = []
+        feature.geometry.type = 'LineString'
         break;
       case 'Polygon':
-        this.feature.geometry.coordinates = []
-        this.feature.geometry.type = 'Polygon'
+        feature.geometry.coordinates = []
+        feature.geometry.type = 'Polygon'
         break;
       default:
-        this.latitude = null
-        this.longitude = null
-        this.mgrs = null
+        this.latitude.set(null)
+        this.longitude.set(null)
+        this.mgrs.set(null)
         this.dmsForm.setValue({ [DimensionKey.Latitude]: '', [DimensionKey.Longitude]: '' }, { emitEvent: false })
-        delete this.feature.geometry.type
+        delete feature.geometry.type
         this.featureEdit?.cancel()
         break;
     }
+    this.currentFeature.set({ ...feature })
     if (shapeType) {
       this.onEditShape()
     }
   }
 
   onEditShape(): void {
-    this.featureEdit?.update(this.feature)
+    this.featureEdit?.update(this.currentFeature())
   }
 
   editCurrentCoordinates(from: CoordinateSystemKey, lat: number, lon: number): void {
     this.coordinateEditSource = from
-    let coordinates = [ ...this.feature.geometry.coordinates ]
-    if (this.feature.geometry.type === 'Point') {
+    const feature = this.currentFeature()
+    let coordinates = [ ...feature.geometry.coordinates ]
+    if (feature.geometry.type === 'Point') {
       coordinates = [ lon, lat ]
     }
-    else if (this.feature.geometry.type === 'LineString') {
+    else if (feature.geometry.type === 'LineString') {
       coordinates[this.selectedVertexIndex] = [ lon, lat ]
     }
-    else if (this.feature.geometry.type === 'Polygon') {
+    else if (feature.geometry.type === 'Polygon') {
       if (coordinates[0]) {
         coordinates[0][this.selectedVertexIndex] = [ lon, lat ]
       }
     }
-    ensurePolygonClosed(this.feature, coordinates)
-    if (this.hasIntersections(this.feature, coordinates)) {
+    ensurePolygonClosed(feature, coordinates)
+    if (this.hasIntersections(feature, coordinates)) {
       return
     }
-    this.feature.geometry.coordinates = coordinates
-    this.featureEdit?.update(this.feature)
+    feature.geometry.coordinates = coordinates
+    this.currentFeature.set({ ...feature })
+    this.featureEdit?.update(feature)
   }
 
   updateCoordinates(): void {
-    if (this.feature.geometry.type === 'Point') {
-      this.longitude = this.feature.geometry.coordinates[0]
-      this.latitude = this.feature.geometry.coordinates[1]
+    const feature = this.currentFeature()
+    if (feature.geometry.type === 'Point') {
+      this.longitude.set(feature.geometry.coordinates[0])
+      this.latitude.set(feature.geometry.coordinates[1])
     }
-    else if (this.feature.geometry.type === 'Polygon') {
-      this.longitude = this.feature.geometry.coordinates[0][this.selectedVertexIndex][0]
-      this.latitude = this.feature.geometry.coordinates[0][this.selectedVertexIndex][1]
+    else if (feature.geometry.type === 'Polygon') {
+      this.longitude.set(feature.geometry.coordinates[0][this.selectedVertexIndex][0])
+      this.latitude.set(feature.geometry.coordinates[0][this.selectedVertexIndex][1])
     }
-    else if (this.feature.geometry.type === 'LineString') {
-      this.longitude = this.feature.geometry.coordinates[this.selectedVertexIndex][0]
-      this.latitude = this.feature.geometry.coordinates[this.selectedVertexIndex][1]
+    else if (feature.geometry.type === 'LineString') {
+      this.longitude.set(feature.geometry.coordinates[this.selectedVertexIndex][0])
+      this.latitude.set(feature.geometry.coordinates[this.selectedVertexIndex][1])
     }
     const from = this.coordinateEditSource
     this.coordinateEditSource = null
     if (from !== 'mgrs') {
-      this.mgrs = this.toMgrs(this.feature)
-      this.mgrsModel.control.setValue(this.mgrs, {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
+      this.mgrs.set(this.toMgrs(feature))
+      this.mgrsModel().control.setValue(this.mgrs(), {emitEvent:false, emitViewToModelChange:false, emitModelToViewChange:true})
     }
     if (from !== 'dms') {
       this.dmsForm.setValue({
-        [DimensionKey.Latitude]: DMS.formatLatitude(this.latitude),
-        [DimensionKey.Longitude]: DMS.formatLongitude(this.longitude)
+        [DimensionKey.Latitude]: DMS.formatLatitude(this.latitude()),
+        [DimensionKey.Longitude]: DMS.formatLongitude(this.longitude())
       }, { emitEvent: false })
     }
   }

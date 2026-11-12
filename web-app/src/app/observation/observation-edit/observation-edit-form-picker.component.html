@@ -6,11 +6,13 @@
   <mat-divider class="form-picker-header__divider"></mat-divider>
 
   <mat-nav-list class="form-picker-list">
-    <mat-list-item *ngFor="let form of forms" (click)="formPicked(form)">
-      <mat-icon matListItemIcon [style.color]="form.color">description</mat-icon>
-      <span matListItemTitle>{{form.name}}</span>
-      <span matListItemLine>{{form.description}}</span>
-    </mat-list-item>
+    @for (form of forms; track form.id) {
+      <mat-list-item (click)="formPicked(form)">
+        <mat-icon matListItemIcon [style.color]="form.color">description</mat-icon>
+        <span matListItemTitle>{{form.name}}</span>
+        <span matListItemLine>{{form.description}}</span>
+      </mat-list-item>
+    }
   </mat-nav-list>
 
 </div>
