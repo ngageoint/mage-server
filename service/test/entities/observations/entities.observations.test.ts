@@ -1563,6 +1563,150 @@ describe('observation entities', function () {
         })
       })
 
+      describe('user field validation', function () {
+
+        let form: Form
+        let field: FormField
+
+        function evaluateEntry(entry: FormFieldEntry | undefined): ReturnType<typeof Observation.evaluate> {
+          const mageEvent = new MageEvent(mageEventAttrs)
+          const observationAttrs = makeObservationAttrs(mageEvent.id)
+          const formEntry: FormEntry = { id: uniqid(), formId: form.id }
+          if (entry !== undefined) {
+            formEntry[field.name] = entry
+          }
+          observationAttrs.properties.forms = [formEntry]
+          return Observation.evaluate(observationAttrs, mageEvent)
+        }
+
+        function fieldErrorFor(evaluated: ReturnType<typeof Observation.evaluate>) {
+          return new Map(evaluated.validation.formEntryErrors).get(0)?.fieldErrors.get(field.name)
+        }
+
+        beforeEach(function () {
+          field = {
+            id: 1,
+            name: 'assignedTo',
+            title: 'Assigned To',
+            required: false,
+            type: FormFieldType.Dropdown,
+            choices: [
+              { id: 1, title: 'Alice', value: 1 },
+              { id: 2, title: 'Bob', value: 2 },
+            ]
+          }
+          form = {
+            id: 1,
+            name: 'Test User Fields',
+            fields: [field],
+            userFields: [field.name],
+            color: '#ffffff',
+            archived: false,
+          }
+          mageEventAttrs.forms = [form]
+        })
+
+        it('passes when the entry is a choice', function () {
+          const evaluated = evaluateEntry('Alice')
+
+          expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+          expect(evaluated.formEntries[0][field.name]).to.equal('Alice')
+        })
+
+        it('passes when the entry is not a choice', function () {
+          const evaluated = evaluateEntry('Charlie')
+
+          expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+          expect(evaluated.formEntries[0][field.name]).to.equal('Charlie')
+        })
+
+        it('passes when the field has no choices', function () {
+          field.choices = []
+          const evaluated = evaluateEntry('Alice')
+
+          expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+        })
+
+        it('still validates choices for a dropdown that is not a user field', function () {
+          form.userFields = []
+          const evaluated = evaluateEntry('Charlie')
+
+          expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Choices)
+        })
+
+        it('fails when the entry is not a string', function () {
+          const evaluated = evaluateEntry(1)
+
+          expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Value)
+        })
+
+        it('fails when required and absent', function () {
+          field.required = true
+          const evaluated = evaluateEntry(undefined)
+
+          expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Required)
+        })
+
+        it('passes when optional and absent', function () {
+          const evaluated = evaluateEntry(undefined)
+
+          expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+          expect(evaluated.formEntries[0]).not.to.have.property(field.name)
+        })
+
+        it('fails when the field is not a dropdown type', function () {
+          field.type = FormFieldType.Text
+          const evaluated = evaluateEntry('Alice')
+
+          expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Value)
+        })
+
+        describe('multi-select', function () {
+
+          beforeEach(function () {
+            field.type = FormFieldType.MultiSelectDropdown
+          })
+
+          it('passes when the entries are choices', function () {
+            const evaluated = evaluateEntry(['Alice', 'Bob'])
+
+            expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+            expect(evaluated.formEntries[0][field.name]).to.deep.equal(['Alice', 'Bob'])
+          })
+
+          it('passes when the entries are not choices', function () {
+            const evaluated = evaluateEntry(['Charlie', 'Dave'])
+
+            expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+          })
+
+          it('fails when the entry is not an array', function () {
+            const evaluated = evaluateEntry('Alice')
+
+            expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Value)
+          })
+
+          it('fails when the entry contains non-string elements', function () {
+            const evaluated = evaluateEntry([1, 2] as any)
+
+            expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Value)
+          })
+
+          it('fails when required and absent', function () {
+            field.required = true
+            const evaluated = evaluateEntry(undefined)
+
+            expect(fieldErrorFor(evaluated)?.constraint).to.equal(FieldConstraintKeys.Required)
+          })
+
+          it('passes when optional and absent', function () {
+            const evaluated = evaluateEntry(undefined)
+
+            expect(evaluated.validation.hasErrors, validationResultMessage(evaluated.validation)).to.be.false
+          })
+        })
+      })
+
       describe('attachment validation', function () {
 
         let field: FormField
