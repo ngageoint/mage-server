@@ -4,7 +4,10 @@ import {
 } from './local-idp.entities'
 import { LocalIdpError, MageLocalIdentityProviderService } from './local-idp.services.api'
 
-
+/*
+TODO: Maybe it's fine to bake all the Mongoose repository code into this module as local-idp is a
+pretty small unit.
+ */
 export function createLocalIdentityProviderService(repo: LocalIdpRepository): MageLocalIdentityProviderService {
 
   async function createAccount(credentials: LocalIdpCredentials): Promise<LocalIdpAccount | LocalIdpError> {
@@ -50,6 +53,8 @@ export function createLocalIdentityProviderService(repo: LocalIdpRepository): Ma
   }
 
   return {
+    readSecurityPolicy: () => repo.readSecurityPolicy(),
+    saveSecurityPolicy: policy => repo.saveSecurityPolicy(policy),
     createAccount,
     deleteAccount,
     authenticate,

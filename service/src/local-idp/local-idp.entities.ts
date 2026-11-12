@@ -4,6 +4,10 @@ import { defaultHashUtil, serializeHashedPassword } from './password-hashing'
 import { PasswordRequirements, validatePasswordRequirements } from './password-requirements'
 
 export type LocalIdpAccount = {
+  /**
+   * TODO: users-next: remove and use username for primary key?
+   */
+  id: string
   username: string
   /**
    * TODO: move away from mutable dates
@@ -46,14 +50,24 @@ export interface AccountLockPolicy {
   disableAfterLockCount: number
 }
 
-export interface SecurityPolicy {
+export type LocalIdpSecurityPolicy = {
   passwordRequirements: PasswordRequirements
   accountLock: AccountLockPolicy
 }
 
+export const defaultLocalIdpSecurityPolicy = Object.freeze({
+  accountLock: {
+    enabled: false
+  },
+  passwordRequirements: {
+    minChars: 14,
+    minCharsEnabled: true,
+  }
+} satisfies LocalIdpSecurityPolicy)
+
 export interface LocalIdpRepository {
-  readSecurityPolicy(): Promise<SecurityPolicy>
-  updateSecurityPolicy(policy: SecurityPolicy): Promise<SecurityPolicy>
+  readSecurityPolicy(): Promise<LocalIdpSecurityPolicy>
+  saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
   createLocalAccount(account: LocalIdpAccountSeed): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError>
   readLocalAccount(username: string): Promise<LocalIdpAccount | null>
   updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'username'>): Promise<LocalIdpAccount | null>
@@ -89,7 +103,7 @@ export class LocalIdpAccountSeed implements Readonly<LocalIdpAccountSeedSpec> {
  * @param password
  * @param policy
  */
-export async function prepareNewAccount(username: string, password: string, policy: SecurityPolicy): Promise<LocalIdpAccountSeed | LocalIdpInvalidPasswordError> {
+export async function prepareNewAccount(username: string, password: string, policy: LocalIdpSecurityPolicy): Promise<LocalIdpAccountSeed | LocalIdpInvalidPasswordError> {
   const passwordRequirements = policy.passwordRequirements
   const passwordValidation = await validatePasswordRequirements(password, passwordRequirements, [])
   if (!passwordValidation.valid) {
@@ -236,4 +250,8 @@ function passwordMismatchError(account: LocalIdpAccount): LocalIdpPasswordMismat
 function accountLockedError(account: LocalIdpAccount): LocalIdpAccountLockedError {
   const message = `account for user ${account.username} is locked${account.security.lockedUntil ? account.security.lockedUntil.toUTCString() : ''}`
   return errorWithData({ code: LocalIdpErrorCode.AccountLocked, account }, message)
+}
+
+export function duplicateUsernameError(username: string): LocalIdpDuplicateUsernameError {
+  return errorWithData({ code: LocalIdpErrorCode.DuplicateUserName, username })
 }

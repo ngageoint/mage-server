@@ -3,7 +3,7 @@ import {
   LocalIdpAccountLockedError,
   LocalIdpAccountNotFoundError,
   LocalIdpAuthenticationResult,
-  LocalIdpCredentials, LocalIdpDuplicateUsernameError, LocalIdpInvalidPasswordError, LocalIdpPasswordMismatchError
+  LocalIdpCredentials, LocalIdpDuplicateUsernameError, LocalIdpInvalidPasswordError, LocalIdpPasswordMismatchError, LocalIdpSecurityPolicy
 } from './local-idp.entities'
 
 
@@ -15,6 +15,8 @@ export type LocalIdpError =
   | LocalIdpPasswordMismatchError
 
 export interface MageLocalIdentityProviderService {
+  readSecurityPolicy(): Promise<LocalIdpSecurityPolicy>
+  saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
   createAccount(credentials: LocalIdpCredentials): Promise<LocalIdpAccount | LocalIdpError>
   /**
    * Return `null` if no account for the given username exists.
