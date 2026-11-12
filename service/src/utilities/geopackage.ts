@@ -4,13 +4,18 @@ import { Feature, GeoJsonProperties, Geometry } from 'geojson';
 import path from 'path';
 import environment from '../environment/env';
 
+export interface FeatureTileStyle {
+  stroke?: string
+  fill?: string
+  width?: number | string
+}
+
 class ExpiringGeoPackageConnection {
   geoPackageConnection?: GeoPackage | undefined
   featureTiles: {[key: string]: FeatureTiles} = {}
   filePath: string
   expiryMs: number
   expiryId?: NodeJS.Timeout = undefined
-  styleKey = 0
   creatingConnection = false
 
   constructor(filePath: string, expiryMs = 5000) {
@@ -20,17 +25,14 @@ class ExpiringGeoPackageConnection {
 
   expire () {
     if (this.geoPackageConnection) {
-      console.log('xxxxxxxxxxxxxxxxxxxx Expiring the GeoPackage connection xxxxxxxxxxxxxxxxxxxx');
       try {
         this.geoPackageConnection.close()
         Object.values(this.featureTiles).forEach(featureTile => {
           try {
             featureTile.cleanup()
-            // eslint-disable-next-line no-empty
           } catch (e) {}
         })
         this.featureTiles = {}
-        // eslint-disable-next-line no-empty
       } catch (e) {
       } finally {
         this.geoPackageConnection = undefined
@@ -99,17 +101,42 @@ class ExpiringGeoPackageConnection {
     })
   }
 
-  public async accessFeatureTiles (tableName: string, maxFeatures: number): Promise<FeatureTiles> {
-    if (!this.featureTiles[tableName]) {
+  public async accessFeatureTiles (tableName: string, maxFeatures: number, style: FeatureTileStyle = {}): Promise<FeatureTiles> {
+    const styled = Boolean(style.stroke || style.fill || style.width)
+    const key = styled ? `${tableName}:${style.stroke ?? ''}:${style.fill ?? ''}:${style.width ?? ''}` : tableName
+    if (!this.featureTiles[key]) {
       const geoPackageConnection = await this.accessConnection()
-      this.featureTiles[tableName] = new FeatureTiles(geoPackageConnection.getFeatureDao(tableName), 256, 256)
-      this.featureTiles[tableName].maxFeaturesPerTile = maxFeatures
-      this.featureTiles[tableName].simplifyTolerance = 1.0
-      this.featureTiles[tableName].maxFeaturesTileDraw = new ShadedFeaturesTile()
+      const featureTiles = new FeatureTiles(geoPackageConnection.getFeatureDao(tableName), 256, 256)
+      featureTiles.maxFeaturesPerTile = maxFeatures
+      featureTiles.simplifyTolerance = 1.0
+      featureTiles.maxFeaturesTileDraw = new ShadedFeaturesTile()
+
+      if (styled) {
+        // FeatureTiles uses null for "no feature styles", its typings just don't allow it
+        featureTiles.featureTableStyles = null!
+
+        if (style.stroke) {
+          featureTiles.pointColor = style.stroke
+          featureTiles.lineColor = style.stroke
+          featureTiles.polygonColor = style.stroke
+        }
+
+        if (style.fill) {
+          featureTiles.polygonFillColor = style.fill
+        }
+
+        // Width is a stroke width only, points keep their default radius
+        if (style.width) {
+          featureTiles.polygonStrokeWidth = Number(style.width)
+          featureTiles.lineStrokeWidth = Number(style.width)
+        }
+      }
+
+      this.featureTiles[key] = featureTiles
     } else {
       this.cancelExpiry()
     }
-    return this.featureTiles[tableName]
+    return this.featureTiles[key]
   }
 
   finished () {
@@ -120,8 +147,6 @@ class ExpiringGeoPackageConnection {
 export class GeoPackageUtility {
   static readonly tileSize: number = 256;
   private static instance : GeoPackageUtility;
-  // track style changes, anytime the style changes, the cached connection will need to be reset
-  private styleKeyMap: any = {};
   // cache geopackage connections
   private cachedGeoPackageConnections: any = {}
 
@@ -222,7 +247,7 @@ export class GeoPackageUtility {
   }
 
   // TODO: any needs to be GeoPackageSchema I think
-  public async tile(layer:any, tableName:string, { stroke, width: lineWidth, fill}: {stroke: string, width: number, fill: string}, {x, y, z}: {x: number, y: number, z: number}): Promise<any> {
+  public async tile(layer:any, tableName:string, style: FeatureTileStyle, {x, y, z}: {x: number, y: number, z: number}): Promise<any> {
     const geopackagePath = path.join(environment.layerBaseDirectory, layer.file.relativePath);
     const table = layer.tables.find((table: any) => table.name === tableName);
     if (!table) throw new Error(`Table ${tableName} does not exist in the GeoPackage`);
@@ -234,27 +259,7 @@ export class GeoPackageUtility {
         tile = await geopackage.xyzTile(table.name, x, y, z, GeoPackageUtility.tileSize, GeoPackageUtility.tileSize);
         break;
       case 'feature':
-        const ft = await connection.accessFeatureTiles(table.name, 10000);
-        if (stroke) {
-          ft.pointColor = stroke;
-          ft.lineColor = stroke;
-          ft.polygonColor = stroke;
-        }
-
-        if (fill) {
-          ft.polygonFillColor = fill;
-        }
-
-        if (lineWidth) {
-          ft.pointRadius = lineWidth;
-          ft.polygonStrokeWidth = lineWidth;
-          ft.lineStrokeWidth = lineWidth;
-        }
-
-        ft.maxFeaturesPerTile = 10000;
-
-        const shadedFeaturesTile = new ShadedFeaturesTile();
-        ft.maxFeaturesTileDraw = shadedFeaturesTile;
+        const ft = await connection.accessFeatureTiles(table.name, 10000, style);
         tile = await ft.drawTile(x, y, z);
         break;
     }
