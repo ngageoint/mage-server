@@ -28,7 +28,6 @@ function observationStub(id: ObservationId, eventId: MageEventId): ObservationAt
     geometry: { type: 'Point', coordinates: [0, 0] },
     createdAt: new Date(now),
     lastModified: new Date(now),
-    noGeometry: false,
     properties: {
       timestamp: new Date(now),
       forms: []

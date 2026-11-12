@@ -443,8 +443,7 @@ function baseObservationAttrsForMod(mod: api.ExoObservationMod, observationToUpd
       timestamp: mod.properties.timestamp,
       forms: []
     },
-    attachments: [],
-    noGeometry: !!mod.noGeometry,
+    attachments: []
   }
   assignFirstDefined('accuracy', attrs.properties, mod.properties, observationToUpdate?.properties)
   assignFirstDefined('delta', attrs.properties, mod.properties, observationToUpdate?.properties)

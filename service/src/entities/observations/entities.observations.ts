@@ -36,8 +36,7 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
       ...from.properties,
       timestamp: new Date(from.properties.timestamp),
       forms: from.properties.forms.map(x => ({ ...x })),
-    },
-    noGeometry: !!from.noGeometry
+    }
   }
 }
 
@@ -182,7 +181,6 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly properties: Readonly<ObservationFeatureProperties>
   readonly attachments: readonly Attachment[]
   readonly pendingEvents: readonly PendingObservationDomainEvent[]
-  readonly noGeometry?: boolean
 
   constructor(...args: unknown[]) {
     if (args[0] !== ObservationConstructionToken) {
@@ -215,7 +213,6 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.#attachmentsById = new Map(this.attachments.map(x => [x.id, x]))
     this.#validation = args[3] as ObservationValidationResult
     this.pendingEvents = (args[4] || []) as PendingObservationDomainEvent[]
-    this.noGeometry = !!attrs.noGeometry
   }
 
   get validation(): ObservationValidationResult {
