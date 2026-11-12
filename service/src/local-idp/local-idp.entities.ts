@@ -57,7 +57,10 @@ export type LocalIdpSecurityPolicy = {
 
 export const defaultLocalIdpSecurityPolicy = Object.freeze({
   accountLock: {
-    enabled: false
+    enabled: false,
+    lockAfterInvalidLoginCount: 5,
+    lockDurationSeconds: 120,
+    disableAfterLockCount: 3,
   },
   passwordRequirements: {
     minChars: 14,
