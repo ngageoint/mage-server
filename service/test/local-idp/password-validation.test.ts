@@ -4,7 +4,7 @@ import { defaultHashUtil } from '../../lib/local-idp/password-hashing'
 import { PasswordRequirements } from '../../lib/local-idp/password-requirements'
 import { serializeHashedPassword } from '../../lib/local-idp/password-hashing'
 
-describe.only('password requirements validation', function () {
+describe('password requirements validation', function () {
 
   it('fails null password', async function () {
     const validation = await validatePasswordRequirements(null as any, {}, [])

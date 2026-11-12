@@ -9,7 +9,7 @@ import { InvalidUserSeedError } from '../../../lib/entities/users/entities.users
 import { UserAccountSeed } from '../../../lib/entities/users/entities.users'
 
 
-describe.only('users mongoose repository', function () {
+describe('users mongoose repository', function () {
 
   let model: mongoose.Model<UserDocument>
   let repo: MongooseUserRepository
