@@ -1,8 +1,8 @@
 import mongoose, { HydratedSingleSubdocument, ToObjectOptions } from 'mongoose'
+import { PageOf } from '../entities/entities.global'
 import { UserDocument } from './user'
 import { MageEventId, MageEventAttrs, MageEventCreateAttrs, EventAccessType, EventRole } from '../entities/events/entities.events'
 import { Form, FormField } from '../entities/events/entities.events.forms'
-import { PageInfo } from '../utilities/paging'
 
 export interface MageEventDocumentToObjectOptions extends ToObjectOptions {
   access: { user: UserDocument, permission: EventAccessType }
@@ -62,9 +62,9 @@ export declare function getUsers(eventId: MageEventId, callback: Callback<UserDo
 export declare function addTeam(event: MageEventModelInstance, team: any, callback: Callback<MageEventModelInstance>): void
 export declare function getTeams(eventId: MageEventId, options: { populate: string[] | null }, callback: Callback): void
 export declare function removeTeam(event: MageEventModelInstance, team: any, callback: Callback<MageEventModelInstance>): void
-export declare function getMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
-export declare function getNonMembers(eventId: MageEventId, options: TODO): Promise<PageInfo>
-export declare function getTeamsInEvent(eventId: MageEventId, options: TODO): Promise<PageInfo>
-export declare function getTeamsNotInEvent(eventId: MageEventId, options: TODO): Promise<PageInfo>
+export declare function getMembers(eventId: MageEventId, options: TODO): Promise<PageOf<UserDocument>>
+export declare function getNonMembers(eventId: MageEventId, options: TODO): Promise<PageOf<UserDocument>>
+export declare function getTeamsInEvent(eventId: MageEventId, options: TODO): Promise<PageOf<any>>
+export declare function getTeamsNotInEvent(eventId: MageEventId, options: TODO): Promise<PageOf<any>>
 
 export declare const Model: mongoose.Model<MageEventDocument>
