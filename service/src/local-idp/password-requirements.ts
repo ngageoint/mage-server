@@ -58,8 +58,10 @@ export async function validatePasswordRequirements(password: string, policy: Pas
 }
 
 function validatePasswordLength(policy: PasswordRequirements, password: string): boolean {
-  return !!policy.passwordMinLengthEnabled && typeof policy.passwordMinLength === 'number' &&
-    password.length >= policy.passwordMinLength
+  if (!policy.passwordMinLengthEnabled || typeof policy.passwordMinLength !== 'number') {
+    return true
+  }
+  return password.length >= policy.passwordMinLength
 }
 
 function validateMinimumCharacters(policy: PasswordRequirements, password: string): boolean {
