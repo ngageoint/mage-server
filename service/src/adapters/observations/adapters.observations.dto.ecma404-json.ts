@@ -54,8 +54,7 @@ export function exoObservationModFromJson(json: Json): ExoObservationMod | Inval
     properties: {
       ...properties as any,
       timestamp: timestamp.toDate()
-    },
-    noGeometry: !!json.noGeometry
+    }
   }
   if (bbox) {
     mod.bbox = bbox as BBox

@@ -631,7 +631,6 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
-        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -692,7 +691,6 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
-        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -889,7 +887,6 @@ describe('observations web controller', function () {
         favoriteUserIds: [],
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [65, 56] },
-        noGeometry: false,
         properties: {
           timestamp: new Date(),
           forms: []

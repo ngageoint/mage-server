@@ -29,11 +29,6 @@ export interface ObservationAttrs extends Feature<Geometry, ObservationFeaturePr
    *   a unique id
    */
   states: readonly ObservationState[]
-
-  /**
-   * A boolean flag to indicate whether the observation has geometry.
-   */
-  noGeometry?: boolean
 }
 
 export interface ObservationFeatureProperties {

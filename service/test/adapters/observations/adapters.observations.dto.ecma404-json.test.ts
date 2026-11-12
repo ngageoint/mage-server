@@ -43,7 +43,6 @@ describe('observation json dto transform', function () {
         coordinates: [23, 45, 67],
         bbox: [11, 22, 33, 12, 23, 33]
       },
-      noGeometry: false,
       properties: modPropertiesJson
     }
   })
