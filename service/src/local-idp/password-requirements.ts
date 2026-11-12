@@ -1,5 +1,9 @@
 import { defaultHashUtil } from './password-hashing'
 
+/**
+ * Default allowed special characters.
+ * TODO: missing /\+'`[] and space. why?
+ */
 const SPECIAL_CHARS = '~!@#$%^&*(),.?":{}|<>_=;-'
 
 export type PasswordRequirements = Partial<{
@@ -128,37 +132,20 @@ function validateMinimumSpecialCharacters(policy: PasswordRequirements, password
   if (!policy.specialCharsEnabled || typeof policy.specialChars !== 'number') {
     return true
   }
-  let allowedChars = null
-  let forbiddenChars = null
-  if (policy.restrictSpecialCharsEnabled && typeof policy.restrictSpecialChars === 'string') {
-    forbiddenChars = new RegExp('[' + createRestrictedRegex(policy.restrictSpecialChars) + ']')
-    allowedChars = new RegExp('[' + policy.restrictSpecialChars + ']')
-  }
-  else {
-    allowedChars = new RegExp('[' + SPECIAL_CHARS + ']')
-  }
+  const allowedChars = policy.restrictSpecialCharsEnabled && typeof policy.restrictSpecialChars === 'string'
+    ? policy.restrictSpecialChars
+    : null
   let specialCharCount = 0
-  for (let i = 0; i < password.length && specialCharCount < policy.specialChars && specialCharCount > -1; i++) {
-    const char = password[i]
-    if (forbiddenChars && forbiddenChars.test(char)) {
-      specialCharCount = -1
-    }
-    else if (allowedChars.test(char)) {
+  for (const char of password) {
+    const isSpecialChar = SPECIAL_CHARS.includes(char)
+    if (isSpecialChar) {
+      if (allowedChars !== null && !allowedChars.includes(char)) {
+        return false
+      }
       specialCharCount++
     }
   }
   return specialCharCount >= policy.specialChars
-}
-
-function createRestrictedRegex(restrictedChars: string): string {
-  let forbiddenRegex = ''
-  for (let i = 0; i < SPECIAL_CHARS.length; i++) {
-    const specialChar = SPECIAL_CHARS[i]
-    if (!restrictedChars.includes(specialChar)) {
-      forbiddenRegex += specialChar
-    }
-  }
-  return forbiddenRegex
 }
 
 async function validatePasswordHistory(policy: PasswordRequirements, password: string, previousPasswordHashes: string[]): Promise<boolean> {

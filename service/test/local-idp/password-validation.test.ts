@@ -4,7 +4,6 @@ import { defaultHashUtil } from '../../lib/local-idp/password-hashing'
 import { PasswordRequirements } from '../../lib/local-idp/password-requirements'
 import { serializeHashedPassword } from '../../lib/local-idp/password-hashing'
 
-
 describe.only('password requirements validation', function () {
 
   it('fails null password', async function () {
@@ -216,7 +215,7 @@ describe.only('password requirements validation', function () {
 
   it('passes with unrestricted special characters', async function () {
     const policy: PasswordRequirements = {
-      specialChars: 1,
+      specialChars: 3,
       specialCharsEnabled: true,
       restrictSpecialChars: '$',
       restrictSpecialCharsEnabled: true
@@ -234,6 +233,96 @@ describe.only('password requirements validation', function () {
 
     const validationStatus = await validatePasswordRequirements('abc', policy)
     expect(validationStatus.valid).to.be.true
+  })
+
+  describe('special character validation', function () {
+    const testCases: { name: string; password: string; policy: PasswordRequirements; expected: boolean }[] = [
+      {
+        name: 'rejects a forbidden character before reaching the minimum',
+        password: '@$',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: false
+      },
+      {
+        name: 'rejects a forbidden character after reaching the minimum',
+        password: '$@',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: false
+      },
+      {
+        name: 'accepts the exact allowed-character minimum',
+        password: '$$',
+        policy: { specialChars: 2, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'rejects fewer allowed characters than the minimum',
+        password: '$',
+        policy: { specialChars: 2, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: false
+      },
+      {
+        name: 'treats caret as a literal allowed character',
+        password: 'abc^',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '^', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'treats hyphen as a literal allowed character',
+        password: 'abc-',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '-', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'accepts standard characters with an empty restriction list and zero minimum',
+        password: 'abc',
+        policy: { specialChars: 0, specialCharsEnabled: true, restrictSpecialChars: '', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'rejects known special characters with an empty restriction list even when the minimum is zero',
+        password: 'abc$',
+        policy: { specialChars: 0, specialCharsEnabled: true, restrictSpecialChars: '', restrictSpecialCharsEnabled: true },
+        expected: false
+      },
+      {
+        name: 'ignores the restriction list when special-character validation is disabled',
+        password: '$@',
+        policy: { specialChars: 10, specialCharsEnabled: false, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'allows all known special characters when restriction is disabled',
+        password: '@',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: false },
+        expected: true
+      },
+      {
+        name: 'treats a missing allowlist as unrestricted',
+        password: '@',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'does not restrict characters outside the known special-character set',
+        password: '$/',
+        policy: { specialChars: 1, specialCharsEnabled: true, restrictSpecialChars: '$', restrictSpecialCharsEnabled: true },
+        expected: true
+      },
+      {
+        name: 'counts only known special characters toward the special character count',
+        password: ' \\/[]`\'+',
+        policy: { specialChars: 1, specialCharsEnabled: true },
+        expected: false
+      }
+    ]
+
+    for (const testCase of testCases) {
+      it(testCase.name, async function () {
+        const result = await validatePasswordRequirements(testCase.password, testCase.policy)
+        expect(result.valid).to.equal(testCase.expected)
+      })
+    }
   })
 
   it('enforces a complex password policy', async function () {
