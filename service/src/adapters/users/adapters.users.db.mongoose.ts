@@ -106,7 +106,7 @@ export class MongooseUserRepository implements UserRepository {
     throw new Error('method not allowed')
   }
 
-  async removeById(id: any): Promise<User | null> {
+  async removeById(id: UserId): Promise<User | null> {
     throw new Error('method not allowed')
   }
 
