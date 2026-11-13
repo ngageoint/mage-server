@@ -170,7 +170,7 @@ export function CreateExport(
           const stats = await contentStore.contentStats(newExport)
           const update = {
             status: ExportStatus.Completed,
-            size: stats instanceof Stats ? stats.size : undefined,
+            size: stats instanceof Error ? undefined : stats?.size,
             summary: {
               observations: { ...result.observations},
               locations: { ...result.locations }
