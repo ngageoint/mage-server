@@ -8,7 +8,7 @@
           <observation-edit-geometry-map [feature]="mapFeature()" (onEdit)="startGeometryEdit()"></observation-edit-geometry-map>
         </div>
         <div class="geometry-panel__edit">
-          <observation-edit-geometry-form [feature]="editFeature()" (save)="saveGeometryEdit($event)" (cancel)="cancelGeometryEdit()"></observation-edit-geometry-form>
+          <observation-edit-geometry-form (save)="saveGeometryEdit($event)" (cancel)="cancelGeometryEdit()"></observation-edit-geometry-form>
         </div>
       </div>
     </div>

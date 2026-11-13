@@ -1,4 +1,4 @@
-import { Component, Directive, effect, EventEmitter, inject, input, OnInit, Output, signal, viewChild } from '@angular/core'
+import { Component, Directive, EventEmitter, inject, input, OnInit, Output, signal, viewChild } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, FormsModule, NgModel, NG_VALIDATORS, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms'
 import { InputMaskModule } from '@ngneat/input-mask'
 import { MatButtonModule } from '@angular/material/button'
@@ -77,7 +77,6 @@ export class ObservationEditGeometryFormComponent implements OnInit {
   private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
   private readonly snackBar: MatSnackBar = inject(MatSnackBar)
 
-  feature = input<any>()
   @Output() save = new EventEmitter<any>()
   @Output() cancel = new EventEmitter<any>()
 
@@ -107,30 +106,28 @@ export class ObservationEditGeometryFormComponent implements OnInit {
 
   constructor() {
     this.coordinateSystem = this.localStorageService.getCoordinateSystemEdit()
+    this.dmsForm.disable({emitEvent: false})
+  }
 
-    effect(() => {
-      const feature = this.feature()
-      if (feature) {
-        const cloned = { ...feature }
-        this.currentFeature.set(cloned)
-        this.featureEdit = this.mapService.createFeature(cloned, {
-          geometryChanged: geometry => {
-            this.geometryChanged(geometry)
-          },
-          vertexClick: vertex => {
-            this.vertexClick(vertex)
-          }
-        });
-        this.selectedVertexIndex = 0;
-        this.updateCoordinates()
+  startEdit(feature: any): void {
+    const cloned = { ...feature }
+    this.currentFeature.set(cloned)
+    this.featureEdit = this.mapService.createFeature(cloned, {
+      geometryChanged: geometry => {
+        this.geometryChanged(geometry)
+      },
+      vertexClick: vertex => {
+        this.vertexClick(vertex)
       }
-      if (this.currentFeature()?.geometry?.coordinates) {
-        this.dmsForm.enable({emitEvent: false})
-      }
-      else {
-        this.dmsForm.disable({emitEvent: false})
-      }
-    })
+    });
+    this.selectedVertexIndex = 0;
+    this.updateCoordinates()
+    if (this.currentFeature()?.geometry?.coordinates) {
+      this.dmsForm.enable({emitEvent: false})
+    }
+    else {
+      this.dmsForm.disable({emitEvent: false})
+    }
   }
 
   ngOnInit(): void {

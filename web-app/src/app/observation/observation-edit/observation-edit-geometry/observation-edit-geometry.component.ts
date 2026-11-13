@@ -32,10 +32,10 @@ export class ObservationEditGeometryComponent {
   @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
 
   geometryElement = viewChild.required<ElementRef<HTMLElement>>('geometry')
+  geometryForm = viewChild.required(ObservationEditGeometryFormComponent)
 
   edit = false
   mapFeature = signal<any>(null)
-  editFeature = signal<any>(null)
 
   constructor() {
     effect(() => {
@@ -56,7 +56,7 @@ export class ObservationEditGeometryComponent {
 
     const value = this.formGroup().get(this.definition().name).value
     if (value) {
-      this.editFeature.set({
+      this.geometryForm().startEdit({
         id: this.featureId(),
         type: 'Feature',
         geometry: value,
@@ -64,7 +64,7 @@ export class ObservationEditGeometryComponent {
       })
     } else {
       const mapPosition = this.localStorageService.getMapPosition();
-      this.editFeature.set({
+      this.geometryForm().startEdit({
         type: 'Feature',
         geometry: {
           type: 'Point',
