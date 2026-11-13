@@ -155,6 +155,15 @@ describe('password hashing', function () {
         expect(await util.validPassword('test password', tampered)).to.be.false
       })
 
+      it('returns false when the stored derived key length does not match the stored derived key length value', async function () {
+        const hash = await util.hashPassword('test password')
+        const keyBytes = Buffer.from(hash.derivedKey, 'base64')
+        const truncated = serializeHashedPassword({ ...hash, derivedKey: keyBytes.subarray(0, keyBytes.length - 1).toString('base64') })
+        const extended = serializeHashedPassword({ ...hash, derivedKey: Buffer.concat([ keyBytes, Buffer.from([ 0 ]) ]).toString('base64') })
+        expect(await util.validPassword('test password', truncated)).to.be.false
+        expect(await util.validPassword('test password', extended)).to.be.false
+      })
+
       it('returns false for an empty hash', async function () {
         expect(await util.validPassword('test password', '')).to.be.false
       })

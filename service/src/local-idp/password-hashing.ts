@@ -87,7 +87,11 @@ export class PasswordHashUtil {
       throw new Error('invalid password hash')
     }
     const testHash = await pbkdf2_promise(password, hash.salt, hash.iterations, hash.derivedKeyLength, digest)
-    return testHash.toString('base64') === hash.derivedKey
+    const storedKey = Buffer.from(hash.derivedKey, 'base64')
+    if (storedKey.length !== testHash.length) {
+      return false
+    }
+    return crypto.timingSafeEqual(testHash, storedKey)
   }
 }
 
