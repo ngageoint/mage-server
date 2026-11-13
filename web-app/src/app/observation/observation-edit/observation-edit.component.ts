@@ -11,6 +11,7 @@ import {
   Injector,
   input,
   linkedSignal,
+  OnDestroy,
   Output,
   signal,
   viewChild,
@@ -87,7 +88,7 @@ type ObservationFormControls = {
         ObservationEditGeometryComponent,
     ]
 })
-export class ObservationEditComponent {
+export class ObservationEditComponent implements OnDestroy {
   observation = input.required<any>();
   currentObservation = linkedSignal(() => this.observation());
   attachments = [];
@@ -206,7 +207,6 @@ export class ObservationEditComponent {
     }
   }
 
-  // TODO multi-form build out validators here as well for each form control
   toFormGroup(observation: ObservationDraft): void {
     const formArray = new FormArray<FormEntryGroup>([]);
     const observationForms = observation.properties.forms || [];
