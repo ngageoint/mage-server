@@ -7,12 +7,11 @@ import {
   DestroyRef,
   effect,
   ElementRef,
-  EventEmitter,
   Injector,
   input,
   linkedSignal,
   OnDestroy,
-  Output,
+  output,
   signal,
   viewChild,
   viewChildren,
@@ -91,16 +90,25 @@ type ObservationFormControls = {
 export class ObservationEditComponent implements OnDestroy {
   observation = input.required<any>();
   currentObservation = linkedSignal(() => this.observation());
-  attachments = [];
 
-  @Output() closed = new EventEmitter<any>();
+  closed = output<any>();
 
   editContent = viewChild.required<ElementRef>('editContent');
   formElements = viewChildren<ElementRef>('form');
 
-  private destroyRef = inject(DestroyRef);
-  private injector = inject(Injector);
-  private loadEventPreferences$ = new Subject<number>();
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly loadEventPreferences$ = new Subject<number>();
+  private readonly sanitizer = inject(DomSanitizer);
+  private readonly matIconRegistry = inject(MatIconRegistry);
+  readonly dialog = inject(MatDialog);
+  private readonly bottomSheet = inject(MatBottomSheet);
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly attachmentService = inject(AttachmentService);
+  private readonly mapService = inject(MapService);
+  private readonly userService = inject(UserService);
+  private readonly eventService = inject(EventService);
+  private readonly observationService = inject(ObservationService);
 
   event: any;
   formGroup = signal<FormGroup<ObservationFormControls>>(undefined);
@@ -138,21 +146,10 @@ export class ObservationEditComponent implements OnDestroy {
 
   formRemoveSnackbar: MatSnackBarRef<SimpleSnackBar>;
 
-  constructor(
-    sanitizer: DomSanitizer,
-    matIconRegistry: MatIconRegistry,
-    public dialog: MatDialog,
-    private bottomSheet: MatBottomSheet,
-    private snackBar: MatSnackBar,
-    private attachmentService: AttachmentService,
-    private mapService: MapService,
-    private userService: UserService,
-    private eventService: EventService,
-    private observationService: ObservationService
-  ) {
-    matIconRegistry.addSvgIcon(
+  constructor() {
+    this.matIconRegistry.addSvgIcon(
       "handle",
-      sanitizer.bypassSecurityTrustResourceUrl("assets/images/handle-24px.svg")
+      this.sanitizer.bypassSecurityTrustResourceUrl("assets/images/handle-24px.svg")
     );
 
     this.loadEventPreferences$
@@ -312,7 +309,7 @@ export class ObservationEditComponent implements OnDestroy {
       delete form.id;
     }
 
-    this.eventService.saveObservation(form).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.eventService.saveObservation(form).subscribe({
       next: (observation) => {
         // If this feature was added to the map as a new observation, remove it
         // as the event service will add it back to the map based on it new id
@@ -397,7 +394,7 @@ export class ObservationEditComponent implements OnDestroy {
           } else {
             this.mapService.removeFeatureFromLayer(this.currentObservation(), "observations");
           }
-          this.closed.emit();
+          this.closed.emit(undefined);
         }
       });
   }
@@ -498,7 +495,8 @@ export class ObservationEditComponent implements OnDestroy {
         break;
       }
       case AttachmentUploadStatus.ERROR: {
-        this.snackBar.open(event.response?.error, undefined, { duration: 4000 });
+        const error = event.response?.error;
+        this.snackBar.open(typeof error === 'string' ? error : 'Unable to upload attachment.', undefined, { duration: 4000 });
 
         this.forms.controls.forEach((formGroup) => {
           const formDefinition = this.formDefinitions()[formGroup.controls.formId.value];

@@ -31,7 +31,6 @@ import { ObservationEditAttachmentComponent } from './observation-edit-attachmen
 import { ObservationEditPasswordComponent } from './observation-edit-password/observation-edit-password.component';
 
 @NgModule({
-  declarations: [],
   imports: [
     CommonModule,
     FormsModule,

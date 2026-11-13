@@ -39,7 +39,7 @@
       </div>
     }
 
-    <form class="observation" name="observationForm" novalidate>
+    <div class="observation">
       <mat-card class="form">
         <mat-card-content>
           <observation-edit-date class="edit-date" [formGroup]="formGroup().get('properties')" [definition]="timestampDefinition"></observation-edit-date>
@@ -70,7 +70,7 @@
           </div>
         }
       </div>
-    </form>
+    </div>
   </div>
 
   @if (hasForms()) {
