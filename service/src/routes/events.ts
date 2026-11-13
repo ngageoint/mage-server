@@ -577,7 +577,7 @@ function EventRoutes(app: express.Application, security: { authentication: authe
 
         log.info('layer added to event', {
           event: req.event!.name,
-          layerName: req.body.name,
+          layerId: req.body.id,
           addedBy: req.user!.username,
           addedTime: new Date().toISOString()
         });
@@ -596,6 +596,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer removed from event', {
+          event: req.event!.name,
+          layerId: req.params.id,
+          removedBy: req.user!.username,
+          removedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }
