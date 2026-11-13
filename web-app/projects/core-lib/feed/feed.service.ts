@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Feature } from 'geojson'
-import { BehaviorSubject, Observable, Subject } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { BehaviorSubject, Observable } from 'rxjs'
+import { map, shareReplay, tap } from 'rxjs/operators'
 import { Feed, FeedContent, FeedExpanded, FeedPost, FeedPreview, FeedTopic, Service, ServiceType, StyledFeature } from './feed.model'
 
 
@@ -92,26 +92,19 @@ export class FeedService {
   }
 
   fetchFeeds(eventId: number): Observable<Array<Feed>> {
-    const subject = new Subject<Array<Feed>>();
-    this.webClient.get<Array<Feed>>(`/api/events/${eventId}/feeds`).subscribe(feeds => {
-      feeds.map(feed => {
-        feed.id = feed.id.toString();
-        return feed;
-      });
-
-      feeds.forEach(feed => {
-        let feedItems = this._feedItems.get(feed.id);
-        if (!feedItems) {
-          feedItems = new BehaviorSubject<Array<Feature>>([]);
-          this._feedItems.set(feed.id, feedItems);
-        }
-      })
-
-      subject.next(feeds);
-      this._feeds.next(feeds);
-    });
-
-    return subject;
+    return this.webClient.get<Array<Feed>>(`/api/events/${eventId}/feeds`).pipe(
+      map(feeds => feeds.map(feed => ({ ...feed, id: String(feed.id) }))),
+      tap(feeds => {
+        feeds.forEach(feed => {
+          if (!this._feedItems.has(feed.id)) {
+            this._feedItems.set(feed.id, new BehaviorSubject<Array<Feature>>([]));
+          }
+        });
+        this._feeds.next(feeds);
+      }),
+      // Keep cancellation with callers instead of an internal HTTP subscription.
+      shareReplay({ bufferSize: 1, refCount: true })
+    );
   }
 
   fetchFeedItems(event: any, feed: Feed): Observable<FeedContent> {
