@@ -114,6 +114,8 @@ module.exports = function (app, security) {
       });
 
       lock.acquire(enabledKey, async function (done) {
+        const previousConfig = await AuthenticationConfiguration.getById(req.params.id);
+        const wasEnabled = previousConfig && previousConfig.enabled;
         const allowed = await isAllowed(updatedConfig);
         if (!allowed) {
           log.error('Cannot update ' + updatedConfig.name + ', since this would leave no enabled authentications');
@@ -152,7 +154,14 @@ module.exports = function (app, security) {
           const config = response[0];
           return SecurePropertyAppender.appendToConfig(config);
         }).then(config => {
-          log.info("Reconfiguring authentication strategy " + config.type + " (" + config.title + ")");
+          let message = "Reconfiguring authentication strategy " + config.type + " (" + config.title + ")";
+          if (wasEnabled !== config.enabled) {
+            message += ", " + (config.enabled ? "enabled" : "disabled");
+          }
+          log.info(message, {
+            updatedBy: req.user.username
+          });
+
           const strategy = require('../authentication/' + config.type);
           strategy.initialize(config);
 
@@ -237,7 +246,9 @@ module.exports = function (app, security) {
         const config = response[0];
         return SecurePropertyAppender.appendToConfig(config);
       }).then(config => {
-        log.info("Creating new authentication strategy " + config.type + " (" + config.title + ")");
+        log.info("Creating new authentication strategy " + config.type + " (" + config.title + ")", {
+          createdBy: req.user.username
+        });
         const strategy = require('../authentication/' + config.type);
         strategy.initialize(config);
 
@@ -287,7 +298,9 @@ module.exports = function (app, security) {
           }).then(response => {
             const config = response[0];
 
-            log.info("Successfully removed strategy with id " + req.params.id);
+            log.info("Successfully removed strategy with id " + req.params.id, {
+              deletedBy: req.user.username
+            });
             //TODO not sure how to disable passport strategy, but this will effectively disable it
             const transformedConfig = AuthenticationConfigurationTransformer.transform(config, { blacklist: true });
             res.json(transformedConfig);
