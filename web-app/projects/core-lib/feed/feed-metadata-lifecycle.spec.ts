@@ -18,21 +18,18 @@ describe('FeedService metadata request lifecycle', () => {
 
   afterEach(() => http.verify());
 
-  it('starts on subscription, shares results, normalizes IDs and completes', () => {
+  it('starts on subscription, normalizes IDs and completes', () => {
     const result = service.fetchFeeds(1);
     http.expectNone('/api/events/1/feeds');
-    const first = jasmine.createSpy('first');
-    const second = jasmine.createSpy('second');
+    const next = jasmine.createSpy('next');
     const complete = jasmine.createSpy('complete');
     const feeds = jasmine.createSpy('feeds');
     const state = service.feeds$.subscribe(feeds);
 
-    result.subscribe({ next: first, complete });
-    result.subscribe(second);
+    result.subscribe({ next, complete });
     http.expectOne('/api/events/1/feeds').flush([{ id: 3 }]);
 
-    expect(first.calls.mostRecent().args[0][0].id).toBe('3');
-    expect(second).toHaveBeenCalledTimes(1);
+    expect(next.calls.mostRecent().args[0][0].id).toBe('3');
     expect(complete).toHaveBeenCalledTimes(1);
     expect(feeds.calls.mostRecent().args[0]).toEqual([{ id: '3' }]);
     let items: Feature[] | undefined;
@@ -42,15 +39,11 @@ describe('FeedService metadata request lifecycle', () => {
     state.unsubscribe();
   });
 
-  it('keeps a shared request until its last subscriber leaves', () => {
-    const result = service.fetchFeeds(1);
-    const first = result.subscribe();
-    const second = result.subscribe();
+  it('cancels the request when the caller unsubscribes', () => {
+    const subscription = service.fetchFeeds(1).subscribe();
     const request = http.expectOne('/api/events/1/feeds');
 
-    first.unsubscribe();
-    expect(request.cancelled).toBeFalse();
-    second.unsubscribe();
+    subscription.unsubscribe();
     expect(request.cancelled).toBeTrue();
   });
 

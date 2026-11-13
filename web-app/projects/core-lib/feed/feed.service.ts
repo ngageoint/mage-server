@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Feature } from 'geojson'
 import { BehaviorSubject, Observable } from 'rxjs'
-import { map, shareReplay, tap } from 'rxjs/operators'
+import { map, tap } from 'rxjs/operators'
 import { Feed, FeedContent, FeedExpanded, FeedPost, FeedPreview, FeedTopic, Service, ServiceType, StyledFeature } from './feed.model'
 
 
@@ -101,9 +101,7 @@ export class FeedService {
           }
         });
         this._feeds.next(feeds);
-      }),
-      // Keep cancellation with callers instead of an internal HTTP subscription.
-      shareReplay({ bufferSize: 1, refCount: true })
+      })
     );
   }
 
