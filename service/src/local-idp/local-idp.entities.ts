@@ -73,7 +73,10 @@ export interface LocalIdpRepository {
   saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
   createLocalAccount(account: LocalIdpAccountSeed): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError>
   readLocalAccount(username: string): Promise<LocalIdpAccount | null>
-  updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'username'>): Promise<LocalIdpAccount | null>
+  /**
+   * Update the given account with straight-forward PUT semantics.
+   */
+  updateLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | null>
   deleteLocalAccount(username: string): Promise<LocalIdpAccount | null>
 }
 
