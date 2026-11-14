@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import assert from 'node:assert'
+import sinon from 'sinon'
 import { AccountLockPolicy, attemptAuthentication, LocalIdpAccount } from '../../lib/local-idp/local-idp.entities'
 import { LocalIdpErrorCode } from '../../lib/local-idp/local-idp.entities'
 import { LocalIdpAccountSeed, prepareNewAccount } from '../../lib/local-idp/local-idp.entities'
@@ -79,12 +80,89 @@ describe('local idp authentication', function() {
         expect(account2.security.invalidLoginAttempts).to.equal(2)
       })
 
+      const password = 'just for testing'
+      const lockDurationMillis = enabledPolicy.accountLock.lockDurationSeconds * 1000
+      let clock: sinon.SinonFakeTimers
+
+      beforeEach(function() {
+        // only fake Date so password hashing callbacks still run on the real event loop
+        clock = sinon.useFakeTimers({ now: Date.parse('2026-01-01T00:00:00Z'), toFake: [ 'Date' ] })
+      })
+
+      afterEach(function() {
+        clock.restore()
+      })
+
+      async function newAccount(): Promise<LocalIdpAccount> {
+        const accountSeed = await prepareNewAccount('tester', password, laxPasswords)
+        assert(accountSeed instanceof LocalIdpAccountSeed, 'expected instance of LocalIdpAccountSeed')
+        return { id: 'account1', ...accountSeed }
+      }
+
+      async function failUntilLocked(account: LocalIdpAccount): Promise<LocalIdpAccount> {
+        for (let attempt = 1; attempt <= enabledPolicy.accountLock.lockAfterInvalidLoginCount; attempt++) {
+          const result = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+          assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+          account = result.failed.account
+        }
+        return account
+      }
+
       it('locks the account after the failed authentication threshold', async function() {
-        expect.fail('todo')
+
+        let account = await newAccount()
+        const threshold = enabledPolicy.accountLock.lockAfterInvalidLoginCount
+        for (let attempt = 1; attempt < threshold; attempt++) {
+          const result = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+          assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+          account = result.failed.account
+          expect(account.security).to.deep.equal({
+            locked: false,
+            lockedUntil: null,
+            invalidLoginAttempts: attempt,
+            numberOfTimesLocked: 0,
+          })
+        }
+
+        const lockingResult = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+        assert(lockingResult.failed && lockingResult.failed.code === LocalIdpErrorCode.PasswordMismatch)
+        const lockedAccount = lockingResult.failed.account
+        expect(lockedAccount.security).to.deep.equal({
+          locked: true,
+          lockedUntil: new Date(Date.now() + lockDurationMillis),
+          invalidLoginAttempts: threshold,
+          numberOfTimesLocked: 1,
+        })
+
+        const correctPasswordResult = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+        assert(correctPasswordResult.failed, 'expected authentication to fail for locked account')
+        expect(correctPasswordResult.failed.code).to.equal(LocalIdpErrorCode.AccountLocked)
+        assert(correctPasswordResult.failed.code === LocalIdpErrorCode.AccountLocked)
+        expect(correctPasswordResult.failed.account).to.deep.equal(lockedAccount)
       })
 
       it('authenticates and unlocks the account after the lock duration passes', async function() {
-        expect.fail('todo')
+
+        const lockedAccount = await failUntilLocked(await newAccount())
+        expect(lockedAccount.security.locked).to.be.true
+
+        clock.tick(lockDurationMillis - 1)
+        const stillLocked = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+        assert(stillLocked.failed, 'expected account to remain locked before lock duration passes')
+        expect(stillLocked.failed.code).to.equal(LocalIdpErrorCode.AccountLocked)
+
+        clock.tick(1)
+        const unlocked = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+        assert(unlocked.authenticated, 'expected authentication to succeed after lock duration passes')
+        expect(unlocked.authenticated).to.deep.equal({
+          ...lockedAccount,
+          security: {
+            locked: false,
+            lockedUntil: null,
+            invalidLoginAttempts: 0,
+            numberOfTimesLocked: 0,
+          }
+        })
       })
     })
   })
