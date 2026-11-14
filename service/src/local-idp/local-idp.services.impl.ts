@@ -13,7 +13,7 @@ export function createLocalIdentityProviderService(repo: LocalIdpRepository): Ma
   async function createAccount(credentials: LocalIdpCredentials): Promise<LocalIdpAccount | LocalIdpError> {
     const securityPolicy = await repo.readSecurityPolicy()
     const { username, password } = credentials
-    const candidateAccount = await prepareNewAccount(username, password, securityPolicy)
+    const candidateAccount = await prepareNewAccount(username, password, securityPolicy.passwordRequirements)
     if (candidateAccount instanceof Error) {
       return candidateAccount
     }

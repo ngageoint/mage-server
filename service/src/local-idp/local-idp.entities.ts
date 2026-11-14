@@ -56,16 +56,16 @@ export type LocalIdpSecurityPolicy = {
 }
 
 export const defaultLocalIdpSecurityPolicy = Object.freeze({
-  accountLock: {
+  accountLock: Object.freeze({
     enabled: false,
     lockAfterInvalidLoginCount: 5,
     lockDurationSeconds: 120,
     disableAfterLockCount: 3,
-  },
-  passwordRequirements: {
+  }),
+  passwordRequirements: Object.freeze({
     minChars: 14,
     minCharsEnabled: true,
-  }
+  })
 } satisfies LocalIdpSecurityPolicy)
 
 export interface LocalIdpRepository {
@@ -104,13 +104,9 @@ export class LocalIdpAccountSeed implements Readonly<LocalIdpAccountSeedSpec> {
 }
 
 /**
- *
- * @param username
- * @param password
- * @param policy
+ * Hash the given password and return a new account seed object suitable to persist.
  */
-export async function prepareNewAccount(username: string, password: string, policy: LocalIdpSecurityPolicy): Promise<LocalIdpAccountSeed | LocalIdpInvalidPasswordError> {
-  const passwordRequirements = policy.passwordRequirements
+export async function prepareNewAccount(username: string, password: string, passwordRequirements: PasswordRequirements = defaultLocalIdpSecurityPolicy.passwordRequirements): Promise<LocalIdpAccountSeed | LocalIdpInvalidPasswordError> {
   const passwordValidation = await validatePasswordRequirements(password, passwordRequirements, [])
   if (!passwordValidation.valid) {
     return invalidPasswordError(username, passwordRequirements, passwordValidation.errorMessage || 'Password does not meet requirements.')
