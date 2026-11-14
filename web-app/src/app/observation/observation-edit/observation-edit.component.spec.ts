@@ -1,7 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Subject, of, throwError } from 'rxjs';
 
 import { ObservationEditComponent } from './observation-edit.component';
@@ -24,13 +23,12 @@ function newObservation(eventId: number) {
 @Component({
   selector: 'host-component',
   template: `<observation-edit [observation]="observation"></observation-edit>`,
-  standalone: false
+  imports: [ObservationEditComponent]
 })
 class TestHostComponent {
   observation: any = newObservation(1);
 
-  @ViewChild(ObservationEditComponent)
-  component: ObservationEditComponent;
+  component = viewChild.required(ObservationEditComponent);
 }
 
 describe('ObservationEditComponent', () => {
@@ -47,8 +45,7 @@ describe('ObservationEditComponent', () => {
     userService.getEventPreferences.and.returnValue(of(null));
 
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatDialogModule],
-      declarations: [ObservationEditComponent, TestHostComponent],
+      imports: [MatDialogModule, TestHostComponent],
       providers: [
         { provide: AttachmentService, useValue: { upload$: new Subject() } },
         { provide: MapService, useValue: jasmine.createSpyObj('MapService', ['addFeaturesToLayer', 'updateFeatureForLayer', 'removeFeatureFromLayer']) },
@@ -73,7 +70,7 @@ describe('ObservationEditComponent', () => {
   it('should create', () => {
     fixture.detectChanges();
 
-    expect(hostComponent.component).toBeTruthy();
+    expect(hostComponent.component()).toBeTruthy();
   });
 
   describe('loading event preferences', () => {
@@ -89,7 +86,7 @@ describe('ObservationEditComponent', () => {
       fixture.detectChanges();
 
       expect(userService.getEventPreferences).toHaveBeenCalledOnceWith(1);
-      expect(hostComponent.component.eventPreferences).toEqual(eventPreference);
+      expect(hostComponent.component().eventPreferences()).toEqual(eventPreference);
     });
 
     it('does not refetch preferences when the event has not changed', () => {
@@ -131,7 +128,7 @@ describe('ObservationEditComponent', () => {
       // clobber the second event's preferences.
       firstEventResponse.next({ forms: { 1: { fields: {} } } });
 
-      expect(hostComponent.component.eventPreferences).toEqual(secondEventPreference);
+      expect(hostComponent.component().eventPreferences()).toEqual(secondEventPreference);
     });
 
     it('sets preferences to null if the request errors', () => {
@@ -139,7 +136,7 @@ describe('ObservationEditComponent', () => {
 
       fixture.detectChanges();
 
-      expect(hostComponent.component.eventPreferences).toBeNull();
+      expect(hostComponent.component().eventPreferences()).toBeNull();
     });
   });
 
@@ -165,7 +162,7 @@ describe('ObservationEditComponent', () => {
     }
 
     function formValues(): any[] {
-      return hostComponent.component.formGroup.getRawValue().properties.forms;
+      return hostComponent.component().formGroup().getRawValue().properties.forms;
     }
 
     let mapService: jasmine.SpyObj<MapService>;
@@ -225,7 +222,7 @@ describe('ObservationEditComponent', () => {
       hostComponent.observation = unsavedObservation([{ formId: 1 }]);
       fixture.detectChanges();
 
-      hostComponent.component.save();
+      hostComponent.component().save();
 
       const saved = eventService.saveObservation.calls.mostRecent().args[0];
       expect('id' in saved).toBeFalse();
@@ -237,10 +234,10 @@ describe('ObservationEditComponent', () => {
       hostComponent.observation = unsavedObservation([{ formId: 1 }]);
       fixture.detectChanges();
 
-      hostComponent.component.save();
+      hostComponent.component().save();
 
-      expect(hostComponent.component.observation.id).toEqual('new');
-      expect(hostComponent.component.error).toEqual({ message: 'invalid' });
+      expect(hostComponent.component().currentObservation().id).toEqual('new');
+      expect(hostComponent.component().error()).toEqual({ message: 'invalid' });
     });
 
     function closeDiscardDialogWith(result: string | undefined): void {
@@ -254,7 +251,7 @@ describe('ObservationEditComponent', () => {
       hostComponent.observation = observation;
       fixture.detectChanges();
 
-      hostComponent.component.cancel();
+      hostComponent.component().cancel();
 
       expect(mapService.removeFeatureFromLayer).toHaveBeenCalledWith(observation as any, 'observations');
       expect(mapService.updateFeatureForLayer).not.toHaveBeenCalledWith(observation as any, 'observations');
@@ -265,9 +262,9 @@ describe('ObservationEditComponent', () => {
       const close = jasmine.createSpy('close');
       hostComponent.observation = unsavedObservation([{ formId: 1 }]);
       fixture.detectChanges();
-      hostComponent.component.close.subscribe(close);
+      hostComponent.component().closed.subscribe(close);
 
-      hostComponent.component.cancel();
+      hostComponent.component().cancel();
 
       expect(mapService.removeFeatureFromLayer).not.toHaveBeenCalled();
       expect(close).not.toHaveBeenCalled();
@@ -279,7 +276,7 @@ describe('ObservationEditComponent', () => {
       fixture.detectChanges();
       mapService.updateFeatureForLayer.calls.reset();
 
-      hostComponent.component.cancel();
+      hostComponent.component().cancel();
 
       expect(mapService.updateFeatureForLayer).not.toHaveBeenCalled();
     });
@@ -289,10 +286,10 @@ describe('ObservationEditComponent', () => {
       const observation = { ...unsavedObservation([{ id: 'entry1', formId: 1 }]), id: 'obs1' };
       hostComponent.observation = observation;
       fixture.detectChanges();
-      hostComponent.component.observation.geometry = { type: 'Point', coordinates: [30, 40] };
+      hostComponent.component().currentObservation().geometry = { type: 'Point', coordinates: [30, 40] };
       mapService.updateFeatureForLayer.calls.reset();
 
-      hostComponent.component.cancel();
+      hostComponent.component().cancel();
 
       expect(mapService.updateFeatureForLayer).toHaveBeenCalledTimes(1);
       expect(mapService.updateFeatureForLayer.calls.mostRecent().args[0].geometry).toEqual({ type: 'Point', coordinates: [10, 20] });

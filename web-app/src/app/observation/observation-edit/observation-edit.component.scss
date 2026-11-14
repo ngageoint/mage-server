@@ -79,6 +79,32 @@ mat-toolbar {
   }
 }
 
+.edit-banner__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.edit-banner--enter .edit-banner__inner,
+.edit-banner--leave .edit-banner__inner {
+  overflow: hidden;
+}
+
+.edit-banner--enter {
+  animation: edit-banner-expand 250ms ease-out;
+}
+
+.edit-banner--leave {
+  animation: edit-banner-expand 250ms ease-in reverse;
+}
+
+@keyframes edit-banner-expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
 .edit-banner-container {
   margin: 16px;
   flex: 1;

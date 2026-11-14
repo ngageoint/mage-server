@@ -1,14 +1,17 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MapClipComponent } from '../../../map/clip/clip.component';
 
 @Component({
     selector: 'observation-edit-geometry-map',
     templateUrl: './observation-edit-geometry-map.component.html',
     styleUrls: ['./observation-edit-geometry-map.component.scss'],
-    standalone: false
+    imports: [MatButtonModule, MatIconModule, MapClipComponent]
 })
 export class ObservationEditGeometryMapComponent {
-  @Input() feature: any
-  @Output() onEdit = new EventEmitter<void>();
+  feature = input<any>()
+  onEdit = output<void>();
 
   edit(): void {
     this.onEdit.emit();

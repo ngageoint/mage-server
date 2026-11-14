@@ -1,7 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, viewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UntypedFormGroup } from '@angular/forms';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 import { ObservationEditFormComponent } from './observation-edit-form.component';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +16,7 @@ import { MapClipComponent } from 'src/app/map/clip/clip.component';
     [geometryStyle]="geometryStyle"
     [options]="options"
   ></observation-edit-form>`,
-    standalone: false
+    imports: [ObservationEditFormComponent]
 })
 class TestHostComponent {
   formGroup = new UntypedFormGroup({});
@@ -30,8 +29,7 @@ class TestHostComponent {
     expand: false
   };
 
-  @ViewChild(ObservationEditFormComponent)
-  component: ObservationEditFormComponent;
+  component = viewChild.required(ObservationEditFormComponent);
 }
 
 describe('ObservationEditFormComponent', () => {
@@ -41,8 +39,7 @@ describe('ObservationEditFormComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [NoopAnimationsModule, MatIconModule, MatCardModule, MatListModule, MapClipComponent ],
-      declarations: [ObservationEditFormComponent, TestHostComponent]
+      imports: [MatIconModule, MatCardModule, MatListModule, MapClipComponent, TestHostComponent]
     }).compileComponents();
   }));
 
@@ -50,7 +47,7 @@ describe('ObservationEditFormComponent', () => {
     fixture = TestBed.createComponent(TestHostComponent);
     hostComponent = fixture.componentInstance;
     fixture.detectChanges();
-    component = hostComponent.component;
+    component = hostComponent.component();
   });
 
   it('should create', () => {
@@ -67,6 +64,6 @@ describe('ObservationEditFormComponent', () => {
 
     archivedFixture.detectChanges();
 
-    expect(archivedFixture.componentInstance.component.primaryFieldValue).toBeUndefined();
+    expect(archivedFixture.componentInstance.component().primaryFieldValue()).toBeUndefined();
   });
 });
