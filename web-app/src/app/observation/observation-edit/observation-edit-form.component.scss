@@ -68,10 +68,11 @@
 
 .form-header-actions__expand {
   color: var(--mat-sys-on-surface-variant);
+  transform: rotate(0deg);
   transition: transform 300ms ease-out;
 }
 
-.form-header-actions__expand--open {
+.form-header-actions__expand--rotated {
   transform: rotate(180deg);
 }
 
@@ -93,8 +94,13 @@
   margin-top: 24px;
 }
 
-.form-content__body {
+.form-content__content {
   min-height: 0;
+}
+
+.form-content--enter .form-content__content,
+.form-content--leave .form-content__content {
+  overflow: hidden;
 }
 
 .form-content--enter {
@@ -103,11 +109,6 @@
 
 .form-content--leave {
   animation: form-content-expand 300ms ease-in reverse;
-}
-
-.form-content--enter .form-content__body,
-.form-content--leave .form-content__body {
-  overflow: hidden;
 }
 
 @keyframes form-content-expand {

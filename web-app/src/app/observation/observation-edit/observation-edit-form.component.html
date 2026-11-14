@@ -3,27 +3,35 @@
     <div class="form-header">
       <div class="form-header-summary">
         <div class="form-header-title">
-          <mat-icon class="form-header-title__icon" [style.color]="definition.color">description</mat-icon>
-          <div class="form-header-title__text">{{definition.name}}</div>
+          <mat-icon class="form-header-title__icon" [style.color]="definition().color">description</mat-icon>
+          <div class="form-header-title__text">{{definition().name}}</div>
         </div>
-        <div *ngIf="primaryFieldValue" class="form-header-summary__primary">
-          <span [ngSwitch]="primaryField?.type">
-            <span *ngSwitchCase="'geometry'">{{primaryFieldValue | geometry:5}}</span>
-            <span *ngSwitchDefault>{{primaryFieldValue}}</span>
-          </span>
-        </div>
-        <div *ngIf="secondaryFieldValue" class="form-header-summary__secondary">
-          <span [ngSwitch]="secondaryField?.type">
-            <span *ngSwitchCase="'geometry'">{{secondaryFieldValue | geometry:5}}</span>
-            <span *ngSwitchDefault>{{secondaryFieldValue}}</span>
-          </span>
-        </div>
+        @if (primaryFieldValue()) {
+          <div class="form-header-summary__primary">
+            <span>
+              @switch (primaryField()?.type) {
+                @case ('geometry') { {{primaryFieldValue() | geometry:5}} }
+                @default { {{primaryFieldValue()}} }
+              }
+            </span>
+          </div>
+        }
+        @if (secondaryFieldValue()) {
+          <div class="form-header-summary__secondary">
+            <span>
+              @switch (secondaryField()?.type) {
+                @case ('geometry') { {{secondaryFieldValue() | geometry:5}} }
+                @default { {{secondaryFieldValue()}} }
+              }
+            </span>
+          </div>
+        }
       </div>
 
       <div class="form-header-actions">
-        <button matIconButton (click)="expand = !expand">
-          <mat-icon class="form-header-actions__expand" [class.form-header-actions__expand--open]="expand"
-            [style.color]="formGroup.invalid && formGroup.touched ? 'var(--mat-sys-error)' : ''">expand_more</mat-icon>
+        <button matIconButton (click)="expand.set(!expand())">
+          <mat-icon [class.form-header-actions__expand--rotated]="expand()" class="form-header-actions__expand"
+            [style.color]="formGroup().invalid && formGroup().touched ? 'var(--mat-sys-error)' : ''">expand_more</mat-icon>
         </button>
         <div class="form-header-actions__drag" #dragHandle>
           <ng-content></ng-content>
@@ -31,46 +39,76 @@
       </div>
     </div>
 
-    <div *ngIf="expand" animate.enter="form-content--enter" animate.leave="form-content--leave" class="form-content">
-      <div class="form-content__body">
-        <div *ngFor="let fieldName of fieldNames">
-          <div [ngSwitch]="fieldDefinitions[fieldName].type">
-            <observation-edit-attachment *ngSwitchCase="'attachment'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]" [attachments]="observation?.attachments" [url]="attachmentUrl"></observation-edit-attachment>
-            <observation-edit-checkbox *ngSwitchCase="'checkbox'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-checkbox>
-            <observation-edit-date *ngSwitchCase="'date'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-date>
-            <observation-edit-dropdown *ngSwitchCase="'dropdown'"
-              [formGroup]="formGroup"
-              [definition]="fieldDefinitions[fieldName]"
-              [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
-            </observation-edit-dropdown>
-            <observation-edit-multiselect *ngSwitchCase="'multiselectdropdown'"
-              [formGroup]="formGroup"
-              [definition]="fieldDefinitions[fieldName]"
-              [recentChoices]="formPreferences?.fields?.[fieldName]?.recentChoices">
-            </observation-edit-multiselect>
-            <observation-edit-email *ngSwitchCase="'email'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-email>
-            <observation-edit-number *ngSwitchCase="'numberfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-number>
-            <observation-edit-radio *ngSwitchCase="'radio'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-radio>
-            <observation-edit-text *ngSwitchCase="'textfield'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-text>
-            <observation-edit-textarea *ngSwitchCase="'textarea'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-textarea>
-            <observation-edit-password *ngSwitchCase="'password'" [formGroup]="formGroup" [definition]="fieldDefinitions[fieldName]"></observation-edit-password>
-            <observation-edit-geometry *ngSwitchCase="'geometry'"
-              [formGroup]="formGroup"
-              [definition]="fieldDefinitions[fieldName]"
-              featureId="{{formGroup.get('formId').value}}_{{fieldDefinitions[fieldName].id}}"
-              [featureStyle]="geometryStyle"
-              (featureEdit)="onGeometryEdit($event)">
-            </observation-edit-geometry>
-          </div>
-        </div>
+    @if (expand()) {
+      <div class="form-content" animate.enter="form-content--enter" animate.leave="form-content--leave">
+        <div class="form-content__content">
+          @for (fieldName of fieldNames(); track fieldName) {
+            <div>
+              @switch (fieldDefinitions()[fieldName].type) {
+                @case ('attachment') {
+                  <observation-edit-attachment [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]" [attachments]="observation()?.attachments" [url]="attachmentUrl()"></observation-edit-attachment>
+                }
+                @case ('checkbox') {
+                  <observation-edit-checkbox [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-checkbox>
+                }
+                @case ('date') {
+                  <observation-edit-date [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-date>
+                }
+                @case ('dropdown') {
+                  <observation-edit-dropdown
+                    [formGroup]="formGroup()"
+                    [definition]="fieldDefinitions()[fieldName]"
+                    [recentChoices]="formPreferences()?.fields?.[fieldName]?.recentChoices">
+                  </observation-edit-dropdown>
+                }
+                @case ('multiselectdropdown') {
+                  <observation-edit-multiselect
+                    [formGroup]="formGroup()"
+                    [definition]="fieldDefinitions()[fieldName]"
+                    [recentChoices]="formPreferences()?.fields?.[fieldName]?.recentChoices">
+                  </observation-edit-multiselect>
+                }
+                @case ('email') {
+                  <observation-edit-email [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-email>
+                }
+                @case ('numberfield') {
+                  <observation-edit-number [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-number>
+                }
+                @case ('radio') {
+                  <observation-edit-radio [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-radio>
+                }
+                @case ('textfield') {
+                  <observation-edit-text [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-text>
+                }
+                @case ('textarea') {
+                  <observation-edit-textarea [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-textarea>
+                }
+                @case ('password') {
+                  <observation-edit-password [formGroup]="formGroup()" [definition]="fieldDefinitions()[fieldName]"></observation-edit-password>
+                }
+                @case ('geometry') {
+                  <observation-edit-geometry
+                    [formGroup]="formGroup()"
+                    [definition]="fieldDefinitions()[fieldName]"
+                    featureId="{{formGroup().get('formId').value}}_{{fieldDefinitions()[fieldName].id}}"
+                    [featureStyle]="geometryStyle()"
+                    (featureEdit)="onGeometryEdit($event)">
+                  </observation-edit-geometry>
+                }
+              }
+            </div>
+          }
 
-        <div class="form-actions" *ngIf="deletable">
-          <mat-divider></mat-divider>
-          <div class="form-actions-content">
-            <button matButton class="delete-form-button" (click)="removeForm()">Delete Form</button>
-          </div>
+          @if (deletable()) {
+            <div class="form-actions">
+              <mat-divider></mat-divider>
+              <div class="form-actions-content">
+                <button matButton class="delete-form-button" (click)="removeForm()">Delete Form</button>
+              </div>
+            </div>
+          }
         </div>
       </div>
-    </div>
+    }
   </mat-card-content>
 </mat-card>

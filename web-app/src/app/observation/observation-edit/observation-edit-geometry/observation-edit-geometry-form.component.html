@@ -23,7 +23,7 @@
         <mat-form-field appearance="fill">
           <mat-label>Latitude</mat-label>
           <input matInput type="number" step="any" min="-90" max="90" [(ngModel)]="latitude"
-            (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates" />
+            (ngModelChange)="onLatLngChange()" [disabled]="!currentFeature()?.geometry?.coordinates" />
         </mat-form-field>
       </div>
 
@@ -31,7 +31,7 @@
         <mat-form-field appearance="fill">
           <mat-label>Longitude</mat-label>
           <input matInput type="number" step="any" min="-180" max="180" [(ngModel)]="longitude"
-            (ngModelChange)="onLatLngChange()" [disabled]="!feature?.geometry?.coordinates" />
+            (ngModelChange)="onLatLngChange()" [disabled]="!currentFeature()?.geometry?.coordinates" />
         </mat-form-field>
       </div>
     </div>
@@ -43,7 +43,7 @@
         <mat-form-field appearance="fill">
           <mat-label>MGRS</mat-label>
           <input matInput type="text" [(ngModel)]="mgrs" (ngModelChange)="onMgrsChange()"
-            [disabled]="!feature?.geometry?.coordinates" #mgrsModel="ngModel" mgrs />
+            [disabled]="!currentFeature()?.geometry?.coordinates" #mgrsModel="ngModel" mgrs />
           <mat-error>Invalid MGRS</mat-error>
         </mat-form-field>
       </div>
@@ -74,6 +74,6 @@
 
   <div class="edit-location__actions">
     <button matButton type="button" (click)="onCancel()">Cancel</button>
-    <button matButton="filled" type="button" (click)="onSave()" [disabled]="!feature?.geometry?.coordinates?.length">Save</button>
+    <button matButton="filled" type="button" (click)="onSave()" [disabled]="!currentFeature()?.geometry?.coordinates?.length">Save</button>
   </div>
 </div>
