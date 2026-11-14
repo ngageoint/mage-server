@@ -1,4 +1,4 @@
-import { Component, effect, EventEmitter, input, Output, signal } from '@angular/core'
+import { Component, effect, input, output, signal } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { FormPreference } from 'core-lib-src/user'
 import { MatButtonModule } from '@angular/material/button'
@@ -54,8 +54,8 @@ export class ObservationEditFormComponent {
   deletable = input(true)
   options = input.required<{ expand: boolean, deletable: boolean }>()
 
-  @Output() remove = new EventEmitter<UntypedFormGroup>()
-  @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
+  remove = output<UntypedFormGroup>()
+  featureEdit = output<GeometryEditEvent>()
 
   fieldNames = signal<string[]>([])
   fieldDefinitions = signal<Record<string, FormField>>({})

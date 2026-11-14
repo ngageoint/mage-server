@@ -1,4 +1,4 @@
-import { Component, effect, ElementRef, EventEmitter, inject, input, Output, signal, viewChild } from '@angular/core'
+import { Component, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
@@ -29,7 +29,7 @@ export class ObservationEditGeometryComponent {
   featureId = input.required<string>()
   featureStyle = input<any>()
 
-  @Output() featureEdit = new EventEmitter<GeometryEditEvent>()
+  featureEdit = output<GeometryEditEvent>()
 
   geometryElement = viewChild.required<ElementRef<HTMLElement>>('geometry')
   geometryForm = viewChild.required(ObservationEditGeometryFormComponent)

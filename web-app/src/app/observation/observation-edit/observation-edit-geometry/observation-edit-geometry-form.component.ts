@@ -1,4 +1,4 @@
-import { Component, Directive, EventEmitter, inject, input, OnInit, Output, signal, viewChild } from '@angular/core'
+import { Component, Directive, inject, input, OnInit, output, signal, viewChild } from '@angular/core'
 import { AbstractControl, FormControl, FormGroup, FormsModule, NgModel, NG_VALIDATORS, ReactiveFormsModule, ValidationErrors, Validator } from '@angular/forms'
 import { InputMaskModule } from '@ngneat/input-mask'
 import { MatButtonModule } from '@angular/material/button'
@@ -77,8 +77,8 @@ export class ObservationEditGeometryFormComponent implements OnInit {
   private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
   private readonly snackBar: MatSnackBar = inject(MatSnackBar)
 
-  @Output() save = new EventEmitter<any>()
-  @Output() cancel = new EventEmitter<any>()
+  save = output<any>()
+  cancel = output<void>()
 
   mgrsModel = viewChild.required<NgModel>('mgrsModel')
 

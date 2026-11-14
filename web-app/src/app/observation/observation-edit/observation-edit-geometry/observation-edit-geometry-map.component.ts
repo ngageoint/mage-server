@@ -1,4 +1,4 @@
-import { Component, EventEmitter, input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MapClipComponent } from '../../../map/clip/clip.component';
@@ -11,7 +11,7 @@ import { MapClipComponent } from '../../../map/clip/clip.component';
 })
 export class ObservationEditGeometryMapComponent {
   feature = input<any>()
-  @Output() onEdit = new EventEmitter<void>();
+  onEdit = output<void>();
 
   edit(): void {
     this.onEdit.emit();
