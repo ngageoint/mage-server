@@ -179,11 +179,11 @@ function copyIcon(from: UserIcon | null | undefined): UserIcon | null | undefine
   }
   return {
     type: from.type,
-    text: from.text,
-    color: from.color,
-    contentType: from.contentType,
-    size: from.size,
-    relativePath: from.relativePath,
+    ...(from.text ? { text: from.text } : {}),
+    ...(from.color ? { color: from.color } : {}),
+    ...(from.contentType ? { contentType: from.contentType } : {}),
+    ...(typeof from.size === 'number' ? { size: from.size } : {}),
+    ...(from.relativePath ? { relativePath: from.relativePath } : {}),
   }
 }
 
