@@ -167,6 +167,12 @@ export async function attemptAuthentication(account: LocalIdpAccount, password: 
     if (account.security.lockedUntil === null || account.security.lockedUntil.getTime() > Date.now()) {
       return { authenticated: false, failed: accountLockedError(account) }
     }
+    // the lock expired, so restart counting invalid login attempts, but retain the lock count to apply the
+    // disable-after-lock-count policy
+    account = {
+      ...account,
+      security: { ...account.security, locked: false, lockedUntil: null, invalidLoginAttempts: 0 }
+    }
   }
   const passwordMatches = await verifyPasswordForAccount(account, password)
   if (passwordMatches) {
@@ -250,7 +256,7 @@ function passwordMismatchError(account: LocalIdpAccount): LocalIdpPasswordMismat
 }
 
 function accountLockedError(account: LocalIdpAccount): LocalIdpAccountLockedError {
-  const message = `account for user ${account.username} is locked${account.security.lockedUntil ? account.security.lockedUntil.toUTCString() : ''}`
+  const message = `account for user ${account.username} is locked${account.security.lockedUntil ? ' until ' + account.security.lockedUntil.toUTCString() : ''}`
   return errorWithData({ code: LocalIdpErrorCode.AccountLocked, account }, message)
 }
 
