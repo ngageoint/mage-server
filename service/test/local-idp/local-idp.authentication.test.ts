@@ -199,6 +199,35 @@ describe.only('local idp authentication', function() {
         expect(correctPasswordResult.failed.account).to.deep.equal(lockedAccount)
       })
 
+      describe('mismatched password while locked', function() {
+
+        it('fails as locked without changing the account security status', async function() {
+
+          const lockedAccount = await failUntilLocked(await newAccount())
+          clock.tick(lockDurationMillis - 1)
+
+          let account = lockedAccount
+          for (let attempt = 1; attempt <= enabledPolicy.accountLock.lockAfterInvalidLoginCount * 2; attempt++) {
+            const result = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+            assert(result.failed && result.failed.code === LocalIdpErrorCode.AccountLocked)
+            expect(result.failed.account).to.deep.equal(lockedAccount)
+            account = result.failed.account
+          }
+        })
+
+        it('fails indistinguishably from the correct password', async function() {
+
+          const lockedAccount = await failUntilLocked(await newAccount())
+
+          const correctResult = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+          const wrongResult = await attemptAuthentication(lockedAccount, 'wrong', enabledPolicy.accountLock)
+          assert(correctResult.failed && correctResult.failed.code === LocalIdpErrorCode.AccountLocked)
+          assert(wrongResult.failed && wrongResult.failed.code === LocalIdpErrorCode.AccountLocked)
+          expect(wrongResult.failed.message).to.equal(correctResult.failed.message)
+          expect(wrongResult.failed.account).to.deep.equal(correctResult.failed.account)
+        })
+      })
+
       it('authenticates and unlocks the account after the lock duration passes', async function() {
 
         const lockedAccount = await failUntilLocked(await newAccount())
