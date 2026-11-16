@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { Component, ElementRef, computed, effect, input, output, viewChild } from '@angular/core'
 import { AsyncPipe } from '@angular/common'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { ErrorStateMatcher } from '@angular/material/core'
@@ -44,40 +44,40 @@ import {
     MatTooltipModule
   ]
 })
-export class ObservationFieldFilterComponent implements OnChanges {
-  @Input() forms: any[] = []
-  @Input() condition: Condition | null | undefined = null
-  @Input() showIncompleteError = false
-  @Output() conditionChanged = new EventEmitter<Condition | undefined>()
+export class ObservationFieldFilterComponent {
+  readonly forms = input<any[]>([])
+  readonly condition = input<Condition | null | undefined>(null)
+  readonly showIncompleteError = input(false)
+  readonly conditionChanged = output<Condition | undefined>()
 
-  @ViewChild('filterInput') filterInput: ElementRef<HTMLInputElement>
-  @ViewChild(MatAutocompleteTrigger) autoTrigger: MatAutocompleteTrigger
-  @ViewChild('filterDatePicker') datePicker: MatDatepicker<any>
-  @ViewChild('chipGridCondition') chipGridCondition?: MatChipGrid
+  readonly filterInput = viewChild<ElementRef<HTMLInputElement>>('filterInput')
+  readonly autoTrigger = viewChild(MatAutocompleteTrigger)
+  readonly datePicker = viewChild<MatDatepicker<any>>('filterDatePicker')
+  readonly chipGridCondition = viewChild<MatChipGrid>('chipGridCondition')
 
-  incompleteErrorStateMatcher: ErrorStateMatcher = {
-    isErrorState: () => this.showInvalidNumberError || (this.showIncompleteError && this.hasIncompleteCondition)
+  readonly incompleteErrorStateMatcher: ErrorStateMatcher = {
+    isErrorState: () => this.showInvalidNumberError || (this.showIncompleteError() && this.hasIncompleteCondition)
   }
 
   showInvalidNumberError = false
 
-  inputControl = new FormControl('')
+  readonly inputControl = new FormControl('')
   conditionGroups: FilterConditionGroup[] = []
   filteredOptions: Observable<AutocompleteOption[]>
   filteredFormGroups: Observable<FormGroup[]>
 
   conditionState: ConditionState = 'field'
   selectedField: any = null
-  selectedFormId: number = null
-  selectedFormName: string = null
-  selectedFormColor: string = null
-  selectedOperator: string = null
-  selectedOperatorDisplay: string = null
+  selectedFormId: number | null = null
+  selectedFormName: string | null = null
+  selectedFormColor: string | null = null
+  selectedOperator: string | null = null
+  selectedOperatorDisplay: string | null = null
 
   pendingValue: any = null
-  pendingValueDisplay: string = null
+  pendingValueDisplay: string | null = null
 
-  private allFieldGroups: FormGroup[] = []
+  private readonly allFieldGroups = computed(() => buildFieldGroups(this.forms()))
 
   get hasConditions(): boolean {
     return this.conditionGroups.some(g => g.conditions.length > 0)
@@ -118,23 +118,25 @@ export class ObservationFieldFilterComponent implements OnChanges {
       case 'field': return 'Add Condition...'
       case 'comparator': return 'Select operator...'
       case 'value': return 'Enter value...'
+      default: return ''
     }
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.forms) {
-      this.allFieldGroups = buildFieldGroups(this.forms)
+  constructor() {
+    effect(() => {
+      this.forms()
       this.conditionGroups = []
       this.resetState()
-    }
+    })
 
-    if (changes.condition) {
-      this.populateCondition(this.condition)
-    }
+    effect(() => {
+      this.populateCondition(this.condition())
+    })
 
-    if (changes.showIncompleteError) {
+    effect(() => {
+      this.showIncompleteError()
       this.updateChipGridErrorState()
-    }
+    })
   }
 
   onOptionSelected(event: MatAutocompleteSelectedEvent): void {
@@ -159,7 +161,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
         }
         if (this.selectedField?.type === 'date') {
           this.clearInput()
-          setTimeout(() => this.datePicker?.open())
+          setTimeout(() => this.datePicker()?.open())
           return
         }
         this.clearInput()
@@ -177,8 +179,8 @@ export class ObservationFieldFilterComponent implements OnChanges {
     this.updateChipGridErrorState()
 
     setTimeout(() => {
-      this.filterInput?.nativeElement?.focus()
-      this.autoTrigger?.openPanel()
+      this.filterInput()?.nativeElement?.focus()
+      this.autoTrigger()?.openPanel()
     })
   }
 
@@ -195,9 +197,10 @@ export class ObservationFieldFilterComponent implements OnChanges {
       }
       return
     }
-    if (event.key === 'Escape' && this.autoTrigger?.panelOpen) {
+    const autoTrigger = this.autoTrigger()
+    if (event.key === 'Escape' && autoTrigger?.panelOpen) {
       event.stopPropagation()
-      this.autoTrigger.closePanel()
+      autoTrigger.closePanel()
     }
   }
 
@@ -214,7 +217,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
     this.clearInput()
     this.setupFilteredOptions()
     this.updateChipGridErrorState()
-    setTimeout(() => this.autoTrigger?.openPanel())
+    setTimeout(() => this.autoTrigger()?.openPanel())
   }
 
   removeOperatorChip(): void {
@@ -226,7 +229,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
     this.clearInput()
     this.setupFilteredOptions()
     this.updateChipGridErrorState()
-    setTimeout(() => this.autoTrigger?.openPanel())
+    setTimeout(() => this.autoTrigger()?.openPanel())
   }
 
   removeValueChip(): void {
@@ -234,7 +237,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
     this.pendingValueDisplay = null
     this.clearInput()
     this.setupFilteredOptions()
-    setTimeout(() => this.autoTrigger?.openPanel())
+    setTimeout(() => this.autoTrigger()?.openPanel())
   }
 
   onDateSelected(event: MatDatepickerInputEvent<any>): void {
@@ -297,8 +300,9 @@ export class ObservationFieldFilterComponent implements OnChanges {
 
   private clearInput(): void {
     this.inputControl.setValue('', { emitEvent: false })
-    if (this.filterInput) {
-      this.filterInput.nativeElement.value = ''
+    const filterInput = this.filterInput()
+    if (filterInput) {
+      filterInput.nativeElement.value = ''
     }
     if (this.showInvalidNumberError) {
       this.showInvalidNumberError = false
@@ -312,7 +316,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
     if (!input) return null
     if (this.selectedField?.type === 'numberfield') {
       const value = Number(input)
-      return isNaN(value) ? null : value
+      return Number.isNaN(value) ? null : value
     }
     return input
   }
@@ -333,7 +337,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
   }
 
   private updateChipGridErrorState(): void {
-    this.chipGridCondition?.updateErrorState()
+    this.chipGridCondition()?.updateErrorState()
   }
 
   private setupFilteredOptions(): void {
@@ -353,7 +357,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
 
   private getFilteredFieldGroups(query: string): FormGroup[] {
     const q = (query || '').toLowerCase()
-    return this.allFieldGroups
+    return this.allFieldGroups()
       .map(group => ({
         formName: group.formName,
         formColor: group.formColor,
@@ -452,7 +456,7 @@ export class ObservationFieldFilterComponent implements OnChanges {
   }
 
   private filterConditionFromSimple(simple: any): FilterCondition | null {
-    const fieldOption = this.allFieldGroups
+    const fieldOption = this.allFieldGroups()
       .flatMap(g => g.fields)
       .find(f => f.formId === simple.formId && f.field.name === simple.field)
     if (!fieldOption) return null

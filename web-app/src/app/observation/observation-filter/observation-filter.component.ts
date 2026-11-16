@@ -31,7 +31,7 @@ import moment from 'moment'
   ]
 })
 export class ObservationFilterDialogComponent implements OnInit {
-  fieldFilter = viewChild(ObservationFieldFilterComponent)
+  private readonly fieldFilter = viewChild(ObservationFieldFilterComponent)
 
   mageEvent: any
   teams: any[]
@@ -40,22 +40,23 @@ export class ObservationFilterDialogComponent implements OnInit {
   intervalChoices = INTERVAL_CHOICES
 
   initialMemberFilter: MemberFilterSelection | null = null
-  memberFilter: MemberFilterSelection | null = null
-  hasAttachments = signal(false)
-  isUserFavorite = signal(false)
-  isFlaggedImportant = signal(false)
-  condition = signal<Condition | undefined>(undefined)
-  showIncompleteConditionError = signal(false)
-  timeZone = signal<'local' | 'gmt'>('local')
-  intervalChoice = signal<FilterChoice>(DEFAULT_OBSERVATION_FILTER.timeInterval.choice!)
+  private memberFilter: MemberFilterSelection | null = null
+  readonly hasAttachments = signal(false)
+  readonly isUserFavorite = signal(false)
+  readonly isFlaggedImportant = signal(false)
+  readonly condition = signal<Condition | undefined>(undefined)
+  readonly showIncompleteConditionError = signal(false)
+  readonly timeZone = signal<'local' | 'gmt'>('local')
+  readonly intervalChoice = signal<FilterChoice>(DEFAULT_OBSERVATION_FILTER.timeInterval.choice!)
+  
   defaultStartDate: Date
   startDate: Date
   defaultEndDate: Date
   endDate: Date
 
   constructor(
-    public dialogRef: MatDialogRef<ObservationFilterDialogComponent>,
-    private filterService: FilterService
+    public readonly dialogRef: MatDialogRef<ObservationFilterDialogComponent>,
+    private readonly filterService: FilterService
   ) { }
 
   ngOnInit() {
@@ -99,7 +100,7 @@ export class ObservationFilterDialogComponent implements OnInit {
     this.timeZone.update(timeZone => timeZone === 'gmt' ? 'local' : 'gmt')
   }
 
-  public compareIntervalChoices = function (option: FilterChoice, value: FilterChoice): boolean {
+  public readonly compareIntervalChoices = function (option: FilterChoice, value: FilterChoice): boolean {
     return option.filter === value.filter
   }
 

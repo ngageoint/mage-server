@@ -8,6 +8,7 @@ import { BinaryCondition } from '../../entities/observation/filter/entities.obse
 
 describe('ObservationFilterDialogComponent', () => {
   let component: ObservationFilterDialogComponent;
+  let componentAny: any;
   let fixture: ComponentFixture<ObservationFilterDialogComponent>;
   let filterService: jasmine.SpyObj<FilterService>;
   let dialogRef: jasmine.SpyObj<MatDialogRef<ObservationFilterDialogComponent>>;
@@ -35,6 +36,7 @@ describe('ObservationFilterDialogComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ObservationFilterDialogComponent);
     component = fixture.componentInstance;
+    componentAny = component;
   });
 
   it('should create', () => {
@@ -51,14 +53,14 @@ describe('ObservationFilterDialogComponent', () => {
 
     it('defaults to no filters and the default interval choice when nothing is saved', () => {
       fixture.detectChanges();
-      expect(component.initialMemberFilter).toBeNull();
-      expect(component.memberFilter).toBeNull();
-      expect(component.hasAttachments()).toBe(false);
-      expect(component.isFlaggedImportant()).toBe(false);
-      expect(component.isUserFavorite()).toBe(false);
-      expect(component.condition()).toBeUndefined();
-      expect(component.intervalChoice()).toEqual(INTERVAL_CHOICES[0]);
-      expect(component.timeZone()).toBe('local');
+      expect(componentAny.initialMemberFilter).toBeNull();
+      expect(componentAny.memberFilter).toBeNull();
+      expect(componentAny.hasAttachments()).toBe(false);
+      expect(componentAny.isFlaggedImportant()).toBe(false);
+      expect(componentAny.isUserFavorite()).toBe(false);
+      expect(componentAny.condition()).toBeUndefined();
+      expect(componentAny.intervalChoice()).toEqual(INTERVAL_CHOICES[0]);
+      expect(componentAny.timeZone()).toBe('local');
     });
 
     it('restores the saved filter state', () => {
@@ -78,14 +80,14 @@ describe('ObservationFilterDialogComponent', () => {
 
       fixture.detectChanges();
 
-      expect(component.initialMemberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
-      expect(component.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
-      expect(component.hasAttachments()).toBeTrue();
-      expect(component.isFlaggedImportant()).toBeTrue();
-      expect(component.isUserFavorite()).toBeTrue();
-      expect(component.condition()).toEqual(condition);
-      expect(component.intervalChoice()).toEqual(savedChoice);
-      expect(component.timeZone()).toBe('gmt');
+      expect(componentAny.initialMemberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect(componentAny.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect(componentAny.hasAttachments()).toBeTrue();
+      expect(componentAny.isFlaggedImportant()).toBeTrue();
+      expect(componentAny.isUserFavorite()).toBeTrue();
+      expect(componentAny.condition()).toEqual(condition);
+      expect(componentAny.intervalChoice()).toEqual(savedChoice);
+      expect(componentAny.timeZone()).toBe('gmt');
       expect(component.defaultStartDate).toEqual(startDate);
       expect(component.defaultEndDate).toEqual(endDate);
     });
@@ -96,12 +98,12 @@ describe('ObservationFilterDialogComponent', () => {
 
     it('sets the member filter when a team or user is selected', () => {
       component.onMemberFilterChanged({ teamIds: ['t1'], userIds: [] });
-      expect(component.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect(componentAny.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
     });
 
     it('clears the member filter when the selection is empty', () => {
       component.onMemberFilterChanged({ teamIds: [], userIds: [] });
-      expect(component.memberFilter).toBeNull();
+      expect(componentAny.memberFilter).toBeNull();
     });
   });
 
@@ -111,13 +113,13 @@ describe('ObservationFilterDialogComponent', () => {
     it('sets the condition', () => {
       const condition: BinaryCondition = { formId: 1, field: 'status', operator: '=', value: 'open' };
       component.onConditionChanged(condition);
-      expect(component.condition()).toEqual(condition);
+      expect(componentAny.condition()).toEqual(condition);
     });
 
     it('clears the condition', () => {
-      component.condition.set({ formId: 1, field: 'status', operator: '=', value: 'open' });
+      componentAny.condition.set({ formId: 1, field: 'status', operator: '=', value: 'open' });
       component.onConditionChanged(undefined);
-      expect(component.condition()).toBeUndefined();
+      expect(componentAny.condition()).toBeUndefined();
     });
   });
 
@@ -125,11 +127,11 @@ describe('ObservationFilterDialogComponent', () => {
     beforeEach(() => fixture.detectChanges());
 
     it('toggles between local and gmt', () => {
-      component.timeZone.set('local');
+      componentAny.timeZone.set('local');
       component.onTimezone();
-      expect(component.timeZone()).toBe('gmt');
+      expect(componentAny.timeZone()).toBe('gmt');
       component.onTimezone();
-      expect(component.timeZone()).toBe('local');
+      expect(componentAny.timeZone()).toBe('local');
     });
   });
 
@@ -146,23 +148,23 @@ describe('ObservationFilterDialogComponent', () => {
     beforeEach(() => fixture.detectChanges());
 
     it('blocks saving and shows an error when the condition builder has a pending, uncommitted condition', () => {
-      spyOn(component, 'fieldFilter').and.returnValue({ hasIncompleteCondition: true } as any);
+      spyOn(componentAny, 'fieldFilter').and.returnValue({ hasIncompleteCondition: true } as any);
 
       component.onFilter();
 
-      expect(component.showIncompleteConditionError()).toBeTrue();
+      expect(componentAny.showIncompleteConditionError()).toBeTrue();
       expect(filterService.setObservationFilter).not.toHaveBeenCalled();
       expect(dialogRef.close).not.toHaveBeenCalled();
     });
 
     it('saves the filter state and closes the dialog', () => {
       const condition: BinaryCondition = { formId: 1, field: 'status', operator: '=', value: 'open' };
-      component.memberFilter = { teamIds: ['t1'], userIds: [] };
-      component.hasAttachments.set(true);
-      component.isFlaggedImportant.set(true);
-      component.isUserFavorite.set(true);
-      component.condition.set(condition);
-      component.intervalChoice.set({ filter: 86400, label: 'Last 24 Hours' });
+      componentAny.memberFilter = { teamIds: ['t1'], userIds: [] };
+      componentAny.hasAttachments.set(true);
+      componentAny.isFlaggedImportant.set(true);
+      componentAny.isUserFavorite.set(true);
+      componentAny.condition.set(condition);
+      componentAny.intervalChoice.set({ filter: 86400, label: 'Last 24 Hours' });
 
       component.onFilter();
 
@@ -179,8 +181,8 @@ describe('ObservationFilterDialogComponent', () => {
     it('includes start/end dates and the local timezone flag for a custom interval', () => {
       const startDate = new Date('2024-02-01T00:00:00Z');
       const endDate = new Date('2024-02-02T00:00:00Z');
-      component.intervalChoice.set({ filter: 'custom', label: 'Custom' });
-      component.timeZone.set('gmt');
+      componentAny.intervalChoice.set({ filter: 'custom', label: 'Custom' });
+      componentAny.timeZone.set('gmt');
       component.onStartDate(startDate);
       component.onEndDate(endDate);
 
@@ -199,6 +201,7 @@ describe('ObservationFilterDialogComponent', () => {
       });
       fixture = TestBed.createComponent(ObservationFilterDialogComponent);
       component = fixture.componentInstance;
+      componentAny = component;
       fixture.detectChanges();
 
       component.onFilter();

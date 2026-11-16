@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { SimpleChange } from '@angular/core';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ObservationFieldFilterComponent } from './observation-field-filter.component';
@@ -36,7 +35,7 @@ const forms: any[] = [
 ];
 
 function fieldOption(component: ObservationFieldFilterComponent, formId: number, fieldName: string) {
-  return (component as any).allFieldGroups
+  return (component as any).allFieldGroups()
     .flatMap((g: any) => g.fields)
     .find((f: any) => f.formId === formId && f.field.name === fieldName);
 }
@@ -69,19 +68,19 @@ describe('ObservationFieldFilterComponent', () => {
   });
 
   function setForms(): void {
-    component.forms = forms;
-    component.ngOnChanges({ forms: new SimpleChange(null, forms, true) });
+    fixture.componentRef.setInput('forms', forms);
+    fixture.detectChanges();
   }
 
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('ngOnChanges - forms', () => {
+  describe('forms input', () => {
     it('builds field groups excluding archived forms, archived fields, and excluded field types', () => {
       setForms();
 
-      const groups = (component as any).allFieldGroups;
+      const groups = (component as any).allFieldGroups();
       expect(groups.length).toBe(1);
       expect(groups[0].formName).toBe('Form A');
 
@@ -94,20 +93,21 @@ describe('ObservationFieldFilterComponent', () => {
       selectField(component, 1, 'severity');
       expect(component.conditionState).toBe('comparator');
 
-      setForms();
+      fixture.componentRef.setInput('forms', [...forms]);
+      fixture.detectChanges();
 
       expect(component.conditionState).toBe('field');
       expect(component.conditionGroups).toEqual([]);
     });
   });
 
-  describe('ngOnChanges - condition', () => {
+  describe('condition input', () => {
     it('populates a single simple condition', () => {
       setForms();
       const condition: SimpleCondition = { formId: 1, field: 'severity', operator: '=', value: 'high' };
 
-      component.condition = condition;
-      component.ngOnChanges({ condition: new SimpleChange(null, condition, true) });
+      fixture.componentRef.setInput('condition', condition);
+      fixture.detectChanges();
 
       expect(component.conditionGroups.length).toBe(1);
       expect(component.conditionGroups[0].conditions.length).toBe(1);
@@ -123,8 +123,8 @@ describe('ObservationFieldFilterComponent', () => {
         ]
       };
 
-      component.condition = condition;
-      component.ngOnChanges({ condition: new SimpleChange(null, condition, true) });
+      fixture.componentRef.setInput('condition', condition);
+      fixture.detectChanges();
 
       expect(component.conditionGroups.length).toBe(1);
       expect(component.conditionGroups[0].conditions.length).toBe(2);
@@ -139,8 +139,8 @@ describe('ObservationFieldFilterComponent', () => {
         ]
       };
 
-      component.condition = condition;
-      component.ngOnChanges({ condition: new SimpleChange(null, condition, true) });
+      fixture.componentRef.setInput('condition', condition);
+      fixture.detectChanges();
 
       expect(component.conditionGroups.length).toBe(2);
       expect(component.conditionGroups[0].conditions.length).toBe(1);
@@ -151,16 +151,16 @@ describe('ObservationFieldFilterComponent', () => {
       setForms();
       const condition: SimpleCondition = { formId: 1, field: 'doesNotExist', operator: '=', value: 'x' };
 
-      component.condition = condition;
-      component.ngOnChanges({ condition: new SimpleChange(null, condition, true) });
+      fixture.componentRef.setInput('condition', condition);
+      fixture.detectChanges();
 
       expect(component.conditionGroups).toEqual([{ conditions: [] }]);
     });
 
     it('does nothing when the condition is null', () => {
       setForms();
-      component.condition = null;
-      component.ngOnChanges({ condition: new SimpleChange(null, null, true) });
+      fixture.componentRef.setInput('condition', null);
+      fixture.detectChanges();
 
       expect(component.conditionGroups).toEqual([]);
     });
