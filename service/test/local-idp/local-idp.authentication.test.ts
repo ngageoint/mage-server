@@ -432,4 +432,102 @@ describe.only('local idp authentication', function() {
       })
     })
   })
+
+  describe('input account', function() {
+
+    const password = 'just for testing'
+    const now = Date.parse('2026-01-01T00:00:00Z')
+    const enabledLock: AccountLockPolicy = Object.freeze({ ...policy.accountLock, enabled: true })
+    const disabledLock = policy.accountLock
+    const threshold = enabledLock.lockAfterInvalidLoginCount
+    let clock: sinon.SinonFakeTimers
+    let seed: LocalIdpAccountSeed
+
+    before(async function() {
+      const accountSeed = await prepareNewAccount('tester', password, laxPasswords)
+      assert(accountSeed instanceof LocalIdpAccountSeed, 'expected instance of LocalIdpAccountSeed')
+      seed = accountSeed
+    })
+
+    beforeEach(function() {
+      clock = sinon.useFakeTimers({ now, toFake: [ 'Date' ] })
+    })
+
+    afterEach(function() {
+      clock.restore()
+    })
+
+    /**
+     * Recursively freeze the given object, so any attempt to modify it throws a `TypeError` in strict mode.  Freezing
+     * does not protect a `Date`'s internal time value, so tests also compare the account to a snapshot.
+     */
+    function deepFreeze<T>(x: T): T {
+      if (x && typeof x === 'object' && !Object.isFrozen(x)) {
+        Object.freeze(x)
+        for (const value of Object.values(x)) {
+          deepFreeze(value)
+        }
+      }
+      return x
+    }
+
+    function accountWithSecurity(security: LocalIdpAccount['security']): LocalIdpAccount {
+      return {
+        id: 'account1',
+        username: seed.username,
+        hashedPassword: seed.hashedPassword,
+        previousHashedPasswords: [ ...seed.previousHashedPasswords ],
+        createdAt: new Date(seed.createdAt),
+        lastUpdated: new Date(seed.lastUpdated),
+        security: { ...security, lockedUntil: security.lockedUntil && new Date(security.lockedUntil) },
+      }
+    }
+
+    function snapshotOf(account: LocalIdpAccount): LocalIdpAccount {
+      return accountWithSecurity(account.security)
+    }
+
+    const unlocked = { locked: false, lockedUntil: null, invalidLoginAttempts: 0, numberOfTimesLocked: 0 }
+    const scenarios: { name: string, security: LocalIdpAccount['security'], lockPolicy: AccountLockPolicy }[] = [
+      { name: 'unlocked', security: unlocked, lockPolicy: enabledLock },
+      {
+        name: 'one attempt below the lock threshold',
+        security: { ...unlocked, invalidLoginAttempts: threshold - 1 },
+        lockPolicy: enabledLock
+      },
+      {
+        name: 'locked until a future time',
+        security: { locked: true, lockedUntil: new Date(now + 60_000), invalidLoginAttempts: threshold, numberOfTimesLocked: 1 },
+        lockPolicy: enabledLock
+      },
+      {
+        name: 'locked until a past time',
+        security: { locked: true, lockedUntil: new Date(now - 60_000), invalidLoginAttempts: threshold, numberOfTimesLocked: 1 },
+        lockPolicy: enabledLock
+      },
+      {
+        name: 'locked indefinitely',
+        security: { locked: true, lockedUntil: null, invalidLoginAttempts: threshold, numberOfTimesLocked: enabledLock.disableAfterLockCount },
+        lockPolicy: enabledLock
+      },
+      {
+        name: 'locked while the policy is disabled',
+        security: { locked: true, lockedUntil: new Date(now + 60_000), invalidLoginAttempts: threshold, numberOfTimesLocked: 1 },
+        lockPolicy: disabledLock
+      },
+    ]
+
+    for (const scenario of scenarios) {
+      for (const [ passwordDescription, attemptedPassword ] of [ [ 'correct', password ], [ 'mismatched', 'wrong' ] ]) {
+
+        it(`is not modified when ${scenario.name} with a ${passwordDescription} password`, async function() {
+
+          const account = deepFreeze(accountWithSecurity(scenario.security))
+          const snapshot = snapshotOf(account)
+          await attemptAuthentication(account, attemptedPassword, scenario.lockPolicy)
+          expect(account).to.deep.equal(snapshot)
+        })
+      }
+    }
+  })
 })
