@@ -53,6 +53,26 @@ describe.only('local idp authentication', function() {
 
     describe('disabled', function() {
 
+      it('does not track failed authentication attempts or lock the account', async function() {
+
+        const password = 'just for testing'
+        const accountSeed = await prepareNewAccount('tester', password, laxPasswords)
+        assert(accountSeed instanceof LocalIdpAccountSeed, 'expected instance of LocalIdpAccountSeed')
+        const account: LocalIdpAccount = { id: 'account1', ...accountSeed }
+        expect(policy.accountLock.enabled).to.be.false
+
+        let current = account
+        for (let attempt = 1; attempt <= policy.accountLock.lockAfterInvalidLoginCount * 2; attempt++) {
+          const result = await attemptAuthentication(current, 'wrong', policy.accountLock)
+          assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+          expect(result.failed.account).to.deep.equal(account)
+          current = result.failed.account
+        }
+
+        const result = await attemptAuthentication(current, password, policy.accountLock)
+        assert(result.authenticated, 'expected authentication to succeed')
+        expect(result.authenticated).to.deep.equal(account)
+      })
     })
 
     describe('enabled', function() {
