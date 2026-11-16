@@ -1,6 +1,7 @@
 import {
   attemptAuthentication, LocalIdpAccount, LocalIdpAuthenticationResult, LocalIdpCredentials,
-  LocalIdpErrorCode, LocalIdpRepository, prepareNewAccount
+  LocalIdpErrorCode, LocalIdpInvalidAccountLockPolicyError, LocalIdpRepository, LocalIdpSecurityPolicy, prepareNewAccount,
+  validateAccountLockPolicy
 } from './local-idp.entities'
 import { LocalIdpError, MageLocalIdentityProviderService } from './local-idp.services.api'
 
@@ -52,9 +53,17 @@ export function createLocalIdentityProviderService(repo: LocalIdpRepository): Ma
     return null
   }
 
+  async function saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy | LocalIdpInvalidAccountLockPolicyError> {
+    const accountLock = validateAccountLockPolicy(policy.accountLock)
+    if (accountLock instanceof Error) {
+      return accountLock
+    }
+    return await repo.saveSecurityPolicy({ ...policy, accountLock })
+  }
+
   return {
     readSecurityPolicy: () => repo.readSecurityPolicy(),
-    saveSecurityPolicy: policy => repo.saveSecurityPolicy(policy),
+    saveSecurityPolicy,
     createAccount,
     deleteAccount,
     authenticate,

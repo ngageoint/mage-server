@@ -6,6 +6,7 @@ import {
   LocalIdpAccount,
   LocalIdpRepository,
   LocalIdpSecurityPolicy,
+  ValidLocalIdpSecurityPolicy,
   duplicateUsernameError, defaultLocalIdpSecurityPolicy, LocalIdpAccountSeed
 } from './local-idp.entities'
 import { MongoServerError } from 'mongodb';
@@ -60,7 +61,7 @@ function policyEntityForDoc(doc: LocalIdpSecurityPolicyDocument): LocalIdpSecuri
   }
 }
 
-function policyDocForEntity(entity: LocalIdpSecurityPolicy): LocalIdpSecurityPolicyDocument {
+function policyDocForEntity(entity: ValidLocalIdpSecurityPolicy): LocalIdpSecurityPolicyDocument {
   const lock = entity.accountLock
   const pwr = entity.passwordRequirements
   return {
@@ -148,7 +149,7 @@ export class MongooseLocalIdpRepository implements LocalIdpRepository {
     this.#accountModel = accountModel
   }
 
-  async saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy> {
+  async saveSecurityPolicy(policy: ValidLocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy> {
     const policyDoc = policyDocForEntity(policy)
     const policyHydoc = new this.#policyModel(policyDoc)
     await policyHydoc.save()

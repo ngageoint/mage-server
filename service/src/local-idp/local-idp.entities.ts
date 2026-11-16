@@ -55,22 +55,85 @@ export type LocalIdpSecurityPolicy = {
   accountLock: AccountLockPolicy
 }
 
-export const defaultLocalIdpSecurityPolicy = Object.freeze({
-  accountLock: Object.freeze({
+/**
+ * A security policy whose account lock policy passed {@link validateAccountLockPolicy() validation}
+ */
+export type ValidLocalIdpSecurityPolicy = LocalIdpSecurityPolicy & {
+  accountLock: ValidAccountLockPolicy
+}
+
+const ValidAccountLockPolicyConstructorToken = Symbol()
+
+/**
+ * An immutable account lock policy that is always valid.  Only {@link validateAccountLockPolicy()} can create
+ * instances.
+ */
+export class ValidAccountLockPolicy implements Readonly<AccountLockPolicy> {
+
+  readonly enabled: boolean
+  readonly lockAfterInvalidLoginCount: number
+  readonly lockDurationSeconds: number
+  readonly disableAfterLockCount: number
+
+  constructor(token: unknown, policy: AccountLockPolicy) {
+    assert(token === ValidAccountLockPolicyConstructorToken, 'illegal private constructor call')
+    this.enabled = policy.enabled
+    this.lockAfterInvalidLoginCount = policy.lockAfterInvalidLoginCount
+    this.lockDurationSeconds = policy.lockDurationSeconds
+    this.disableAfterLockCount = policy.disableAfterLockCount
+    Object.freeze(this)
+  }
+}
+
+/**
+ * Return a {@link ValidAccountLockPolicy} with the given policy's values if all its numeric values are positive integers
+ * and `enabled` is a boolean, or an error that lists the invalid keys.  Validate regardless of `enabled`, so enabling a
+ * saved policy cannot activate invalid values.  Return the given policy if it is already a `ValidAccountLockPolicy`.
+ */
+export function validateAccountLockPolicy(policy: AccountLockPolicy): ValidAccountLockPolicy | LocalIdpInvalidAccountLockPolicyError {
+  if (policy instanceof ValidAccountLockPolicy) {
+    return policy
+  }
+  const invalidKeys: (keyof AccountLockPolicy)[] = []
+  if (typeof policy.enabled !== 'boolean') {
+    invalidKeys.push('enabled')
+  }
+  const positiveIntegerKeys = [ 'lockAfterInvalidLoginCount', 'lockDurationSeconds', 'disableAfterLockCount' ] as const
+  for (const key of positiveIntegerKeys) {
+    const value = policy[key]
+    if (!Number.isSafeInteger(value) || value < 1) {
+      invalidKeys.push(key)
+    }
+  }
+  return invalidKeys.length ?
+    invalidAccountLockPolicyError(invalidKeys) :
+    new ValidAccountLockPolicy(ValidAccountLockPolicyConstructorToken, policy)
+}
+
+function validDefaultAccountLockPolicy(): ValidAccountLockPolicy {
+  const policy = validateAccountLockPolicy({
     enabled: false,
     lockAfterInvalidLoginCount: 5,
     lockDurationSeconds: 120,
     disableAfterLockCount: 3,
-  }),
+  })
+  if (policy instanceof Error) {
+    throw policy
+  }
+  return policy
+}
+
+export const defaultLocalIdpSecurityPolicy = Object.freeze({
+  accountLock: validDefaultAccountLockPolicy(),
   passwordRequirements: Object.freeze({
     minChars: 14,
     minCharsEnabled: true,
   })
-} satisfies LocalIdpSecurityPolicy)
+} satisfies ValidLocalIdpSecurityPolicy)
 
 export interface LocalIdpRepository {
   readSecurityPolicy(): Promise<LocalIdpSecurityPolicy>
-  saveSecurityPolicy(policy: LocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
+  saveSecurityPolicy(policy: ValidLocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
   createLocalAccount(account: LocalIdpAccountSeed): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError>
   readLocalAccount(username: string): Promise<LocalIdpAccount | null>
   /**
@@ -210,6 +273,10 @@ export const LocalIdpErrorCode = Object.freeze({
    */
   InvalidPassword: 'LocalIdpError.InvalidPassword',
   /**
+   * The account lock policy contained invalid values.
+   */
+  InvalidAccountLockPolicy: 'LocalIdpError.InvalidAccountLockPolicy',
+  /**
    * The incoming username/password pair did not match the stored pair.
    */
   PasswordMismatch: 'LocalIdpError.PasswordMismatch',
@@ -233,6 +300,13 @@ export type LocalIdpInvalidPasswordError = Error & {
   code: typeof LocalIdpErrorCode.InvalidPassword
   username: string
   passwordRequirements: PasswordRequirements
+}
+export type LocalIdpInvalidAccountLockPolicyError = Error & {
+  code: typeof LocalIdpErrorCode.InvalidAccountLockPolicy
+  /**
+   * The keys of the policy whose values are invalid, in the order of {@link AccountLockPolicy}'s keys
+   */
+  invalidKeys: (keyof AccountLockPolicy)[]
 }
 export type LocalIdpPasswordMismatchError = Error & {
   code: typeof LocalIdpErrorCode.PasswordMismatch
@@ -263,6 +337,11 @@ function passwordMismatchError(account: LocalIdpAccount): LocalIdpPasswordMismat
 function accountLockedError(account: LocalIdpAccount): LocalIdpAccountLockedError {
   const message = `account for user ${account.username} is locked${account.security.lockedUntil ? ' until ' + account.security.lockedUntil.toUTCString() : ''}`
   return errorWithData({ code: LocalIdpErrorCode.AccountLocked, account }, message)
+}
+
+function invalidAccountLockPolicyError(invalidKeys: (keyof AccountLockPolicy)[]): LocalIdpInvalidAccountLockPolicyError {
+  const message = `invalid account lock policy: ${invalidKeys.map(key => `${key} must be ${key === 'enabled' ? 'a boolean' : 'a positive integer'}`).join(', ')}`
+  return errorWithData({ code: LocalIdpErrorCode.InvalidAccountLockPolicy, invalidKeys }, message)
 }
 
 export function duplicateUsernameError(username: string): LocalIdpDuplicateUsernameError {

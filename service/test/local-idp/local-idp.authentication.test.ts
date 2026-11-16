@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import assert from 'node:assert'
 import sinon from 'sinon'
-import { AccountLockPolicy, attemptAuthentication, LocalIdpAccount } from '../../lib/local-idp/local-idp.entities'
+import { AccountLockPolicy, attemptAuthentication, LocalIdpAccount, validateAccountLockPolicy, ValidAccountLockPolicy } from '../../lib/local-idp/local-idp.entities'
 import { LocalIdpErrorCode } from '../../lib/local-idp/local-idp.entities'
 import { LocalIdpAccountSeed, prepareNewAccount } from '../../lib/local-idp/local-idp.entities'
 import { defaultLocalIdpSecurityPolicy } from '../../lib/local-idp/local-idp.entities'
@@ -46,8 +46,97 @@ describe.only('local idp authentication', function() {
 
     describe('validation', function() {
 
-      it('accepts only positive integers for account lock policy', function() {
-        expect.fail('todo')
+      const positiveIntegerKeys = [ 'lockAfterInvalidLoginCount', 'lockDurationSeconds', 'disableAfterLockCount' ] as const
+
+      it('accepts positive integers for account lock policy', function() {
+
+        for (const enabled of [ true, false ]) {
+          const valid: AccountLockPolicy = { enabled, lockAfterInvalidLoginCount: 1, lockDurationSeconds: 1, disableAfterLockCount: Number.MAX_SAFE_INTEGER }
+          const result = validateAccountLockPolicy(valid)
+          assert(result instanceof ValidAccountLockPolicy, 'expected instance of ValidAccountLockPolicy')
+          expect({ ...result }).to.deep.equal(valid)
+        }
+      })
+
+      it('copies the values of the given policy into an immutable valid policy', function() {
+
+        const input: AccountLockPolicy = { enabled: true, lockAfterInvalidLoginCount: 2, lockDurationSeconds: 30, disableAfterLockCount: 4 }
+        const result = validateAccountLockPolicy(input)
+        assert(result instanceof ValidAccountLockPolicy, 'expected instance of ValidAccountLockPolicy')
+        expect(result).to.not.equal(input)
+        expect(Object.isFrozen(result)).to.be.true
+
+        input.lockDurationSeconds = -1
+        expect(result.lockDurationSeconds).to.equal(30)
+        expect(() => (result as AccountLockPolicy).lockDurationSeconds = -1).to.throw(TypeError)
+      })
+
+      it('returns the given policy if it is already valid', function() {
+
+        const valid = validateAccountLockPolicy({ ...accountLock })
+        assert(valid instanceof ValidAccountLockPolicy, 'expected instance of ValidAccountLockPolicy')
+        expect(validateAccountLockPolicy(valid)).to.equal(valid)
+      })
+
+      it('provides a valid default policy', function() {
+
+        expect(defaultLocalIdpSecurityPolicy.accountLock).to.be.instanceOf(ValidAccountLockPolicy)
+      })
+
+      it('prevents constructing a valid policy outside of validation', function() {
+
+        expect(() => new ValidAccountLockPolicy(Symbol(), { ...accountLock, lockDurationSeconds: -1 })).to.throw('illegal private constructor call')
+      })
+
+      const invalidValues: [ string, unknown ][] = [
+        [ 'zero', 0 ],
+        [ 'a negative integer', -1 ],
+        [ 'a fraction', 1.5 ],
+        [ 'NaN', NaN ],
+        [ 'Infinity', Infinity ],
+        [ 'an unsafe integer', Number.MAX_SAFE_INTEGER + 1 ],
+        [ 'a numeric string', '5' ],
+        [ 'null', null ],
+        [ 'undefined', undefined ],
+      ]
+
+      for (const key of positiveIntegerKeys) {
+        for (const [ valueDescription, value ] of invalidValues) {
+          for (const enabled of [ true, false ]) {
+
+            it(`rejects ${valueDescription} for ${key} when ${enabled ? 'enabled' : 'disabled'}`, function() {
+
+              const invalid = { ...accountLock, enabled, [key]: value } as AccountLockPolicy
+              const result = validateAccountLockPolicy(invalid)
+              assert(result instanceof Error, 'expected an error')
+              assert(result.code === LocalIdpErrorCode.InvalidAccountLockPolicy)
+              expect(result.invalidKeys).to.deep.equal([ key ])
+              expect(result.message).to.equal(`invalid account lock policy: ${key} must be a positive integer`)
+            })
+          }
+        }
+      }
+
+      it('rejects a non-boolean enabled value', function() {
+
+        for (const enabled of [ 'true', 1, null, undefined ]) {
+          const invalid = { ...accountLock, enabled } as unknown as AccountLockPolicy
+          const result = validateAccountLockPolicy(invalid)
+          assert(result instanceof Error, `expected an error for enabled ${String(enabled)}`)
+          expect(result.invalidKeys).to.deep.equal([ 'enabled' ])
+          expect(result.message).to.equal('invalid account lock policy: enabled must be a boolean')
+        }
+      })
+
+      it('reports all invalid keys', function() {
+
+        const invalid = { enabled: 'yes', lockAfterInvalidLoginCount: 0, lockDurationSeconds: -60, disableAfterLockCount: 2.5 } as unknown as AccountLockPolicy
+        const result = validateAccountLockPolicy(invalid)
+        assert(result instanceof Error, 'expected an error')
+        expect(result.invalidKeys).to.deep.equal([ 'enabled', ...positiveIntegerKeys ])
+        expect(result.message).to.equal(
+          'invalid account lock policy: enabled must be a boolean, lockAfterInvalidLoginCount must be a positive integer, ' +
+          'lockDurationSeconds must be a positive integer, disableAfterLockCount must be a positive integer')
       })
     })
 
