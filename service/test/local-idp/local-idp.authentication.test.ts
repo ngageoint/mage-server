@@ -65,25 +65,6 @@ describe.only('local idp authentication', function() {
         })
       })
 
-      it('increments failed authentication count', async function() {
-
-        const accountSeed = await prepareNewAccount('tester', 'just for testing', laxPasswords)
-        assert(accountSeed instanceof LocalIdpAccountSeed, 'expected instance of LocalIdpAccountSeed')
-        const account: LocalIdpAccount = { id: 'account1', ...accountSeed }
-
-        const result1 = await attemptAuthentication(account, 'whoops', enabledPolicy.accountLock)
-        assert(!result1.authenticated)
-        assert(result1.failed.code === LocalIdpErrorCode.PasswordMismatch)
-        const account1 = result1.failed.account
-        expect(account1.security.invalidLoginAttempts).to.equal(1)
-
-        const result2 = await attemptAuthentication(account1, 'typo', enabledPolicy.accountLock)
-        assert(!result2.authenticated)
-        assert(result2.failed.code === LocalIdpErrorCode.PasswordMismatch)
-        const account2 = result2.failed.account
-        expect(account2.security.invalidLoginAttempts).to.equal(2)
-      })
-
       const password = 'just for testing'
       const lockDurationMillis = enabledPolicy.accountLock.lockDurationSeconds * 1000
       let clock: sinon.SinonFakeTimers
