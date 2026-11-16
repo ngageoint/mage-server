@@ -160,10 +160,15 @@ export type LocalIdpAuthenticationResult = { authenticated: LocalIdpAccount, fai
 /**
  * Check whether the given password matches the given account's password.  If the password does not match, or the
  * account is locked, return an error whose account object reflects the given account lock policy.  If the password
- * matches, return the given account with {@link unlockAndResetSecurityStatus() good security status}.
+ * matches, return the given account with {@link unlockAndResetSecurityStatus() good security status}.  When the policy
+ * is disabled, reset the account's security status on any authentication attempt, successful or not, to clear any
+ * lock that the policy applied while it was enabled.
  */
 export async function attemptAuthentication(account: LocalIdpAccount, password: string, policy: AccountLockPolicy): Promise<LocalIdpAuthenticationResult> {
-  if (account.security.locked) {
+  if (!policy.enabled) {
+    account = unlockAndResetSecurityStatusOfAccount(account)
+  }
+  else if (account.security.locked) {
     if (account.security.lockedUntil === null || account.security.lockedUntil.getTime() > Date.now()) {
       return { authenticated: false, failed: accountLockedError(account) }
     }

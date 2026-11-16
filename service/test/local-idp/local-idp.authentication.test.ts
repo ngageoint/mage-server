@@ -73,6 +73,59 @@ describe.only('local idp authentication', function() {
         assert(result.authenticated, 'expected authentication to succeed')
         expect(result.authenticated).to.deep.equal(account)
       })
+
+      describe('with an account locked while the policy was enabled', function() {
+
+        const password = 'just for testing'
+        const unlockedStatus = Object.freeze({
+          locked: false,
+          lockedUntil: null,
+          invalidLoginAttempts: 0,
+          numberOfTimesLocked: 0,
+        })
+        const lockStatuses = {
+          'until a future time': {
+            locked: true,
+            lockedUntil: new Date(Date.now() + 60 * 60 * 1000),
+            invalidLoginAttempts: policy.accountLock.lockAfterInvalidLoginCount,
+            numberOfTimesLocked: 1,
+          },
+          'indefinitely': {
+            locked: true,
+            lockedUntil: null,
+            invalidLoginAttempts: policy.accountLock.lockAfterInvalidLoginCount,
+            numberOfTimesLocked: policy.accountLock.disableAfterLockCount,
+          },
+        }
+
+        async function lockedAccount(security: LocalIdpAccount['security']): Promise<LocalIdpAccount> {
+          const accountSeed = await prepareNewAccount('tester', password, laxPasswords)
+          assert(accountSeed instanceof LocalIdpAccountSeed, 'expected instance of LocalIdpAccountSeed')
+          return { id: 'account1', ...accountSeed, security: { ...security } }
+        }
+
+        for (const [ lockDescription, lockStatus ] of Object.entries(lockStatuses)) {
+
+          describe(`locked ${lockDescription}`, function() {
+
+            it('authenticates and resets the account security status', async function() {
+
+              const account = await lockedAccount(lockStatus)
+              const result = await attemptAuthentication(account, password, policy.accountLock)
+              assert(result.authenticated, 'expected authentication to succeed')
+              expect(result.authenticated).to.deep.equal({ ...account, security: unlockedStatus })
+            })
+
+            it('fails a mismatched password and resets the account security status', async function() {
+
+              const account = await lockedAccount(lockStatus)
+              const result = await attemptAuthentication(account, 'wrong', policy.accountLock)
+              assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+              expect(result.failed.account).to.deep.equal({ ...account, security: unlockedStatus })
+            })
+          })
+        }
+      })
     })
 
     describe('enabled', function() {
