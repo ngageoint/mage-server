@@ -1,7 +1,7 @@
 import { expect } from 'chai'
 import assert from 'node:assert'
 import sinon from 'sinon'
-import { LocalIdpErrorCode, LocalIdpRepository, LocalIdpSecurityPolicy, ValidAccountLockPolicy } from '../../lib/local-idp/local-idp.entities'
+import { defaultLocalIdpSecurityPolicy, LocalIdpErrorCode, LocalIdpRepository, LocalIdpSecurityPolicy, ValidAccountLockPolicy } from '../../lib/local-idp/local-idp.entities'
 import { createLocalIdentityProviderService } from '../../lib/local-idp/local-idp.services.impl'
 
 describe('local idp service', function() {
@@ -29,6 +29,15 @@ describe('local idp service', function() {
         updateLocalAccount: sinon.stub(),
         deleteLocalAccount: sinon.stub(),
       }
+    })
+
+    it('reads the default policy without saving it when no policy exists', async function() {
+
+      repo.readSecurityPolicy.resolves(null)
+      const service = createLocalIdentityProviderService(repo)
+      const read = await service.readSecurityPolicy()
+      expect(read).to.equal(defaultLocalIdpSecurityPolicy)
+      expect(repo.saveSecurityPolicy.called).to.be.false
     })
 
     it('saves a valid policy', async function() {

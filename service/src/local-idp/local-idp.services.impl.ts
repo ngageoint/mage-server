@@ -1,5 +1,5 @@
 import {
-  attemptAuthentication, LocalIdpAccount, LocalIdpAuthenticationResult, LocalIdpCredentials,
+  attemptAuthentication, defaultLocalIdpSecurityPolicy, LocalIdpAccount, LocalIdpAuthenticationResult, LocalIdpCredentials,
   LocalIdpErrorCode, LocalIdpInvalidAccountLockPolicyError, LocalIdpRepository, LocalIdpSecurityPolicy, prepareNewAccount,
   validateAccountLockPolicy
 } from './local-idp.entities'
@@ -11,8 +11,15 @@ pretty small unit.
  */
 export function createLocalIdentityProviderService(repo: LocalIdpRepository): MageLocalIdentityProviderService {
 
+  /**
+   * Return the default policy without saving it if no policy exists.
+   */
+  async function readSecurityPolicy(): Promise<LocalIdpSecurityPolicy> {
+    return await repo.readSecurityPolicy() || defaultLocalIdpSecurityPolicy
+  }
+
   async function createAccount(credentials: LocalIdpCredentials): Promise<LocalIdpAccount | LocalIdpError> {
-    const securityPolicy = await repo.readSecurityPolicy()
+    const securityPolicy = await readSecurityPolicy()
     const { username, password } = credentials
     const candidateAccount = await prepareNewAccount(username, password, securityPolicy.passwordRequirements)
     if (candidateAccount instanceof Error) {
@@ -38,7 +45,7 @@ export function createLocalIdentityProviderService(repo: LocalIdpRepository): Ma
       console.info('local account does not exist:', username)
       return null
     }
-    const securityPolicy = await repo.readSecurityPolicy()
+    const securityPolicy = await readSecurityPolicy()
     const attempt = await attemptAuthentication(account, password, securityPolicy.accountLock)
     if (attempt.failed) {
       console.info('local authentication failed', attempt.failed)
@@ -62,7 +69,7 @@ export function createLocalIdentityProviderService(repo: LocalIdpRepository): Ma
   }
 
   return {
-    readSecurityPolicy: () => repo.readSecurityPolicy(),
+    readSecurityPolicy,
     saveSecurityPolicy,
     createAccount,
     deleteAccount,

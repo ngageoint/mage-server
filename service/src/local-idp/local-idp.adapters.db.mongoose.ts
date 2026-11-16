@@ -7,7 +7,7 @@ import {
   LocalIdpRepository,
   LocalIdpSecurityPolicy,
   ValidLocalIdpSecurityPolicy,
-  duplicateUsernameError, defaultLocalIdpSecurityPolicy, LocalIdpAccountSeed
+  duplicateUsernameError, LocalIdpAccountSeed
 } from './local-idp.entities'
 import { MongoServerError } from 'mongodb';
 
@@ -61,6 +61,13 @@ function policyEntityForDoc(doc: LocalIdpSecurityPolicyDocument): LocalIdpSecuri
   }
 }
 
+/**
+ * Return a shallow copy of the given object without the entries whose values are `undefined`.
+ */
+function omitUndefinedEntries<T extends object>(x: T): T {
+  return Object.fromEntries(Object.entries(x).filter(([ , value ]) => value !== undefined)) as T
+}
+
 function policyDocForEntity(entity: ValidLocalIdpSecurityPolicy): LocalIdpSecurityPolicyDocument {
   const lock = entity.accountLock
   const pwr = entity.passwordRequirements
@@ -72,7 +79,7 @@ function policyDocForEntity(entity: ValidLocalIdpSecurityPolicy): LocalIdpSecuri
       lockAfterInvalidLoginCount: lock.lockAfterInvalidLoginCount,
       lockDurationSeconds: lock.lockDurationSeconds,
     },
-    passwordRequirements: {
+    passwordRequirements: omitUndefinedEntries({
       highLetters: pwr.highLetters,
       highLettersEnabled: pwr.highLettersEnabled,
       lowLetters: pwr.lowLetters,
@@ -92,7 +99,7 @@ function policyDocForEntity(entity: ValidLocalIdpSecurityPolicy): LocalIdpSecuri
       specialChars: pwr.specialChars,
       specialCharsEnabled: pwr.specialCharsEnabled,
       helpText: pwr.helpText,
-    }
+    })
   }
 }
 
@@ -128,7 +135,7 @@ function accountDocForEntity(entity: Partial<LocalIdpAccount>): Partial<LocalIdp
     doc.password = entity.hashedPassword
   }
   if (hasKey('previousHashedPasswords') && entity.previousHashedPasswords) {
-    doc.previousPasswords = entity.previousHashedPasswords
+    doc.previousPasswords = entity.previousHashedPasswords.slice()
   }
   if (hasKey('security') && entity.security) {
     doc.security = { ...entity.security }
@@ -151,17 +158,19 @@ export class MongooseLocalIdpRepository implements LocalIdpRepository {
 
   async saveSecurityPolicy(policy: ValidLocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy> {
     const policyDoc = policyDocForEntity(policy)
-    const policyHydoc = new this.#policyModel(policyDoc)
-    await policyHydoc.save()
-    return policyEntityForDoc(policyHydoc)
+    const saved = await this.#policyModel.findOneAndReplace({ _id: 1 }, policyDoc, { upsert: true, new: true, lean: true })
+    if (!saved) {
+      throw new Error('security policy upsert did not return a document')
+    }
+    return policyEntityForDoc(saved)
   }
 
-  async readSecurityPolicy(): Promise<LocalIdpSecurityPolicy> {
-    const policyDoc = await this.#policyModel.findOne({ _id: 1 })
-    if (policyDoc) {
-      return policyEntityForDoc(policyDoc)
-    }
-    return await this.saveSecurityPolicy(defaultLocalIdpSecurityPolicy)
+  /**
+   * Return `null` if no policy exists.
+   */
+  async readSecurityPolicy(): Promise<LocalIdpSecurityPolicy | null> {
+    const policyDoc = await this.#policyModel.findOne({ _id: 1 }, null, { lean: true })
+    return policyDoc ? policyEntityForDoc(policyDoc) : null
   }
 
   async createLocalAccount(account: LocalIdpAccountSeed): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError> {
@@ -190,8 +199,10 @@ export class MongooseLocalIdpRepository implements LocalIdpRepository {
     return null
   }
 
-  async updateLocalAccount(update: Partial<LocalIdpAccount> & Pick<LocalIdpAccount, 'username'>): Promise<LocalIdpAccount | null> {
-    throw new Error('Method not implemented.')
+  async updateLocalAccount(account: LocalIdpAccount): Promise<LocalIdpAccount | null> {
+    const doc = accountDocForEntity(account)
+    const updated = await this.#accountModel.findOneAndReplace({ _id: doc._id }, doc, { new: true, lean: true })
+    return updated ? accountEntityForDoc(updated) : null
   }
 
   async deleteLocalAccount(username: string): Promise<LocalIdpAccount | null> {

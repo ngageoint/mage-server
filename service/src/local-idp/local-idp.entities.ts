@@ -132,7 +132,10 @@ export const defaultLocalIdpSecurityPolicy = Object.freeze({
 } satisfies ValidLocalIdpSecurityPolicy)
 
 export interface LocalIdpRepository {
-  readSecurityPolicy(): Promise<LocalIdpSecurityPolicy>
+  /**
+   * Return `null` if no policy exists.
+   */
+  readSecurityPolicy(): Promise<LocalIdpSecurityPolicy | null>
   saveSecurityPolicy(policy: ValidLocalIdpSecurityPolicy): Promise<LocalIdpSecurityPolicy>
   createLocalAccount(account: LocalIdpAccountSeed): Promise<LocalIdpAccount | LocalIdpDuplicateUsernameError>
   readLocalAccount(username: string): Promise<LocalIdpAccount | null>
