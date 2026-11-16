@@ -277,6 +277,41 @@ describe.only('local idp authentication', function() {
 
       describe('successful authentication', function() {
 
+        it('resets the failed authentication count before reaching the lock threshold', async function() {
+
+          let account = await newAccount()
+          const threshold = enabledPolicy.accountLock.lockAfterInvalidLoginCount
+          for (let attempt = 1; attempt < threshold; attempt++) {
+            const result = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+            assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+            account = result.failed.account
+          }
+          expect(account.security.invalidLoginAttempts).to.equal(threshold - 1)
+
+          const authResult = await attemptAuthentication(account, password, enabledPolicy.accountLock)
+          assert(authResult.authenticated, 'expected authentication to succeed')
+          account = authResult.authenticated
+          expect(account.security).to.deep.equal({
+            locked: false,
+            lockedUntil: null,
+            invalidLoginAttempts: 0,
+            numberOfTimesLocked: 0,
+          })
+
+          // a full set of failures below the threshold must not lock the account
+          for (let attempt = 1; attempt < threshold; attempt++) {
+            const result = await attemptAuthentication(account, 'wrong', enabledPolicy.accountLock)
+            assert(result.failed && result.failed.code === LocalIdpErrorCode.PasswordMismatch)
+            account = result.failed.account
+          }
+          expect(account.security).to.deep.equal({
+            locked: false,
+            lockedUntil: null,
+            invalidLoginAttempts: threshold - 1,
+            numberOfTimesLocked: 0,
+          })
+        })
+
         it('resets the lock count', async function() {
 
           const lockedAccount = await failUntilLocked(await newAccount())
