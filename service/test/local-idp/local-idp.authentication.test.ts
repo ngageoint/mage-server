@@ -51,6 +51,10 @@ describe.only('local idp authentication', function() {
       })
     })
 
+    describe('disabled', function() {
+
+    })
+
     describe('enabled', function() {
 
       const enabledPolicy: LocalIdpSecurityPolicy = Object.freeze({
@@ -185,6 +189,43 @@ describe.only('local idp authentication', function() {
           lockedUntil: new Date(Date.now() + lockDurationMillis),
           invalidLoginAttempts: enabledPolicy.accountLock.lockAfterInvalidLoginCount,
           numberOfTimesLocked: 2,
+        })
+      })
+
+      describe('successful authentication', function() {
+
+        it('resets the lock count', async function() {
+
+          const lockedAccount = await failUntilLocked(await newAccount())
+          expect(lockedAccount.security.numberOfTimesLocked).to.equal(1)
+          clock.tick(lockDurationMillis)
+
+          const result = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+          assert(result.authenticated, 'expected authentication to succeed after lock duration passes')
+          expect(result.authenticated.security.numberOfTimesLocked).to.equal(0)
+        })
+
+        it('prevents indefinite lock when interleaved between timed locks', async function() {
+
+          const disableAfterLockCount = enabledPolicy.accountLock.disableAfterLockCount
+          let account = await newAccount()
+          for (let lockCount = 1; lockCount < disableAfterLockCount; lockCount++) {
+            account = await failUntilLocked(account)
+            clock.tick(lockDurationMillis)
+          }
+          expect(account.security.numberOfTimesLocked).to.equal(disableAfterLockCount - 1)
+
+          const authResult = await attemptAuthentication(account, password, enabledPolicy.accountLock)
+          assert(authResult.authenticated, 'expected authentication to succeed after lock duration passes')
+          account = authResult.authenticated
+
+          account = await failUntilLocked(account)
+          expect(account.security).to.deep.equal({
+            locked: true,
+            lockedUntil: new Date(Date.now() + lockDurationMillis),
+            invalidLoginAttempts: enabledPolicy.accountLock.lockAfterInvalidLoginCount,
+            numberOfTimesLocked: 1,
+          })
         })
       })
 
