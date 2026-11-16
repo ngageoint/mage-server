@@ -1,0 +1,44 @@
+.embedded-wrapper {
+  display: flex;
+  position: relative;
+  width: 100%;
+}
+
+.embedded-input {
+  flex: 1;
+}
+
+.mat-mdc-option.multi-line-option {
+  height: auto;
+  min-height: 48px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  line-height: normal;
+}
+
+.option-container {
+  display: flex;
+  flex-direction: column;
+  white-space: normal;
+}
+
+.primary-text {
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+}
+
+.secondary-text {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.search-clear {
+  flex-shrink: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.search-spinner {
+  flex-shrink: 0;
+  margin: 0 8px;
+}

@@ -57,7 +57,7 @@ describe('ObservationEditComponent', () => {
       // Override the real template, which pulls in the entire tree of form field
       // components, so this suite can exercise the component class in isolation.
       .overrideComponent(ObservationEditComponent, {
-        set: { template: '<div #editContent><div #form></div></div>' }
+        set: { template: '<div><div #form></div></div>' }
       })
       .compileComponents();
   }));

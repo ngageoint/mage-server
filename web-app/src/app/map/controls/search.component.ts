@@ -1,71 +1,47 @@
 import {
   Component,
-  Output,
-  EventEmitter,
-  ViewChild,
+  Directive,
   ElementRef,
   AfterViewInit,
-  OnInit
+  ViewEncapsulation,
+  inject,
+  input,
+  output,
+  viewChild
 } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
 import { DomEvent } from 'leaflet';
-import { MapSettingsService } from '../settings/map.settings.service';
-import { MapSettings } from 'src/app/entities/map/entities.map';
-import {
-  PlacenameSearchResult,
-  PlacenameSearchService
-} from '../search/search.service';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PlacenameSearchResult } from '../../geocoder/search/search.service';
+import { GeocoderService } from '../../geocoder/geocoder';
 
 export enum SearchState {
   ON,
   OFF
 }
 
-export interface SearchEvent {
-  result: PlacenameSearchResult;
-}
+@Directive()
+export abstract class BaseSearchComponent {
+  protected readonly geocoderService = inject(GeocoderService);
+  private readonly snackBar = inject(MatSnackBar);
 
-@Component({
-    selector: 'map-control-search',
-    templateUrl: './search.component.html',
-    styleUrls: ['./search.component.scss'],
-    standalone: false
-})
-export class SearchComponent implements OnInit, AfterViewInit {
-  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
-  @ViewChild('searchList') matList!: ElementRef<HTMLElement>;
+  searchInput = viewChild<ElementRef<HTMLInputElement>>('searchInput');
 
-  @Output() onSearch = new EventEmitter<SearchEvent>();
-  @Output() onSearchClear = new EventEmitter<void>();
-
-  mapSettings: MapSettings;
+  onSearch = output<PlacenameSearchResult>();
+  onSearchClear = output<void>();
 
   SearchState = SearchState;
   searchState = SearchState.OFF;
 
-  searchResults: any[] = [];
+  searchResults: PlacenameSearchResult[] = [];
   searching = false;
-
-  constructor(
-    private mapSettingsService: MapSettingsService,
-    private searchService: PlacenameSearchService,
-    private snackBar: MatSnackBar
-  ) { }
-
-  ngOnInit(): void {
-    this.mapSettingsService
-      .getMapSettings()
-      .subscribe((settings: MapSettings) => {
-        this.mapSettings = settings;
-      });
-  }
-
-  ngAfterViewInit(): void {
-    if (this.matList?.nativeElement) {
-      DomEvent.disableClickPropagation(this.matList.nativeElement);
-      DomEvent.disableScrollPropagation(this.matList.nativeElement);
-    }
-  }
+  hint = '';
 
   searchToggle(): void {
     this.searchState =
@@ -73,38 +49,111 @@ export class SearchComponent implements OnInit, AfterViewInit {
 
     if (this.searchState === SearchState.ON) {
       setTimeout(() => {
-        this.searchInput?.nativeElement?.focus();
+        this.searchInput()?.nativeElement?.focus();
       });
     }
   }
 
-  search(value: string): void {
+  async search(value: string): Promise<void> {
     this.searching = true;
-    this.searchService.search(this.mapSettings, value).subscribe({
-      next: (results: PlacenameSearchResult[]) => {
-        this.searching = false;
-        this.searchResults = results;
-      },
-      error: () => {
-        this.searching = false;
-        this.snackBar.open('Error accessing place name server', undefined, {
-          duration: 2000
-        });
+
+    try {
+      this.searchResults = await this.geocoderService.geocode(value);
+      if (!this.searchResults.length) {
+        const message = this.geocoderService.placenameSearchEnabled
+          ? 'No results found'
+          : 'Place name search is not available, enter coordinates';
+        this.snackBar.open(message, undefined, { duration: 3000 });
       }
-    });
+    } catch {
+      this.searchResults = [];
+      this.snackBar.open('Error accessing place name server', undefined, {
+        duration: 2000
+      });
+    } finally {
+      this.searching = false;
+    }
   }
 
-  clear($event: MouseEvent, input: HTMLInputElement): void {
+  clear($event: MouseEvent): void {
     $event.stopPropagation();
     $event.preventDefault();
-    input.value = '';
-    this.searchResults = [];
+    this.clearResults();
     this.searchState = SearchState.OFF;
 
     this.onSearchClear.emit();
   }
 
   searchResultClick(result: PlacenameSearchResult): void {
-    this.onSearch.emit({ result });
+    this.onSearch.emit(result);
+  }
+
+  clearResults(): void {
+    const input = this.searchInput()?.nativeElement;
+    if (input) {
+      input.value = '';
+    }
+    this.searchResults = [];
+  }
+}
+
+@Component({
+  selector: 'map-control-search',
+  templateUrl: './search.component.html',
+  styleUrls: ['./search.component.scss'],
+  standalone: false
+})
+export class SearchComponent extends BaseSearchComponent implements AfterViewInit {
+  matList = viewChild<ElementRef<HTMLElement>>('searchList');
+
+  get placeholder(): string {
+    return this.geocoderService.placenameSearchEnabled ? 'Place name or coordinates' : 'Coordinates';
+  }
+
+  ngAfterViewInit(): void {
+    const list = this.matList()?.nativeElement;
+    if (list) {
+      DomEvent.disableClickPropagation(list);
+      DomEvent.disableScrollPropagation(list);
+    }
+  }
+}
+
+@Component({
+  selector: 'embedded-control-search',
+  templateUrl: './embedded.search.component.html',
+  styleUrls: ['./embedded.search.component.scss'],
+  encapsulation: ViewEncapsulation.None,
+  imports: [
+    DecimalPipe,
+    MatAutocompleteModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatIconModule,
+    MatInputModule,
+    MatProgressSpinnerModule
+  ]
+})
+export class EmbeddedSearchComponent extends BaseSearchComponent {
+  label = input('Search by name, address, or coordinates');
+
+  displayFn(option: PlacenameSearchResult | null): string {
+    return option?.name ?? '';
+  }
+
+  async search(value: string): Promise<void> {
+    await super.search(value);
+
+    // Coordinates and MGRS come back as a single result named after the input, take it without the dropdown
+    if (this.searchResults.length === 1 && this.searchResults[0].name === value) {
+      const result = this.searchResults[0];
+      this.searchResults = [];
+      this.searchResultClick(result);
+    }
+  }
+
+  searchResultClick(result: PlacenameSearchResult): void {
+    super.searchResultClick(result);
+    this.hint = result.coordinateString();
   }
 }

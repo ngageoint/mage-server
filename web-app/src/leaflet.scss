@@ -19,27 +19,6 @@
   margin: 13px 19px;
 }
 
-.overlay-tooltip {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: gray;
-  color: white;
-  opacity: 0.87;
-  border-radius: 3px;
-  border: none;
-}
-
-.leaflet-tooltip-left.overlay-tooltip::before {
-  border-left-color: transparent;
-}
-
-.leaflet-tooltip-right.overlay-tooltip::before {
-  border-right-color: transparent;
-}
-
 .observation-edit-marker {
   display: flex;
   flex-direction: row;
@@ -133,6 +112,38 @@
 @keyframes marker-pulse-fade {
   0%, 80% { opacity: 1; }
   100% { opacity: 0; }
+}
+
+.search-highlight__dot {
+  position: absolute;
+  border-radius: 50%;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  background-color: #1e88e5;
+}
+
+.search-highlight__label {
+  position: absolute;
+  left: 24px;
+  top: -11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  font: 12px/18px Roboto, "Helvetica Neue", sans-serif;
+  white-space: nowrap;
+}
+
+.leaflet-vertex-icon,
+.leaflet-middle-icon {
+  border-radius: 50%;
+}
+
+.leaflet-vertex-icon.selected-marker {
+  background-color: #1e88e5;
+  border-color: #1e88e5;
 }
 
 .shape-pulse {

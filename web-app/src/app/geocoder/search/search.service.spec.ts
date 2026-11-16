@@ -70,3 +70,11 @@ describe('SearchService', () => {
     req.flush(featureCollection);
   });
 });
+
+describe('PlacenameSearchResult', () => {
+  it('should round its coordinate string to five decimals', () => {
+    const result = new PlacenameSearchResult('test', [0, 0, 0, 0], [-104.987656, 39.123456]);
+
+    expect(result.coordinateString()).toBe('39.12346, -104.98766');
+  });
+});

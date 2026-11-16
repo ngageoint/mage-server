@@ -1,4 +1,5 @@
 import { CdkDragDrop, DragDropModule, moveItemInArray } from "@angular/cdk/drag-drop";
+import { Portal, PortalModule } from "@angular/cdk/portal";
 import { ScrollingModule } from "@angular/cdk/scrolling";
 
 import {
@@ -13,7 +14,6 @@ import {
   OnDestroy,
   output,
   signal,
-  viewChild,
   viewChildren,
   inject
 } from "@angular/core";
@@ -76,6 +76,7 @@ type ObservationFormControls = {
     styleUrls: ["./observation-edit.component.scss"],
     imports: [
         DragDropModule,
+        PortalModule,
         ScrollingModule,
         MatButtonModule,
         MatCardModule,
@@ -93,7 +94,6 @@ export class ObservationEditComponent implements OnDestroy {
 
   closed = output<any>();
 
-  editContent = viewChild.required<ElementRef>('editContent');
   formElements = viewChildren<ElementRef>('form');
 
   private readonly destroyRef = inject(DestroyRef);
@@ -127,7 +127,7 @@ export class ObservationEditComponent implements OnDestroy {
     required: true,
   };
 
-  mask = false;
+  geometryEditor = signal<Portal<any> | undefined>(undefined);
   saving = signal(false);
   error = signal<any>(null);
 
@@ -405,22 +405,7 @@ export class ObservationEditComponent implements OnDestroy {
   }
 
   onGeometryEdit(event: GeometryEditEvent): void {
-    this.mask = event.action === "edit";
-
-    if (event.action === "edit") {
-      const elementBounds = event.source.nativeElement.getBoundingClientRect();
-      const parentBounds =
-        this.editContent().nativeElement.getBoundingClientRect();
-      if (
-        elementBounds.top < parentBounds.top ||
-        elementBounds.bottom > parentBounds.bottom
-      ) {
-        event.source.nativeElement.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-        });
-      }
-    }
+    this.geometryEditor.set(event.action === "edit" ? event.portal : undefined);
   }
 
   pickForm(): void {

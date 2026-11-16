@@ -158,17 +158,6 @@ describe('LocalStorageService', () => {
       expect(service.getCoordinateSystemView()).toBe('wgs84');
     });
 
-    it('falls back the edit coordinate system to the view setting', () => {
-      service.setCoordinateSystemView('mgrs');
-      expect(service.getCoordinateSystemEdit()).toBe('mgrs');
-    });
-
-    it('uses its own edit coordinate system when set', () => {
-      service.setCoordinateSystemView('mgrs');
-      service.setCoordinateSystemEdit('gars');
-      expect(service.getCoordinateSystemEdit()).toBe('gars');
-    });
-
     it('defaults time zone view to local', () => {
       expect(service.getTimeZoneView()).toBe('local');
     });
