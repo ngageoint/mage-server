@@ -1,21 +1,14 @@
-<div class="geometry-wrapper" #geometry>
-  <div class="geometry-field" [class.geometry-field--active]="edit">
-    <div class="geometry-field__label" [class.geometry-field__label--active]="edit">{{definition().title}} {{definition().required ? '*' : ''}}</div>
+<div class="geometry-wrapper">
+  <div class="geometry-field">
+    <div class="geometry-field__label">{{definition().title}} {{definition().required ? '*' : ''}}</div>
 
     <div class="geometry-panel">
-      <div class="geometry-panel__contents" [class.geometry-panel__flip]="edit">
-        <div class="geometry-panel__view">
-          <observation-edit-geometry-map [feature]="mapFeature()" (onEdit)="startGeometryEdit()"></observation-edit-geometry-map>
-        </div>
-        <div class="geometry-panel__edit">
-          <observation-edit-geometry-form (save)="saveGeometryEdit($event)" (cancel)="cancelGeometryEdit()"></observation-edit-geometry-form>
-        </div>
-      </div>
+      <observation-edit-geometry-map [feature]="mapFeature()" (onEdit)="startGeometryEdit()"></observation-edit-geometry-map>
     </div>
 
   </div>
 
-  <div class="geometry__underline" [class.geometry__underline--active]="edit"></div>
+  <div class="geometry__underline"></div>
 
   <div class="geometry-help">
     @if (mapFeature() && mapFeature().geometry) {
@@ -24,3 +17,20 @@
   </div>
 
 </div>
+
+<ng-template #editor>
+  <div class="geometry-editor">
+    <div class="geometry-editor__content">
+      <observation-edit-geometry-form #form [title]="definition()?.title || 'Location'" [feature]="editFeature()" (save)="saveGeometryEdit($event)" (cancel)="cancelGeometryEdit()"></observation-edit-geometry-form>
+
+      <!-- Sits under the list, sticks to the bottom once the list scrolls -->
+      @if (!form.pasteOpen) {
+        <div class="geometry-editor__actions">
+          <span class="geometry-editor__status" [class.geometry-editor__status--warn]="form.hasCrossingEdges()">{{ form.statusText() }}</span>
+          <button matButton type="button" (click)="form.onCancel()">Cancel</button>
+          <button matButton="filled" type="button" (click)="form.onSave()" [disabled]="!form.canSave()">Done</button>
+        </div>
+      }
+    </div>
+  </div>
+</ng-template>

@@ -1,89 +1,93 @@
 <div #editForm>
-  <mat-toolbar>
-    <mat-toolbar-row class="navigation">
-      <button matIconButton class="navigation__icon" (click)="cancel()" [disabled]="saving() || mask">
-        <mat-icon>close</mat-icon>
-      </button>
-      <div class="navigation__title">
-        @if (isNewObservation()) {
-          <span>Create Observation</span>
-        } @else {
-          <span>Edit Observation</span>
-        }
-      </div>
-      <button matButton class="navigation__save" (click)="save()" [disabled]="saving() || mask">Save</button>
-    </mat-toolbar-row>
-  </mat-toolbar>
-
-  @if (saving()) {
-    <mat-progress-bar mode="indeterminate" class="edit-progress"></mat-progress-bar>
-  }
-
-  <div cdkScrollable #editContent class="edit-content" [class.edit-content--scroll-lock]="mask">
-    @if (error()) {
-      <div class="edit-banner mat-elevation-z4" animate.enter="edit-banner--enter" animate.leave="edit-banner--leave">
-        <div class="edit-banner__inner">
-          <div class="edit-banner-container">
-            <div class="edit-banner-content">
-              <div class="edit-banner-content__title">
-                <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
-                Unable to save observation
-              </div>
-              <div class="edit-banner-content__summary">{{error()?.message}}</div>
-            </div>
-          </div>
-          <div class="edit-banner-actions">
-            <button matButton (click)="error.set(null)">Dismiss</button>
-          </div>
+  <div class="edit-view" [attr.inert]="geometryEditor() ? '' : null">
+    <mat-toolbar>
+      <mat-toolbar-row class="navigation">
+        <button matIconButton class="navigation__icon" (click)="cancel()" [disabled]="saving()">
+          <mat-icon>close</mat-icon>
+        </button>
+        <div class="navigation__title">
+          @if (isNewObservation()) {
+            <span>Create Observation</span>
+          } @else {
+            <span>Edit Observation</span>
+          }
         </div>
-      </div>
+        <button matButton class="navigation__save" (click)="save()" [disabled]="saving()">Save</button>
+      </mat-toolbar-row>
+    </mat-toolbar>
+
+    @if (saving()) {
+      <mat-progress-bar mode="indeterminate" class="edit-progress"></mat-progress-bar>
     }
 
-    <div class="observation">
-      <mat-card class="form">
-        <mat-card-content>
-          <observation-edit-date class="edit-date" [formGroup]="formGroup().get('properties')" [definition]="timestampDefinition"></observation-edit-date>
-
-          <observation-edit-geometry [formGroup]="formGroup()" [definition]="geometryDefinition"
-            [featureId]="currentObservation().id" [featureStyle]="geometryStyle()" (featureEdit)="onGeometryEdit($event)">
-          </observation-edit-geometry>
-        </mat-card-content>
-      </mat-card>
-
-      @let forms = formGroup()?.get('properties')?.get('forms');
-      <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)"
-        [cdkDropListDisabled]="forms.length <= 1">
-        @for (group of forms?.controls; track group; let i = $index) {
-          <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
-            <observation-edit-form [formGroup]="group" [definition]="formDefinitions()[group.get('formId').value]"
-              [formPreferences]="eventPreferences()?.forms?.[group.get('formId')?.value]"
-              [geometryStyle]="geometryStyle()" [attachmentUrl]="attachmentUrl()" [observation]="currentObservation()"
-              [options]="{expand: true}" (remove)="removeForm($event)"
-              (featureEdit)="onGeometryEdit($event)">
-
-              @if (forms.length > 1) {
-                <div cdkDragHandle>
-                  <mat-icon class="form-drag-handle" svgIcon="handle"></mat-icon>
+    <div cdkScrollable class="edit-content">
+      @if (error()) {
+        <div class="edit-banner mat-elevation-z4" animate.enter="edit-banner--enter" animate.leave="edit-banner--leave">
+          <div class="edit-banner__inner">
+            <div class="edit-banner-container">
+              <div class="edit-banner-content">
+                <div class="edit-banner-content__title">
+                  <mat-icon class="edit-banner-content__title-icon">error_outline</mat-icon>
+                  Unable to save observation
                 </div>
-              }
-            </observation-edit-form>
+                <div class="edit-banner-content__summary">{{error()?.message}}</div>
+              </div>
+            </div>
+            <div class="edit-banner-actions">
+              <button matButton (click)="error.set(null)">Dismiss</button>
+            </div>
           </div>
-        }
+        </div>
+      }
+
+      <div class="observation">
+        <mat-card class="form">
+          <mat-card-content>
+            <observation-edit-date class="edit-date" [formGroup]="formGroup().get('properties')" [definition]="timestampDefinition"></observation-edit-date>
+
+            <observation-edit-geometry [formGroup]="formGroup()" [definition]="geometryDefinition"
+              [featureId]="currentObservation().id" [featureStyle]="geometryStyle()" (featureEdit)="onGeometryEdit($event)">
+            </observation-edit-geometry>
+          </mat-card-content>
+        </mat-card>
+
+        @let forms = formGroup()?.get('properties')?.get('forms');
+        <div class="edit-forms" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderForm($event)"
+          [cdkDropListDisabled]="forms.length <= 1">
+          @for (group of forms?.controls; track group; let i = $index) {
+            <div class="form" #form cdkDrag cdkDragBoundary=".edit-forms">
+              <observation-edit-form [formGroup]="group" [definition]="formDefinitions()[group.get('formId').value]"
+                [formPreferences]="eventPreferences()?.forms?.[group.get('formId')?.value]"
+                [geometryStyle]="geometryStyle()" [attachmentUrl]="attachmentUrl()" [observation]="currentObservation()"
+                [options]="{expand: true}" (remove)="removeForm($event)"
+                (featureEdit)="onGeometryEdit($event)">
+
+                @if (forms.length > 1) {
+                  <div cdkDragHandle>
+                    <mat-icon class="form-drag-handle" svgIcon="handle"></mat-icon>
+                  </div>
+                }
+              </observation-edit-form>
+            </div>
+          }
+        </div>
       </div>
     </div>
+
+    @if (hasForms()) {
+      <div class="add-form">
+        <button matFab extended (click)="pickForm()">
+          <mat-icon>note_add</mat-icon>
+          Add Form
+        </button>
+      </div>
+    }
   </div>
 
-  @if (hasForms()) {
-    <div class="add-form">
-      <button matFab extended (click)="pickForm()">
-        <mat-icon>note_add</mat-icon>
-        Add Form
-      </button>
+  @if (geometryEditor()) {
+    <div class="geometry-editor-overlay" animate.enter="geometry-editor-overlay--enter" animate.leave="geometry-editor-overlay--leave">
+      <ng-template [cdkPortalOutlet]="geometryEditor()"></ng-template>
     </div>
-  }
-
-  @if (mask) {
-    <div class="form-mask" animate.enter="form-mask--enter" animate.leave="form-mask--leave"></div>
   }
 </div>
 

@@ -1,7 +1,7 @@
-<div class="search-wrapper" *ngIf="mapSettings?.webSearchType !== 'NONE'">
+<div class="search-wrapper">
   <div class="search-pill" [class.expanded]="searchState === SearchState.ON" [class.results]="searchResults.length && searchState === SearchState.ON">
     <div class="search-expand" [class.expanded]="searchState === SearchState.ON">
-      <input #searchInput class="search-input" placeholder="Address / Place Name" type="text"
+      <input #searchInput class="search-input" [placeholder]="placeholder" type="text"
              autocomplete="off"
              [tabindex]="searchState === SearchState.ON ? 0 : -1"
              (keydown.enter)="search(searchInput.value)">
@@ -9,7 +9,7 @@
         <mat-spinner *ngIf="searching" diameter="20"></mat-spinner>
         <button *ngIf="!searching" matIconButton class="search-clear"
                 [tabindex]="searchState === SearchState.ON ? 0 : -1"
-                (click)="clear($event, searchInput)">
+                (click)="clear($event)">
           <mat-icon>close</mat-icon>
         </button>
       </div>
@@ -28,6 +28,7 @@
         <mat-list-item matRipple *ngFor="let result of searchResults" (click)="searchResultClick(result)">
           <mat-icon matListItemIcon>place</mat-icon>
           <span matListItemTitle>{{result.name}}</span>
+          <span matListItemLine>{{result.position[1] | number:'1.5-5'}}, {{result.position[0] | number:'1.5-5'}}</span>
         </mat-list-item>
       </mat-list>
     </mat-card>

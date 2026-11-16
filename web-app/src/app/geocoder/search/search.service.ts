@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { MapSettings, WebSearchType } from 'src/app/entities/map/entities.map';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { BBox, FeatureCollection, Position } from 'geojson';
 import { map } from 'rxjs/operators';
 import center from '@turf/center';
@@ -16,6 +16,22 @@ export class PlacenameSearchResult {
     this.bbox = bbox
     this.position = position
   }
+
+  get longitude(): number {
+    return this.position[0]
+  }
+
+  get latitude(): number {
+    return this.position[1]
+  }
+
+  coordinateString(): string {
+    return `${this.roundToFiveDecimals(this.latitude)}, ${this.roundToFiveDecimals(this.longitude)}`
+  }
+
+  roundToFiveDecimals(num: number): number {
+    return Number(num.toFixed(5))
+  }
 }
 
 interface PlacenameSearch {
@@ -27,12 +43,12 @@ interface PlacenameSearch {
 })
 export class PlacenameSearchService {
   constructor(
-    private http: HttpClient
+    private readonly http: HttpClient
   ) { }
 
   search(settings: MapSettings, text: string): Observable<PlacenameSearchResult[]> {
     const service = this.getSearchService(settings.webSearchType, settings.webNominatimUrl)
-    return service.search(text)
+    return service ? service.search(text) : of([])
   }
 
   private getSearchService(type: WebSearchType, url: string): PlacenameSearch | null {
@@ -51,8 +67,8 @@ class NominatimService implements PlacenameSearch {
   private static readonly LIMIT = '10';
 
   constructor(
-    private http: HttpClient,
-    private url: string
+    private readonly http: HttpClient,
+    private readonly url: string
   ) { }
 
   search(text: string): Observable<PlacenameSearchResult[]> {

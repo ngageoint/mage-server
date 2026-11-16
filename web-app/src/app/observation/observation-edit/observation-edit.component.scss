@@ -39,10 +39,6 @@ mat-toolbar {
   padding-bottom: 54px;
 }
 
-.edit-content--scroll-lock {
-  overflow-y: hidden;
-}
-
 .edit-banner {
   background: var(--mat-sys-surface-container-low);
   display: grid;
@@ -150,27 +146,26 @@ mat-toolbar {
   margin-bottom: 16px;
 }
 
-.form-mask {
-  background: black;
+.geometry-editor-overlay {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0;
   left: 0;
-  opacity: .2;
+  right: 0;
+  z-index: 2;
 }
 
-.form-mask--enter {
-  animation: form-mask-fade 250ms ease-out;
+.geometry-editor-overlay--enter {
+  animation: geometry-editor-slide 250ms ease-out;
 }
 
-.form-mask--leave {
-  animation: form-mask-fade 250ms ease-in reverse;
+.geometry-editor-overlay--leave {
+  animation: geometry-editor-slide 250ms ease-in reverse;
 }
 
-@keyframes form-mask-fade {
+@keyframes geometry-editor-slide {
   from {
-    opacity: 0;
+    transform: translateX(100%);
   }
 }
 

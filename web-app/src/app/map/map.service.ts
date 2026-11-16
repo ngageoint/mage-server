@@ -12,16 +12,20 @@ import { Layer } from "../entities/layer/entities.layer";
 import { MageEvent } from "../entities/event/entities.event";
 import { Feed } from "@ngageoint/mage.web-core-lib/feed";
 import { LocationEvent as LeafletLocationEvent } from "leaflet";
+import { PlacenameSearchResult } from "../geocoder/search/search.service";
 
 export interface FeatureEdit {
   update(feature: any): void;
   cancel(): void;
   save(): void;
+  selectVertex(index: number): void;
+  showSearchResult(result: PlacenameSearchResult): void;
 }
 
-interface FeatureEditDelegate {
+export interface FeatureEditDelegate {
   geometryChanged?: (geometry: any) => void;
   vertexClick?: (vertex: any) => void;
+  vertexDeleted?: (vertex: { index: number }) => void;
 }
 
 interface MapDelegate {
@@ -87,11 +91,11 @@ export class MapService {
   usersById: Record<string, any> = {};
 
   constructor(
-    private eventService: EventService,
-    private locationService: LocationService,
-    private mapPopupService: MapPopupService,
-    private featureService: FeatureService,
-    private sessionService: SessionService
+    private readonly eventService: EventService,
+    private readonly locationService: LocationService,
+    private readonly mapPopupService: MapPopupService,
+    private readonly featureService: FeatureService,
+    private readonly sessionService: SessionService
   ) {}
 
   init () {
@@ -260,7 +264,7 @@ export class MapService {
         // Add token to the url of all private layers
         // TODO add watch for token change and reset the url for these layers
         let url = layer.url ?? '';
-        if (url.indexOf('private') === 0) {
+        if (url.startsWith('private')) {
           url = url + "?access_token=" + this.sessionService.getToken();
         }
 
@@ -347,7 +351,7 @@ export class MapService {
       // and coalesces requests within a session, unlike the XHR/blob approach
       // it replaced, but a longer-term fix (e.g. cookie-based auth for this
       // route) would avoid the per-login cache miss entirely.
-      const iconId = (feed.mapStyle && feed.mapStyle.icon) ? feed.mapStyle.icon.id : feed.icon ? feed.icon.id : null;
+      const iconId = (feed.mapStyle?.icon) ? feed.mapStyle.icon.id : feed.icon ? feed.icon.id : null;
       const iconUrl = iconId ? `/api/icons/${iconId}/content?access_token=${this.sessionService.getToken()}` : '/assets/images/default_marker.png'
       const feedLayer: VectorLayer = {
         id: `feed-${feed.id}`,

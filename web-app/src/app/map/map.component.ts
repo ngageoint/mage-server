@@ -1,13 +1,12 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
 import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
-import { SearchEvent } from '../../app/map/controls/search.component'
 import { ZoomDirection, ZoomEvent as ZoomControlEvent } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
 import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
-import { MapService } from './map.service'
+import { FeatureEdit, FeatureEditDelegate, MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent } from "leaflet"
+import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent, divIcon, DomUtil, Marker } from "leaflet"
 import { OpacityEvent, ZoomEvent as LayerZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -18,12 +17,13 @@ import { COUNTRIES as countries } from './layers/static/layers'
 import 'leaflet-editable'
 import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
+import { PlacenameSearchResult } from '../geocoder/search/search.service'
 import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerGroup, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
-import { MatDialog as MatDialog } from '@angular/material/dialog'
+import { MatDialog } from '@angular/material/dialog'
 import * as _ from 'lodash'
 import moment from 'moment';
 import { Subscription, interval } from 'rxjs'
@@ -74,6 +74,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   locationLayer = locationMarker([0, 0], { color: '#136AEC', radius: 16 })
   locationState = LocationState.Off
   searchMarker: any
+  searchHighlight?: Marker
+  searchHighlightTimeout?: ReturnType<typeof setTimeout>
   featurePanes: string[] = []
 
   toggleSubscription: Subscription
@@ -86,13 +88,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     public dialog: MatDialog,
-    private mapService: MapService,
-    private sessionService: SessionService,
+    private readonly mapService: MapService,
+    private readonly sessionService: SessionService,
     mapLayerService: MapLayerService,
-    private layerService: LayerService,
-    private eventService: EventService,
-    private filterService: FilterService,
-    private localStorageService: LocalStorageService
+    private readonly layerService: LayerService,
+    private readonly eventService: EventService,
+    private readonly filterService: FilterService,
+    private readonly localStorageService: LocalStorageService
   ) {
     this.toggleSubscription = mapLayerService.toggle$.subscribe(event => this.layerTogged(event));
     this.zoomSubscription = mapLayerService.zoom$.subscribe(event => this.zoom(event));
@@ -260,18 +262,62 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onSearch($event: SearchEvent) {
+  onSearch(result: PlacenameSearchResult) {
     this.onSearchClear()
 
     this.map.fitBounds(
       latLngBounds(
-        latLng($event.result.bbox[1], $event.result.bbox[0]),
-        latLng($event.result.bbox[3], $event.result.bbox[2])
+        latLng(result.bbox[1], result.bbox[0]),
+        latLng(result.bbox[3], result.bbox[2])
       )
     )
 
-    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent($event.result.name)
-    this.searchMarker = marker([$event.result.position[1], $event.result.position[0]])
+    this.addSearchMarker(result)
+  }
+
+  showSearchResultForEdit(result: PlacenameSearchResult, editor: FeatureEditor) {
+    this.clearSearchHighlight()
+
+    const resultBounds = latLngBounds(
+      latLng(result.bbox[1], result.bbox[0]),
+      latLng(result.bbox[3], result.bbox[2])
+    )
+    const position = latLng(result.position[1], result.position[0])
+    const shapeBounds = editor.getBounds()
+    const bounds = shapeBounds ? shapeBounds.extend(position) : resultBounds
+    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 })
+
+    this.addSearchHighlight(position, result.name)
+  }
+
+  private addSearchHighlight(position: LatLng, name: string) {
+    const html = DomUtil.create('div')
+    DomUtil.create('div', 'marker-pulse__ring', html)
+    DomUtil.create('div', 'search-highlight__dot', html)
+    DomUtil.create('div', 'search-highlight__label', html).textContent = name
+
+    this.searchHighlight = marker(position, {
+      icon: divIcon({ className: 'marker-pulse', html, iconSize: [0, 0] }),
+      interactive: false,
+      keyboard: false
+    }).addTo(this.map)
+
+    this.searchHighlightTimeout = setTimeout(() => this.clearSearchHighlight(), 4000)
+    this.map.on('click', this.clearSearchHighlight, this)
+  }
+
+  private clearSearchHighlight() {
+    clearTimeout(this.searchHighlightTimeout)
+    this.map.off('click', this.clearSearchHighlight, this)
+    if (this.searchHighlight) {
+      this.map.removeLayer(this.searchHighlight)
+      this.searchHighlight = undefined
+    }
+  }
+
+  private addSearchMarker(result: PlacenameSearchResult) {
+    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent(result.name)
+    this.searchMarker = marker([result.position[1], result.position[0]])
       .addTo(this.map)
       .bindPopup(markerPopup)
       .openPopup()
@@ -281,6 +327,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker)
     }
+    this.clearSearchHighlight()
   }
 
   onAddObservation() {
@@ -328,8 +375,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     // skip if the location has not changed
     if (
       this.locationState === LocationState.Off ||
-      (this.currentLocation &&
-        this.currentLocation.latitude === location.latlng.lat &&
+      (this.currentLocation?.latitude === location.latlng.lat &&
         this.currentLocation.longitude === location.latlng.lng &&
         this.currentLocation.accuracy === location.accuracy)
     ) {
@@ -682,7 +728,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     return bucket ? bucket.color : null
   }
 
-  createFeature(feature: MapFeature, delegate: { geometryChanged?: (geometry: any) => void, vertexClick?: (vertex: any) => void }) {
+  createFeature(feature: MapFeature, delegate: FeatureEditDelegate): FeatureEdit {
     // TODO put Observations in its own pane maybe??
     // TODO pass in layer collection id 'Observations'
     let editor = new FeatureEditor(this.map, feature, delegate)
@@ -705,8 +751,15 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         editor.stopEdit()
         editor = new FeatureEditor(this.map, feature, delegate)
       },
+      selectVertex: (index: number) => {
+        editor.selectVertex(index)
+      },
+      showSearchResult: (result: PlacenameSearchResult) => {
+        this.showSearchResultForEdit(result, editor)
+      },
       cancel: () => {
         editor.stopEdit()
+        this.clearSearchHighlight()
         if (layer?.feature) {
           this.onFeaturesChanged({
             id: 'observations',
@@ -718,6 +771,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       },
       save: () => {
         const newFeature = editor.stopEdit()
+        this.clearSearchHighlight()
         if (layer?.feature) {
           (layer.feature as MapFeature).geometry = newFeature.geometry
           this.onFeaturesChanged({
@@ -735,7 +789,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     panes.forEach(pane => {
       const mapPane = this.map.getPanes()[pane]
       const opacity = mapPane.style.opacity || "1"
-      mapPane.style.opacity = `${parseFloat(opacity) * opacityFactor}`
+      mapPane.style.opacity = `${Number.parseFloat(opacity) * opacityFactor}`
     })
   }
 

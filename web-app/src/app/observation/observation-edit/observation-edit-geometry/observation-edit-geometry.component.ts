@@ -1,5 +1,7 @@
-import { Component, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core'
+import { TemplatePortal } from '@angular/cdk/portal'
+import { Component, effect, inject, input, output, signal, TemplateRef, viewChild, ViewContainerRef } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
 import { ObservationEditGeometryMapComponent } from './observation-edit-geometry-map.component'
@@ -7,14 +9,15 @@ import { ObservationEditGeometryFormComponent } from './observation-edit-geometr
 import { GeometryModule } from 'mage-web-app/geometry/geometry.module'
 
 export type GeometryEditEvent =
-  | { action: 'edit', source: ElementRef<HTMLElement> }
-  | { action: 'none', source?: ElementRef<HTMLElement> }
+  | { action: 'edit', portal: TemplatePortal<any> }
+  | { action: 'none' }
 
 @Component({
     selector: 'observation-edit-geometry',
     templateUrl: './observation-edit-geometry.component.html',
     styleUrls: ['./observation-edit-geometry.component.scss'],
    imports: [
+      MatButtonModule,
       ObservationEditGeometryMapComponent,
       ObservationEditGeometryFormComponent,
       GeometryModule
@@ -22,6 +25,7 @@ export type GeometryEditEvent =
 })
 export class ObservationEditGeometryComponent {
   private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
+  private readonly viewContainerRef = inject(ViewContainerRef)
 
   formGroup = input.required<UntypedFormGroup>()
   definition = input.required<any>()
@@ -31,11 +35,10 @@ export class ObservationEditGeometryComponent {
 
   featureEdit = output<GeometryEditEvent>()
 
-  geometryElement = viewChild.required<ElementRef<HTMLElement>>('geometry')
-  geometryForm = viewChild.required(ObservationEditGeometryFormComponent)
+  editorTemplate = viewChild.required<TemplateRef<any>>('editor')
 
-  edit = false
   mapFeature = signal<any>(null)
+  editFeature = signal<any>(null)
 
   constructor() {
     effect(() => {
@@ -52,11 +55,9 @@ export class ObservationEditGeometryComponent {
   }
 
   startGeometryEdit(): void {
-    this.edit = true;
-
     const value = this.formGroup().get(this.definition().name).value
     if (value) {
-      this.geometryForm().startEdit({
+      this.editFeature.set({
         id: this.featureId(),
         type: 'Feature',
         geometry: value,
@@ -64,7 +65,7 @@ export class ObservationEditGeometryComponent {
       })
     } else {
       const mapPosition = this.localStorageService.getMapPosition();
-      this.geometryForm().startEdit({
+      this.editFeature.set({
         type: 'Feature',
         geometry: {
           type: 'Point',
@@ -76,25 +77,21 @@ export class ObservationEditGeometryComponent {
 
     this.featureEdit.emit({
       action: 'edit',
-      source: this.geometryElement()
+      portal: new TemplatePortal(this.editorTemplate(), this.viewContainerRef)
     })
   }
 
   saveGeometryEdit(event: any): void {
-    this.edit = false
     this.mapFeature.set(event.feature)
 
     this.formGroup().get(this.definition().name).setValue(this.normalizeGeometry(event.feature))
 
     this.featureEdit.emit({
-      action: 'none',
-      source: this.geometryElement()
+      action: 'none'
     })
   }
 
   cancelGeometryEdit(): void {
-    this.edit = false;
-
     this.featureEdit.emit({
       action: 'none'
     })
@@ -110,17 +107,14 @@ export class ObservationEditGeometryComponent {
         else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360
         break;
       case 'LineString':
-        for (let i = 0; i < geometry.coordinates.length; i++) {
-          const coord = geometry.coordinates[i];
-          while (coord[0] < -180) coord[0] = coord[0] + 360
-          while (coord[0] > 180) coord[0] = coord[0] - 360
+        for (const coordinate of geometry.coordinates) {
+          while (coordinate[0] < -180) coordinate[0] = coordinate[0] + 360
+          while (coordinate[0] > 180) coordinate[0] = coordinate[0] - 360
         }
         break;
       case 'Polygon':
-        for (let p = 0; p < geometry.coordinates.length; p++) {
-          const poly = geometry.coordinates[p];
-          for (let i = 0; i < poly.length; i++) {
-            const coord = poly[i];
+        for (const poly of geometry.coordinates) {
+          for (const coord of poly) {
             while (coord[0] < -180) coord[0] = coord[0] + 360
             while (coord[0] > 180) coord[0] = coord[0] - 360
           }
