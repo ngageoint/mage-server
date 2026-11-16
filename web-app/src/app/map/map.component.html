@@ -1,5 +1,6 @@
 <div class="map-controls-layers">
   <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
+  <map-control-osm (openOsm)="onOsmSearch()"></map-control-osm>
   <map-control-layers (onLayerPanelToggle)="drawer.toggle()"></map-control-layers>
 </div>
 

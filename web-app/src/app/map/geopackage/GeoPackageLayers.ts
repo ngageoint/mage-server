@@ -33,7 +33,7 @@ export default class GeoPackageLayers {
       layerId: layerInfo.layerId,
       pane: pane,
       table: {
-        name: layerInfo.name,
+        name: layerInfo.tableName ?? layerInfo.name,
         type: layerInfo.renderAs,
         minZoom: layerInfo.minZoom,
         maxZoom: layerInfo.maxZoom,

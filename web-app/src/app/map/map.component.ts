@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
 import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
 import { SearchEvent } from '../../app/map/controls/search.component'
 import { ZoomDirection, ZoomEvent as ZoomControlEvent } from '../../app/map/controls/zoom.component'
@@ -23,7 +23,8 @@ import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
 import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerGroup, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
-import { MatDialog as MatDialog } from '@angular/material/dialog'
+import { MatDialog as MatDialog, MatDialogRef } from '@angular/material/dialog'
+import { OsmSearchComponent } from './osm/osm-search.component'
 import * as _ from 'lodash'
 import moment from 'moment';
 import { Subscription, interval } from 'rxjs'
@@ -68,6 +69,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     mage: []
   }
   layers: Record<string, RenderedMapLayer> = {}
+  private savedOsmLayerIds = new Set<string>()
   geoPackageLayers: any
   temporalLayers: Extract<RenderedMapLayer, { type: 'vector' }>[] = []
   currentLocation: any = null
@@ -75,6 +77,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   locationState = LocationState.Off
   searchMarker: any
   featurePanes: string[] = []
+  osmDialogRef?: MatDialogRef<OsmSearchComponent>
 
   toggleSubscription: Subscription
   zoomSubscription: Subscription
@@ -85,6 +88,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   private static readonly TEMPORAL_LAYER_REFRESH_INTERVAL_MS = 60000
 
   constructor(
+    private changeDetector: ChangeDetectorRef,
     public dialog: MatDialog,
     private mapService: MapService,
     private sessionService: SessionService,
@@ -204,6 +208,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     this.zoomSubscription.unsubscribe()
     this.opacitySubscription.unsubscribe()
     this.styleSubscription.unsubscribe()
+    this.osmDialogRef?.close()
     this.temporalLayerSubscription.unsubscribe()
 
     this.map?.remove()
@@ -281,6 +286,31 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker)
     }
+  }
+
+  onOsmSearch() {
+    if (this.osmDialogRef) return
+    this.osmDialogRef = this.dialog.open(OsmSearchComponent, {
+      width: '440px',
+      maxWidth: '95vw',
+      hasBackdrop: false,
+      autoFocus: false,
+      position: { top: '72px', right: '72px' },
+      data: { map: this.map, onLayerSaved: (id: number | string) => this.showSavedOsmLayer(id) }
+    })
+    this.osmDialogRef.afterClosed().subscribe(() => { this.osmDialogRef = undefined })
+  }
+
+  /** Enable only the overlay deliberately saved from the OSM tool. */
+  showSavedOsmLayer(id: number | string): void {
+    this.savedOsmLayerIds.add(String(id))
+    for (const layer of Object.values(this.layers)) {
+      if (layer.type === 'GeoPackage' && String(layer.layerId) === String(id)) {
+        layer.selected = true
+        this.layerTogged({ layer, value: true })
+      }
+    }
+    this.changeDetector.markForCheck()
   }
 
   onAddObservation() {
@@ -513,6 +543,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   addLayer(layerInfo: RenderedMapLayer) {
+    if (layerInfo.type === 'GeoPackage' && this.savedOsmLayerIds.has(String(layerInfo.layerId))) {
+      layerInfo.selectedByDefault = true
+    }
     if (this.isSelected(layerInfo)) {
       layerInfo.selected = true
       const toggleEvent: ToggleEvent = {
@@ -523,7 +556,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
 
     const group = this.getGroup(layerInfo)
-    this.groups[group].push(layerInfo)
+    this.groups[group] = [...this.groups[group], layerInfo]
+    this.changeDetector.markForCheck()
     this.restackGroup(group)
   }
 
@@ -649,6 +683,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
       const group = this.getGroup(layerInfo)
       this.groups[group] = this.groups[group].filter(groupLayer => groupLayer !== layerInfo)
+      this.changeDetector.markForCheck()
     }
   }
 

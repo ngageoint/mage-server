@@ -1,0 +1,37 @@
+.osm-area-controls {
+  margin: 0 0 16px;
+  padding: 10px;
+  border: 1px solid #b4c6cc;
+  border-radius: 6px;
+  legend { font-weight: 500; padding: 0 5px; }
+  p { margin: 8px 0 0; font-size: 12px; line-height: 1.5; }
+}
+.osm-area-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.osm-area-buttons button { min-width: 0; padding: 0 10px; }
+.osm-area-buttons button[aria-pressed="true"] { background: #e3f2fd; }
+:host { display: flex; flex-direction: column; max-height: 80vh; }
+.osm-header { display: flex; align-items: flex-start; justify-content: space-between; padding: 16px 8px 0 24px; }
+.osm-title { padding: 0; margin: 0; }
+.osm-subtitle { font-size: 12px; color: var(--mat-sys-on-surface-variant, #555); }
+.osm-content { display: flex; flex-direction: column; gap: 12px; }
+.osm-form { display: flex; gap: 8px; align-items: flex-start; padding-top: 8px; button { margin-top: 8px; } }
+.osm-field { flex: 1; width: 100%; }
+.osm-aliases { margin-top: 8px; }
+.osm-state { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px;
+  background: var(--mat-sys-surface-container, #f5f5f5); color: var(--mat-sys-on-surface-variant, #555); font-size: 13px; }
+.osm-state--error { background: var(--mat-sys-error-container, #ffebee); color: var(--mat-sys-on-error-container, #8b1a1a); }
+.osm-state--warn { background: var(--mat-sys-tertiary-container, #fff8e1); color: var(--mat-sys-on-tertiary-container, #664d03); }
+.osm-toolbar { display: flex; align-items: center; }
+.osm-spacer { flex: 1; }
+.osm-count { font-size: 13px; }
+.osm-list { max-height: 280px; overflow: auto; padding: 0; }
+.osm-item { height: auto !important; }
+.osm-row { display: flex; align-items: center; gap: 4px; }
+.osm-row__text { flex: 1; min-width: 0; cursor: pointer; }
+.osm-row__name { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.osm-row__type { font-size: 12px; color: var(--mat-sys-on-surface-variant, #555); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.osm-attribution { font-size: 11px; color: var(--mat-sys-on-surface-variant, #555); }
+.osm-actions, .osm-save { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+.osm-message { font-size: 13px; }
+.osm-message--error { color: var(--mat-sys-error, #b71c1c); }
+.osm-message--ok { color: var(--mat-sys-primary, #1e5a8a); }
