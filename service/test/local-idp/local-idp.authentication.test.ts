@@ -188,6 +188,63 @@ describe.only('local idp authentication', function() {
         })
       })
 
+      describe('indefinite lock', function() {
+
+        async function lockIndefinitely(): Promise<LocalIdpAccount> {
+          let account = await newAccount()
+          for (let lockCount = 1; lockCount < enabledPolicy.accountLock.disableAfterLockCount; lockCount++) {
+            account = await failUntilLocked(account)
+            clock.tick(lockDurationMillis)
+          }
+          return await failUntilLocked(account)
+        }
+
+        it('locks the account indefinitely after the lock count threshold', async function() {
+
+          let account = await newAccount()
+          const disableAfterLockCount = enabledPolicy.accountLock.disableAfterLockCount
+          for (let lockCount = 1; lockCount < disableAfterLockCount; lockCount++) {
+            account = await failUntilLocked(account)
+            expect(account.security).to.deep.equal({
+              locked: true,
+              lockedUntil: new Date(Date.now() + lockDurationMillis),
+              invalidLoginAttempts: enabledPolicy.accountLock.lockAfterInvalidLoginCount,
+              numberOfTimesLocked: lockCount,
+            })
+            clock.tick(lockDurationMillis)
+          }
+
+          account = await failUntilLocked(account)
+          expect(account.security).to.deep.equal({
+            locked: true,
+            lockedUntil: null,
+            invalidLoginAttempts: enabledPolicy.accountLock.lockAfterInvalidLoginCount,
+            numberOfTimesLocked: disableAfterLockCount,
+          })
+        })
+
+        it('rejects the correct password regardless of elapsed time', async function() {
+
+          const lockedAccount = await lockIndefinitely()
+          expect(lockedAccount.security).to.include({ locked: true, lockedUntil: null })
+
+          clock.tick(lockDurationMillis * 1000)
+          const result = await attemptAuthentication(lockedAccount, password, enabledPolicy.accountLock)
+          assert(result.failed && result.failed.code === LocalIdpErrorCode.AccountLocked)
+          expect(result.failed.account).to.deep.equal(lockedAccount)
+        })
+
+        it('does not change the account security status for a mismatched password', async function() {
+
+          const lockedAccount = await lockIndefinitely()
+
+          clock.tick(lockDurationMillis * 1000)
+          const result = await attemptAuthentication(lockedAccount, 'wrong', enabledPolicy.accountLock)
+          assert(result.failed && result.failed.code === LocalIdpErrorCode.AccountLocked)
+          expect(result.failed.account).to.deep.equal(lockedAccount)
+        })
+      })
+
       describe('locked error message', function() {
 
         it('includes the lock expiration time', async function() {
