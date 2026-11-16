@@ -1,4 +1,5 @@
-import { FeatureTiles, GeoPackage, GeoPackageAPI, setCanvasKitWasmLocateFile, ShadedFeaturesTile } from '@ngageoint/geopackage';
+import { BoundingBox, FeatureTiles, GeoPackage, GeoPackageAPI, ProjectionConstants, setCanvasKitWasmLocateFile, ShadedFeaturesTile } from '@ngageoint/geopackage';
+import { Contents } from '@ngageoint/geopackage/dist/lib/core/contents/contents';
 import { GeoPackageValidationError } from '@ngageoint/geopackage/dist/lib/validate/geoPackageValidate';
 import { Feature, GeoJsonProperties, Geometry } from 'geojson';
 import path from 'path';
@@ -185,7 +186,7 @@ export class GeoPackageUtility {
       return {
         name: tableInfo.table_name,
         type: 'feature',
-        bbox: [tableInfo.min_x, tableInfo.min_y, tableInfo.max_x, tableInfo.max_y],
+        bbox: this.wgs84BoundingBox(geoPackage, tableInfo),
       }
     });
 
@@ -196,12 +197,28 @@ export class GeoPackageUtility {
         type: 'tile',
         minZoom: tileDao.minWebMapZoom,
         maxZoom: tileDao.maxWebMapZoom,
-        bbox: [tableInfo.min_x, tableInfo.min_y, tableInfo.max_x, tableInfo.max_y],
+        bbox: this.wgs84BoundingBox(geoPackage, tableInfo),
       };
     });
 
     connection.finished();
     return tables.concat(tileTables);
+  }
+
+  private wgs84BoundingBox(geoPackage: GeoPackage, contents: Contents): number[] {
+    const { min_x, min_y, max_x, max_y } = contents;
+    if ([min_x, min_y, max_x, max_y].some(value => value === null || value === undefined)) {
+      return [];
+    }
+
+    try {
+      const projection = geoPackage.contentsDao.getProjection(contents);
+      const wgs84 = new BoundingBox(min_x, max_x, min_y, max_y).projectBoundingBox(projection, ProjectionConstants.EPSG_4326);
+      return [wgs84.minLongitude, wgs84.minLatitude, wgs84.maxLongitude, wgs84.maxLatitude];
+    } catch (err) {
+      console.warn(`unable to project bounds of table ${contents.table_name} from srs ${contents.srs_id} to EPSG:4326`, err);
+      return [];
+    }
   }
 
   public async optimize(path:string, progress?: Function):Promise<boolean> {

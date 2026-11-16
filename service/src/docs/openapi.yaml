@@ -3561,6 +3561,31 @@ components:
         format:
           type: string
           enum: [ WMS, XYZ, TMS ]
+        tables:
+          type: array
+          description: The tables of a GeoPackage layer.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              type:
+                type: string
+                enum: [ tile, feature ]
+              minZoom:
+                type: number
+                description: Minimum web map zoom level of a tile table.
+              maxZoom:
+                type: number
+                description: Maximum web map zoom level of a tile table.
+              bbox:
+                type: array
+                description: >
+                  The table's bounds as `[west, south, east, north]` in EPSG:4326 degrees, regardless of the
+                  table's spatial reference system.  Empty if the table's bounds are unknown or cannot be
+                  projected to EPSG:4326.
+                items:
+                  type: number
     WMSLayer:
       title: WMSLayer
       type: object
