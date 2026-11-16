@@ -1,0 +1,140 @@
+<div class="osm-header">
+  <div>
+    <h2 mat-dialog-title class="osm-title">Search OpenStreetMap</h2>
+    <div class="osm-subtitle">{{ areaDrawing.label }} area &middot; {{ event?.name || 'No event selected' }}</div>
+  </div>
+  <button mat-icon-button aria-label="Close" (click)="close()" [disabled]="closeLocked"><mat-icon>close</mat-icon></button>
+</div>
+
+<mat-dialog-content class="osm-content">
+  <fieldset class="osm-area-controls" [disabled]="busy">
+    <legend>Search area</legend>
+    <div class="osm-area-buttons">
+      <button mat-stroked-button type="button" (click)="useVisibleArea()" [disabled]="busy" [attr.aria-pressed]="!areaDrawing.area && !areaDrawing.mode">Visible map</button>
+      <button mat-stroked-button type="button" (click)="drawArea('rectangle')" [disabled]="busy" [attr.aria-pressed]="areaDrawing.mode === 'rectangle'">Rectangle</button>
+      <button mat-stroked-button type="button" (click)="drawArea('circle')" [disabled]="busy" [attr.aria-pressed]="areaDrawing.mode === 'circle'">Circle</button>
+      <button mat-stroked-button type="button" (click)="drawArea('polygon')" [disabled]="busy" [attr.aria-pressed]="areaDrawing.mode === 'polygon'">Polygon</button>
+    </div>
+    <p role="status">{{ areaDrawing.hint }}</p>
+    <ng-container *ngIf="areaDrawing.mode">
+      <button mat-button type="button" (click)="areaDrawing.undo()" [disabled]="!areaDrawing.points.length">Undo point</button>
+      <button mat-button type="button" (click)="areaDrawing.cancel()">Cancel drawing</button>
+    </ng-container>
+  </fieldset>
+  <form class="osm-form" (ngSubmit)="runSearch()">
+    <mat-form-field appearance="outline" class="osm-field" subscriptSizing="dynamic">
+      <mat-label>Tag, key=value, or name keyword</mat-label>
+      <input matInput name="search" [(ngModel)]="search" [maxlength]="maxLength" [disabled]="busy" autocomplete="off">
+      <mat-hint>e.g. amenity=hospital, building=*, or words from a name. Max {{ maxLength }} characters.</mat-hint>
+    </mat-form-field>
+    <button mat-flat-button color="primary" type="submit" [disabled]="busy || !!areaDrawing.mode || !search.trim()">Search</button>
+  </form>
+
+  <mat-chip-listbox class="osm-aliases" aria-label="Common searches">
+    <mat-chip-option *ngFor="let alias of aliases" [selectable]="false" [disabled]="busy" (click)="useAlias(alias)">{{ alias }}</mat-chip-option>
+  </mat-chip-listbox>
+
+  <mat-progress-bar *ngIf="phase === 'searching'" mode="indeterminate"></mat-progress-bar>
+
+  <div *ngIf="phase === 'idle'" class="osm-state">
+    <mat-icon>map</mat-icon>
+    <div>Search the visible map or a drawn area up to {{ maxDegrees }} degrees per side and {{ maxArea }} km².
+      Rectangles and polygons use their boundary; circles use a 48-sided approximation.
+      Matching OSM features retain their complete geometry rather than being clipped at the boundary.
+      A search can return up to 500 features; use a more specific tag if there are too many matches.
+      Search terms and map bounds are sent to the configured Overpass operator, or public providers with failover when no custom provider is configured.
+      Use a trusted private instance for sensitive locations.</div>
+  </div>
+
+  <div *ngIf="phase === 'error'" class="osm-state osm-state--error" role="alert">
+    <mat-icon>error_outline</mat-icon>
+    <div>{{ errorMessage }}</div>
+    <button mat-button (click)="runSearch()" [disabled]="busy || !search.trim()">Retry</button>
+  </div>
+
+  <ng-container *ngIf="phase === 'results' && result">
+    <div *ngIf="!features.length" class="osm-state">
+      <mat-icon>search_off</mat-icon>
+      <div>No matching features in this area<span *ngIf="result.skipped"> ({{ result.skipped }} skipped)</span>. Try a different search or pan the map.</div>
+    </div>
+
+    <div *ngIf="expired" class="osm-state osm-state--warn" role="status">
+      <mat-icon>schedule</mat-icon>
+      <div>These results have expired on the server. Search again to download or save.</div>
+    </div>
+
+    <ng-container *ngIf="features.length">
+      <div class="osm-toolbar">
+        <span class="osm-count">{{ selectedCount }} of {{ features.length }} selected<span *ngIf="result.skipped"> &middot; {{ result.skipped }} skipped</span></span>
+        <span class="osm-spacer"></span>
+        <button mat-button (click)="selectAll()" [disabled]="busy || allSelected">All</button>
+        <button mat-button (click)="selectNone()" [disabled]="busy || !selectedCount">None</button>
+      </div>
+
+      <mat-list class="osm-list" dense>
+        <mat-list-item *ngFor="let f of features" class="osm-item">
+          <div class="osm-row">
+            <mat-checkbox [checked]="isSelected(f)" (change)="toggle(f, $event.checked)" [disabled]="busy" [aria-label]="featureName(f)"></mat-checkbox>
+            <div class="osm-row__text" (click)="zoomTo(f)">
+              <div class="osm-row__name">{{ featureName(f) }}</div>
+              <div class="osm-row__type">{{ featureType(f) }} &middot; {{ f.id }}</div>
+            </div>
+            <a *ngIf="osmLink(f) as link" mat-icon-button [href]="link" target="_blank" rel="noopener noreferrer" matTooltip="Open on OpenStreetMap" aria-label="Open on OpenStreetMap"><mat-icon>open_in_new</mat-icon></a>
+          </div>
+        </mat-list-item>
+      </mat-list>
+    </ng-container>
+
+    <div class="osm-attribution">{{ result.attribution }}<span *ngIf="expiresLabel && !expired"> &middot; Expires by {{ expiresLabel }}</span></div>
+
+    <ng-container *ngIf="features.length">
+      <mat-divider></mat-divider>
+
+      <div class="osm-actions">
+        <button data-guide="osm.csv" mat-stroked-button (click)="download('csv')" [disabled]="!canDownload || !canExport"
+          [matTooltip]="canDownload ? '' : 'Requires layer read permission'">
+          <mat-icon>download</mat-icon> CSV
+        </button>
+        <button data-guide="osm.kml" mat-stroked-button (click)="download('kml')" [disabled]="!canDownload || !canExport"
+          [matTooltip]="canDownload ? '' : 'Requires layer read permission'">
+          <mat-icon>download</mat-icon> KML
+        </button>
+        <button data-guide="osm.gpkg" mat-stroked-button (click)="download('gpkg')" [disabled]="!canDownload || !canExport"
+          [matTooltip]="canDownload ? '' : 'Requires layer read permission'">
+          <mat-icon>download</mat-icon> GPKG
+        </button>
+        <mat-progress-bar *ngIf="downloading" mode="indeterminate"></mat-progress-bar>
+        <div *ngIf="downloadError" class="osm-message osm-message--error" role="alert">{{ downloadError }}</div>
+      </div>
+
+      <div *ngIf="canSave" class="osm-save">
+        <ng-container *ngIf="!savedLayer">
+          <mat-form-field appearance="outline" class="osm-field" subscriptSizing="dynamic">
+            <mat-label>Layer name</mat-label>
+            <input matInput [(ngModel)]="layerName" [disabled]="busy || expired" maxlength="100">
+          </mat-form-field>
+          <button mat-flat-button color="primary" (click)="saveLayer()" [disabled]="!canExport || !layerName.trim()">
+            Save to {{ event?.name || 'event' }}
+          </button>
+          <mat-progress-bar *ngIf="saving" mode="indeterminate"></mat-progress-bar>
+          <div *ngIf="saveError" class="osm-message osm-message--error" role="alert">{{ saveError }}</div>
+        </ng-container>
+
+        <ng-container *ngIf="savedLayer">
+          <div class="osm-message">Saved layer "{{ savedLayer.name }}".</div>
+          <div *ngIf="layerStateMessage" class="osm-message">{{ layerStateMessage }}</div>
+          <mat-progress-bar *ngIf="sharing" mode="indeterminate"></mat-progress-bar>
+          <div *ngIf="shared" class="osm-message osm-message--ok">Confirmed on the event.
+            <span *ngIf="event?.id == savedEventId">The overlay is enabled on the current map.</span>
+            <span *ngIf="event?.id != savedEventId">Return to that event to view its layer.</span>
+          </div>
+          <button *ngIf="shared && event?.id == savedEventId" mat-flat-button color="primary" (click)="close()">View on map</button>
+          <ng-container *ngIf="shareError">
+            <div class="osm-message osm-message--error" role="alert">{{ shareError }}</div>
+            <button mat-stroked-button (click)="share()" [disabled]="sharing">Retry sharing</button>
+          </ng-container>
+        </ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+</mat-dialog-content>

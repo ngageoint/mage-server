@@ -52,6 +52,8 @@ export interface GeoPackageLayer {
    */
   layerId: LayerId
   name: string
+  /** SQL table identifier, separate from the user-facing layer name. */
+  tableName?: string
   renderAs: 'tile' | 'feature'
   url: string
   minZoom?: number

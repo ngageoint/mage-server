@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { OsmControlComponent } from '../map/osm/osm-control.component';
+import { OsmSearchComponent } from '../map/osm/osm-search.component';
 
 import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -213,6 +215,8 @@ class AngularModule { }
     LayersControlComponent,
     LocationComponent,
     MapComponent,
+    OsmControlComponent,
+    OsmSearchComponent,
 
     NavigationComponent,
     PasswordResetSuccessDialog,
