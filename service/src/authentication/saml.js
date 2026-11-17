@@ -1,5 +1,5 @@
 const SamlStrategy = require('@node-saml/passport-saml').Strategy
-  , log = require('winston')
+  , log = require('../logger')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion
@@ -122,9 +122,10 @@ function configure(strategy) {
 
   function authenticate(req, res, next) {
     AuthenticationInitializer.passport.authenticate(strategy.name, function (err, user, info = {}) {
-      if (err) {
-        console.error('saml: authentication error', err);
-        return next(err);
+      if (err) return next(err);
+
+      if (!user) {
+        return next(new Error(info.message || 'No user returned from identity provider'));
       }
 
       req.user = user;

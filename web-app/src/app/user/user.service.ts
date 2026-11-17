@@ -63,11 +63,9 @@ export class UserService {
         return;
       }
 
-      const onMessage = (event: MessageEvent<{ user?: User; token?: string }>) => {
-        if (event.origin !== window.location.origin) {
-          return;
-        }
-
+      const channel = new BroadcastChannel('mage-idp-signin');
+      // addEventListener, not onmessage, so zone.js runs change detection
+      channel.addEventListener('message', (event: MessageEvent<{ user?: User; token?: string }>) => {
         const { user, token } = event.data ?? {};
         if (user && token) {
           subscriber.next({ status: 'authenticated', user, token });
@@ -76,11 +74,11 @@ export class UserService {
         } else {
           subscriber.next({ status: 'failed' });
         }
+        popup.close();
         subscriber.complete();
-      };
+      });
 
-      window.addEventListener('message', onMessage);
-      return () => window.removeEventListener('message', onMessage);
+      return () => channel.close();
     });
   }
 
