@@ -1,1 +1,3 @@
-<div *ngIf="banner" class="banner" [style]="{'color': banner.color, 'backgroundColor': banner.backgroundColor}">{{banner.text}}</div>
+@if (banner()) {
+  <div class="banner" [style]="{'color': banner()!.color, 'backgroundColor': banner()!.backgroundColor}">{{banner()!.text}}</div>
+}
