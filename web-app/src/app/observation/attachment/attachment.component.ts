@@ -1,4 +1,4 @@
-import { Component, EventEmitter, inject, input, OnInit, Output } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -14,7 +14,7 @@ import { FilenamePipe } from '../../filename/filename.pipe';
     styleUrls: ['./attachment.component.scss'],
     imports: [NgClass, MatButtonModule, MatChipsModule, MatIconModule, FilenamePipe]
 })
-export class AttachmentComponent implements OnInit {
+export class AttachmentComponent {
   private readonly sessionService: SessionService = inject(SessionService)
 
   attachment = input.required<Attachment>()
@@ -27,9 +27,9 @@ export class AttachmentComponent implements OnInit {
   // place (that's reserved for the detail/edit views where there's room for it to grow into).
   expandable = input(true)
 
-  @Output() delete = new EventEmitter<void>()
+  delete = output<void>()
 
-  canEdit: boolean
+  readonly canEdit = computed(() => this.sessionService.amAdmin && this.edit())
   token: string = this.sessionService.getToken()
   messageExpanded = false
 
@@ -43,10 +43,6 @@ export class AttachmentComponent implements OnInit {
 
   actions: typeof AttachmentAction = AttachmentAction
 
-  ngOnInit(): void {
-    this.canEdit = this.sessionService.amAdmin && this.edit()
-  }
-
   deleteAttachment(): void {
     this.delete.emit()
   }
@@ -58,7 +54,7 @@ export class AttachmentComponent implements OnInit {
     } else {
       const extension = this.attachment().name.substr(this.attachment().name.lastIndexOf('.') + 1)
       const mimeType = this.mimeTypes[extension]
-      return mimeType ? mimeType : ''
+      return mimeType ?? ''
     }
   }
 

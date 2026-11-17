@@ -9,7 +9,7 @@
       </div>
     } @else if (contentType() === 'video' || contentType() === 'audio') {
       <div class="media">
-        <video width="100%" height="100%" [controls]="!canEdit" class="attachment__video">
+        <video width="100%" height="100%" [controls]="!canEdit()" class="attachment__video">
           <source src="{{attachment().url}}?access_token={{token}}" type="video/mp4">
           <div>
             <div class="media media-unknown">
@@ -41,7 +41,7 @@
     </div>
   }
 
-  @if (canEdit) {
+  @if (canEdit()) {
     <div class="attachment__delete">
       <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
@@ -60,7 +60,7 @@
     }
   </div>
 
-  @if (canEdit || edit()) {
+  @if (canEdit() || edit()) {
     <div class="attachment__delete">
       <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
@@ -74,7 +74,7 @@
     <div>Upload pending...</div>
   </div>
 
-  @if (canEdit) {
+  @if (canEdit()) {
     <div class="attachment__delete">
       <button matMiniFab class="warn" (click)="deleteAttachment()" [disabled]="attachment()?.action === actions.DELETE">
         <mat-icon>delete</mat-icon>
