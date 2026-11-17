@@ -1,21 +1,83 @@
-html
+doctype html
+html(lang='en')
   head
+    meta(charset='utf-8')
+    meta(name='viewport' content='width=device-width, initial-scale=1')
+    title Mage
+    link(rel='icon' type='image/x-icon' href='/favicon.ico')
+    style.
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+        background: #ffffff;
+        color: #1b1b1f;
+        font-family: Roboto, "Helvetica Neue", sans-serif;
+        text-align: center;
+      }
+      main {
+        max-width: 400px;
+      }
+      .status-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 64px;
+        height: 64px;
+        margin-bottom: 24px;
+        border-radius: 50%;
+        background: #d8e2ff;
+        fill: #005cbb;
+      }
+      .status-icon.failed {
+        background: #ffdad6;
+        fill: #ba1a1a;
+      }
+      .status-icon svg {
+        width: 32px;
+        height: 32px;
+      }
+      h1 {
+        margin: 0 0 16px;
+        font-size: 28px;
+        font-weight: 400;
+        line-height: 36px;
+        color: #005cbb;
+      }
+      p {
+        margin: 0 0 8px;
+        font-size: 16px;
+        line-height: 24px;
+        color: #44474e;
+      }
     script.
       (function() {
         const login = !{JSON.stringify(login)};
-        // Ensure host is just the origin (protocol + host + port)
-        const targetOrigin = window.location.origin;
 
-        // Safely send message to opener
-        if (window.opener && targetOrigin) {
-          window.opener.postMessage(login, targetOrigin);
-        }
+        const channel = new BroadcastChannel('mage-idp-signin');
+        channel.postMessage(login);
 
-        // Close after a short delay to allow message delivery
-        setTimeout(() => window.close(), 100);
+        setTimeout(() => {
+          channel.close();
+          window.close();
+        }, 100);
       })();
   body
-    if success
-      p Successful authentication
-    else
-      p Authentication error
+    main
+      if success
+        .status-icon
+          svg(viewBox='0 0 24 24' aria-hidden='true')
+            path(d='M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z')
+        h1 You're all set
+        p You can now close this tab and return to Mage.
+      else
+        .status-icon.failed
+          svg(viewBox='0 0 24 24' aria-hidden='true')
+            path(d='M10 3h4v12h-4z')
+            circle(cx='12' cy='19' r='2')
+        h1 Something went wrong
+        p You can close this tab and return to Mage to try again.

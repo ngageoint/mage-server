@@ -52,70 +52,77 @@ describe('User Service Tests', () => {
       expect(result).toEqual({ status: 'popupBlocked' });
     });
 
-    function signinResult(data: any): IdpSigninResult {
-      const service: UserService = TestBed.inject(UserService);
-      spyOn(window, 'open').and.returnValue({} as Window);
+    describe('sign in result', () => {
+      let service: UserService;
+      let popup: jasmine.SpyObj<Window>;
+      let channel: jasmine.SpyObj<BroadcastChannel>;
 
-      let result: IdpSigninResult;
-      service.idpSignin('openidconnect').subscribe(response => result = response);
-      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data }));
-      return result;
-    }
+      beforeEach(() => {
+        service = TestBed.inject(UserService);
+        popup = jasmine.createSpyObj<Window>('popup', ['close']);
+        spyOn(window, 'open').and.returnValue(popup);
+        channel = jasmine.createSpyObj<BroadcastChannel>('channel', ['addEventListener', 'close']);
+        // A constructor, so spyOn's typings (functions only) don't apply
+        spyOn(window as any, 'BroadcastChannel').and.returnValue(channel);
+      });
 
-    it('reports a user and token posted back as authenticated', () => {
-      const user: any = { id: 'user-1' };
-      expect(signinResult({ user, token: 'token' })).toEqual({ status: 'authenticated', user, token: 'token' });
-    });
+      function broadcast(data: any): void {
+        const [type, listener] = channel.addEventListener.calls.mostRecent().args;
+        expect(type).toBe('message');
+        (listener as EventListener)(new MessageEvent('message', { data }));
+      }
 
-    it('reports a user posted back without a token as unauthorized', () => {
-      const user: any = { id: 'user-1', active: false };
-      expect(signinResult({ user })).toEqual({ status: 'unauthorized', user });
-    });
+      it('listens on the sign in channel', () => {
+        service.idpSignin('openidconnect').subscribe();
 
-    it('reports an empty result as a failed sign in', () => {
-      expect(signinResult({})).toEqual({ status: 'failed' });
-    });
+        expect(window.BroadcastChannel).toHaveBeenCalledWith('mage-idp-signin');
+      });
 
-    it('stops listening once the sign in result arrives', () => {
-      const service: UserService = TestBed.inject(UserService);
-      spyOn(window, 'open').and.returnValue({} as Window);
-      const add = spyOn(window, 'addEventListener').and.callThrough();
-      const remove = spyOn(window, 'removeEventListener').and.callThrough();
+      it('reports a user and token as authenticated', () => {
+        const user: any = { id: 'user-1' };
+        let result: IdpSigninResult;
+        service.idpSignin('openidconnect').subscribe(response => result = response);
 
-      service.idpSignin('openidconnect').subscribe();
-      const listener = add.calls.mostRecent().args[1];
-      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data: {} }));
+        broadcast({ user, token: 'token' });
 
-      expect(remove).toHaveBeenCalledWith('message', listener);
-    });
+        expect(result).toEqual({ status: 'authenticated', user, token: 'token' });
+      });
 
-    it('stops listening when unsubscribed before a result arrives', () => {
-      const service: UserService = TestBed.inject(UserService);
-      spyOn(window, 'open').and.returnValue({} as Window);
-      const add = spyOn(window, 'addEventListener').and.callThrough();
-      const remove = spyOn(window, 'removeEventListener').and.callThrough();
+      it('reports a user without a token as unauthorized', () => {
+        const user: any = { id: 'user-1', active: false };
+        let result: IdpSigninResult;
+        service.idpSignin('openidconnect').subscribe(response => result = response);
 
-      const subscription = service.idpSignin('openidconnect').subscribe();
-      const listener = add.calls.mostRecent().args[1];
-      subscription.unsubscribe();
+        broadcast({ user });
 
-      expect(remove).toHaveBeenCalledWith('message', listener);
-    });
+        expect(result).toEqual({ status: 'unauthorized', user });
+      });
 
-    it('ignores messages from other origins and keeps waiting for the sign in result', () => {
-      const service: UserService = TestBed.inject(UserService);
-      spyOn(window, 'open').and.returnValue({} as Window);
-      const user: any = { id: 'user-1' };
+      it('reports an empty result as a failed sign in', () => {
+        let result: IdpSigninResult;
+        service.idpSignin('openidconnect').subscribe(response => result = response);
 
-      let result: IdpSigninResult;
-      service.idpSignin('openidconnect').subscribe(response => result = response);
-      window.dispatchEvent(new MessageEvent('message', { origin: 'https://extension.example.com', data: { other: true } }));
+        broadcast({});
 
-      expect(result).toBeUndefined();
+        expect(result).toEqual({ status: 'failed' });
+      });
 
-      window.dispatchEvent(new MessageEvent('message', { origin: window.location.origin, data: { user, token: 'token' } }));
+      it('closes the popup and stops listening once the result arrives', () => {
+        service.idpSignin('openidconnect').subscribe();
 
-      expect(result).toEqual({ status: 'authenticated', user, token: 'token' });
+        broadcast({});
+
+        expect(popup.close).toHaveBeenCalled();
+        expect(channel.close).toHaveBeenCalled();
+      });
+
+      it('stops listening when unsubscribed before a result arrives', () => {
+        const subscription = service.idpSignin('openidconnect').subscribe();
+
+        subscription.unsubscribe();
+
+        expect(channel.close).toHaveBeenCalled();
+      });
     });
   });
 

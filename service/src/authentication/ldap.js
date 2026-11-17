@@ -1,5 +1,5 @@
 const { Client, InvalidCredentialsError } = require('ldapts')
-  , log = require('winston')
+  , log = require('../logger')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion

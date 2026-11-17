@@ -157,6 +157,10 @@ function initialize(strategy) {
       passport.authenticate(strategy.name, function (err, user, info = {}) {
          if (err) return next(err);
 
+         if (!user) {
+            return next(new Error(info.message || 'No user returned from identity provider'));
+         }
+
          req.user = user;
 
          // For inactive or disabled accounts don't generate an authorization token

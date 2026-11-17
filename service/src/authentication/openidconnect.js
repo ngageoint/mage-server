@@ -1,7 +1,7 @@
 const crypto = require('crypto')
   , session = require('express-session')
   , OpenIdConnectStrategy = require('passport-openidconnect').Strategy
-  , log = require('winston')
+  , log = require('../logger')
   , User = require('../models/user')
   , Role = require('../models/role')
   , TokenAssertion = require('./verification').TokenAssertion
@@ -75,6 +75,10 @@ function configure(strategy) {
   function authenticate(req, res, next) {
     passport.authenticate(strategy.name, function (err, user, info = {}) {
       if (err) return next(err);
+
+      if (!user) {
+        return next(new Error(info.message || 'No user returned from identity provider'));
+      }
 
       // TODO, this is a workaround for openidconnect library killing the app state
       req.query.state = info.state
