@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, OnDestroy, TemplateRef, ViewChild, signal, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, OnDestroy, TemplateRef, signal, inject, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatDialog as MatDialog } from '@angular/material/dialog';
@@ -64,12 +64,11 @@ export class DeviceDetailsComponent implements OnInit, OnDestroy {
     return this.#breadcrumbs;
   }
 
-  @ViewChild('breadcrumbActions', { static: true })
-  breadcrumbActions!: TemplateRef<unknown>;
+  readonly breadcrumbActions = viewChild.required<TemplateRef<unknown>>('breadcrumbActions');
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-    this.breadcrumbService.setActions(this.breadcrumbActions);
+    this.breadcrumbService.setActions(this.breadcrumbActions());
 
     this.hasUpdatePermission =
       this.sessionService.hasPermission('UPDATE_DEVICE');
