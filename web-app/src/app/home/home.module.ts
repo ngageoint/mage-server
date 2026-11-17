@@ -54,7 +54,7 @@ import { SearchComponent } from '../map/controls/search.component';
 import { LayersComponent } from '../map/layers/layers.component'
 import { LayersControlComponent } from '../map/controls/layers-control.component';
 import { MapComponent } from '../map/map.component';
-import { ColorPickerModule } from '../color-picker/color-picker.module';
+import { ColorPickerComponent } from '../color-picker/color-picker.component';
 import { ExportComponent } from '../export/export.component';
 import { ExportCreateComponent } from '../export/export-create/export-create.component';
 import { ObservationPreviewItemComponent } from '../export/export-create/observation-preview-item.component';
@@ -231,7 +231,7 @@ class AngularModule { }
   ],
   imports: [
     AngularModule,
-    ColorPickerModule,
+    ColorPickerComponent,
     DatetimePickerComponent,
     EventMemberFilterComponent,
     LayersComponent,
