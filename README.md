@@ -39,6 +39,17 @@ web and mobile apps consume.
 The `web-app` directory contains the `@ngageoint/mage.web-app` package.  The package is the bundled, [Angular](https://angular.io)-based
 web app Mage client that includes standard user functionality as well as access administrative functions.
 
+#### Dynamic user guides
+
+Open **Info / About MAGE → Help → Open user guide** to read the six-topic guide
+in a new tab, search it, or download self-contained offline chapters/editions.
+Authorized administrators can customize text, included sections/form fields and
+workflow pictures without AI.
+
+- [Architecture, code locations, API, source links and developer maintenance](web-app/docs/USER_GUIDES.md)
+- [Administrator editing, screenshots and offline copies](web-app/docs/ADMIN_USER_GUIDES.md)
+- [Real-UI screenshot refresh, fictional fixtures, network policy and limits](web-app/docs/guide-screen-capture.md)
+
 ### [`core-lib`](./web-app/projects/core-lib/)
 
 The `core-lib` directory is a descendant of the `web-app` directory that contains the `@ngageoint/mage.web-core-lib`

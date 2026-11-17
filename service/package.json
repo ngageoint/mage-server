@@ -139,6 +139,7 @@
     ]
   },
   "scripts": {
+    "test:guides": "node --test test/guide-customization.test.cjs",
     "build:compile": "tsc -b src",
     "build:copy_assets": "cpy --cwd=src './assets/**/*' '../lib/assets/'",
     "build:copy_docs": "cpy --cwd=src './docs/**/*' '../lib/docs/'",

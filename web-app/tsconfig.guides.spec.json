@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.spec.json",
+  "include": [
+    "src/**/*.d.ts",
+    "src/app/about/about.component.spec.ts",
+    "src/app/http/session.service.spec.ts",
+    "src/app/help/*.spec.ts"
+  ]
+}

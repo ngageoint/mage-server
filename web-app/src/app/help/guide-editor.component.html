@@ -1,0 +1,111 @@
+<section class="guide-editor" aria-label="Customize guide">
+  <header class="ed-head">
+    <div>
+      <div class="eyebrow"><mat-icon>edit_note</mat-icon>Customize guide &middot; {{ scopeLabel }}</div>
+      <h1>{{ isGlobal ? 'Guide content for everyone' : 'Event forms guide' }}</h1>
+    </div>
+    <div class="ed-actions">
+      <button matButton class="cancel" (click)="cancel()" [disabled]="saving">Cancel</button>
+      <button matButton="filled" class="save" (click)="save()" [disabled]="saving || uploading || !dirty">
+        {{ saving ? 'Saving...' : 'Save' }}
+      </button>
+    </div>
+  </header>
+
+  <div class="notice" role="note">
+    <mat-icon>visibility</mat-icon>
+    <div>
+      <p *ngIf="isGlobal"><strong>Public text.</strong> Everything written here is shown to anyone who opens the user guide, including people who are not signed in. Do not include operational details.</p>
+      <p *ngIf="!isGlobal"><strong>Event readers only.</strong> This text is shown to signed-in people who can access this event.</p>
+      <p>Including or excluding a topic, section or field only changes this documentation. It does not change permissions, forms or what people can enter.</p>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="ed-error" role="alert">
+    <mat-icon>error</mat-icon><span>{{ error }}</span>
+    <button *ngIf="conflict" matButton class="reload" (click)="reloadLatest()">Discard draft and reload latest</button>
+  </div>
+
+  <div class="ed-tools">
+    <label class="filter"><mat-icon>filter_list</mat-icon>
+      <input type="search" placeholder="Filter sections" aria-label="Filter sections" [value]="filter" (input)="filter = $any($event.target).value">
+    </label>
+    <span class="count">{{ changeCount }} customization{{ changeCount === 1 ? '' : 's' }} in draft</span>
+    <button matButton class="reset-all" (click)="resetAll()" [disabled]="!changeCount">
+      {{ confirmResetAll ? 'Confirm: remove every customization' : 'Reset all' }}
+    </button>
+    <button *ngIf="confirmResetAll" matButton class="reset-all-cancel" (click)="confirmResetAll = false">Keep them</button>
+  </div>
+
+  <div class="rows">
+    <div *ngFor="let r of visibleRows; trackBy: trackByKey" class="row" [class.topic]="r.kind === 'topic'"
+      [class.excluded]="!included(r) || parentHidden(r)" [attr.data-key]="r.key">
+      <div class="row-head">
+        <label class="include">
+          <input type="checkbox" [checked]="included(r)" (change)="setIncluded(r, $any($event.target).checked)"
+            [attr.aria-label]="'Include ' + r.title">
+          <span>{{ included(r) ? 'Included' : 'Excluded' }}</span>
+        </label>
+        <code class="key">{{ r.key }}</code>
+        <span *ngIf="edited(r)" class="tag">edited</span>
+        <span *ngIf="stale(r)" class="tag warn">generated text changed</span>
+        <span *ngIf="parentHidden(r)" class="tag">topic excluded</span>
+        <button *ngIf="edited(r)" matButton class="reset" (click)="resetText(r)">Reset to automatic text</button>
+      </div>
+      <div class="fields">
+        <label>Title
+          <input class="title-input" [value]="titleOf(r)" (input)="setTitle(r, $any($event.target).value)">
+        </label>
+        <label>{{ r.kind === 'topic' ? 'Summary paragraphs' : 'Paragraphs' }} <small>one per line</small>
+          <textarea class="body-input" rows="3" [value]="bodyOf(r)" (input)="setBody(r, $any($event.target).value)"></textarea>
+        </label>
+        <label *ngIf="r.kind === 'section'">Steps <small>one per line</small>
+          <textarea class="steps-input" rows="2" [value]="stepsOf(r)" (input)="setSteps(r, $any($event.target).value)"></textarea>
+        </label>
+      </div>
+      <fieldset *ngIf="r.kind === 'section'" class="screenshots" [disabled]="saving || uploading">
+        <legend>Workflow screenshots</legend>
+        <p>Use fictional example data, not real users, events or observations. Images are published only when you save this guide.</p>
+        <label>Add screenshot (PNG, JPEG or WebP, up to 1 MiB)
+          <input type="file" accept="image/png,image/jpeg,image/webp" (change)="uploadImage(r, $any($event.target))">
+        </label>
+        <p *ngIf="uploading" role="status">Uploading screenshot…</p>
+        <div *ngFor="let image of imagesOf(r); let n = index; trackBy: trackByImage" class="screenshot">
+          <img [src]="imageSrc(r, image)" [alt]="image.alt">
+          <label>Description for screen readers
+            <input maxlength="500" [value]="image.alt" (input)="updateImage(r, n, {alt: $any($event.target).value})">
+          </label>
+          <label>Caption
+            <input maxlength="2000" [value]="image.caption" (input)="updateImage(r, n, {caption: $any($event.target).value})">
+          </label>
+          <label>Place screenshot
+            <select [value]="positionOf(r, image)" (change)="placeImage(r, n, $any($event.target).value)">
+              <option *ngFor="let position of positions(r); trackBy: trackByPosition" [value]="position.value">{{ position.label }}</option>
+            </select>
+          </label>
+          <div>
+            <button matButton (click)="moveImage(r, n, -1)" [disabled]="n === 0">Move earlier</button>
+            <button matButton (click)="moveImage(r, n, 1)" [disabled]="n === imagesOf(r).length - 1">Move later</button>
+            <button matButton (click)="removeImage(r, n)">Remove screenshot</button>
+          </div>
+        </div>
+        <button matButton *ngIf="draft[r.key]?.images !== undefined" (click)="restoreImages(r)">Restore automatic screenshots</button>
+      </fieldset>
+      <details *ngIf="edited(r)" class="generated">
+        <summary>Automatic text</summary>
+        <strong>{{ r.title }}</strong>
+        <p *ngFor="let p of r.body">{{ p }}</p>
+        <ol *ngIf="r.steps.length"><li *ngFor="let s of r.steps">{{ s }}</li></ol>
+      </details>
+    </div>
+  </div>
+
+  <div *ngIf="orphanKeys.length" class="orphans">
+    <h2>Retained edits for content no longer generated</h2>
+    <p>These are kept on save unless you remove them.</p>
+    <div *ngFor="let k of orphanKeys" class="orphan">
+      <code>{{ k }}</code><span>{{ describeOrphan(k) }}</span>
+      <button matButton class="remove-orphan" (click)="removeOrphan(k)">Remove</button>
+    </div>
+  </div>
+</section>
