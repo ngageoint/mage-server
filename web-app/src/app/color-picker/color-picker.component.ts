@@ -32,7 +32,7 @@ export class ColorPickerComponent extends ColorWrap {
 
   readonly label = input<string>();
   readonly hexColor = input<string>();
-  readonly onColorChanged = output<ColorEvent>();
+  readonly colorChanged = output<ColorEvent>();
 
   readonly swatchEl = viewChild.required<ElementRef>('swatchEl');
   readonly pickerTemplate = viewChild.required<TemplateRef<any>>('pickerTemplate');
@@ -99,7 +99,7 @@ export class ColorPickerComponent extends ColorWrap {
   ok(): void {
     this.background = this.getRGBAStyle(this.rgb);
     this.activeBackground = this.background;
-    this.onColorChanged.emit({ color: new TinyColor(this.rgb).toHex8String() });
+    this.colorChanged.emit({ color: new TinyColor(this.rgb).toHex8String() });
     this.closeOverlay();
   }
 

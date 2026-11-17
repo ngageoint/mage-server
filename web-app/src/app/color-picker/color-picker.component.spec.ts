@@ -59,12 +59,12 @@ describe('ColorPickerComponent', () => {
   });
 
   it('should emit color on ok', () => {
-    spyOn(component.onColorChanged, 'emit');
+    spyOn(component.colorChanged, 'emit');
     component.open();
     component.rgb = { r: 1, g: 0, b: 1, a: 1 };
     component.ok();
     expect(component.background).toEqual('rgba(1, 0, 1, 1)');
-    expect(component.onColorChanged.emit).toHaveBeenCalledWith({
+    expect(component.colorChanged.emit).toHaveBeenCalledWith({
       color: new TinyColor(component.rgb).toHex8String()
     });
   });
