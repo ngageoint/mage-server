@@ -80,6 +80,12 @@ export class TeamService {
     if (typeof which.includeTotalCount === 'boolean') {
       queryParams.total = which.includeTotalCount ? 'true' : 'false'
     }
+    if (which.members?.length) {
+      queryParams.with_members = which.members
+    }
+    if (which.omitEventTeams) {
+      queryParams.omit_event_teams = 'true'
+    }
     return this.http.get<PageOf<Team>>('/api/next-teams/search', {
       params: queryParams
     })
@@ -111,5 +117,7 @@ type SearchQueryParams = {
   page_size: string,
   page: string,
   term?: string,
-  total?: 'true' | 'false'
+  total?: 'true' | 'false',
+  with_members?: string[],
+  omit_event_teams?: 'true'
 }

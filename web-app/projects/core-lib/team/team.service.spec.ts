@@ -85,5 +85,20 @@ describe('team service', () => {
       expect(receivedParams.get('page')).toEqual('10')
       expect(receivedParams.get('page_size')).toEqual('12')
     })
+
+    it('sends the member and event team filters', () => {
+
+      service.search({ pageIndex: 0, pageSize: 5, members: [ 'user1', 'user2' ], omitEventTeams: true }).subscribe(() => {})
+
+      const testReq = httpTest.expectOne(req => {
+        return req.method === 'GET' && req.url === `${BASE_URL}/search`
+      })
+      testReq.flush({ pageIndex: 0, pageSize: 5, items: [] })
+
+      const receivedParams = testReq.request.params
+      expect(receivedParams.keys().sort()).toEqual([ 'omit_event_teams', 'page', 'page_size', 'with_members' ])
+      expect(receivedParams.getAll('with_members')).toEqual([ 'user1', 'user2' ])
+      expect(receivedParams.get('omit_event_teams')).toEqual('true')
+    })
   })
 })
