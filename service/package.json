@@ -62,7 +62,7 @@
     "mime-types": "2.1.35",
     "moment": "2.31.0",
     "mongoose": "8.24.1",
-    "multer": "2.4.0",
+    "multer": "2.5.0",
     "passport": "0.7.0",
     "passport-anonymous": "1.0.1",
     "passport-http-bearer": "1.0.1",
