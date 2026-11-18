@@ -1,5 +1,5 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
-import { Component, effect, EventEmitter, inject, input, Output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -32,35 +32,35 @@ enum PreviewType {
 export class AttachUploadComponent {
   private readonly attachmentService: AttachmentService = inject(AttachmentService)
 
-  attachment = input<FileUpload>()
-  url = input<string>()
+  readonly attachment = input<FileUpload>()
+  readonly url = input<string>()
 
-  @Output() remove = new EventEmitter<{ id: number | string }>()
-  @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>()
-  @Output() error = new EventEmitter<{ id: number | string }>()
+  readonly remove = output<{ id: number | string }>()
+  readonly upload = output<{ id: number | string, response: HttpResponseBase }>()
+  readonly uploadError = output<{ id: number | string }>()
 
-  preview = signal<PreviewType>(PreviewType.LOADING)
-  previewType = PreviewType
-  uploading = signal(false)
-  uploadProgress = signal<number | null>(null)
-  actions: typeof AttachmentAction = AttachmentAction
+  readonly preview = signal<PreviewType>(PreviewType.LOADING)
+  readonly previewType = PreviewType
+  readonly uploading = signal(false)
+  readonly uploadProgress = signal<number | null>(null)
+  readonly actions: typeof AttachmentAction = AttachmentAction
 
   constructor() {
     effect(() => {
       const attachment = this.attachment()
       if (!attachment) return
 
-      if (attachment.file.type.match('image')) {
+      if (/image/.exec(attachment.file.type)) {
         this.preview.set(PreviewType.LOADING)
         this.previewImage(attachment)
           .then(() => { this.preview.set(PreviewType.IMAGE) })
           .catch(() => this.preview.set(PreviewType.UNKNOWN))
-      } else if (attachment.file.type.match('video')) {
+      } else if (/video/.exec(attachment.file.type)) {
         this.preview.set(PreviewType.LOADING)
         this.previewVideo(attachment)
           .then(() => { this.preview.set(PreviewType.VIDEO) })
           .catch(() => this.preview.set(PreviewType.UNKNOWN))
-      } else if (attachment.file.type.match('audio')) {
+      } else if (/audio/.exec(attachment.file.type)) {
         this.preview.set(PreviewType.AUDIO)
       } else {
         this.preview.set(PreviewType.UNKNOWN)
@@ -93,37 +93,31 @@ export class AttachUploadComponent {
   }
 
   previewVideo(info: FileUpload): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
+    return info.file.arrayBuffer().then(buffer => new Promise<void>((resolve, reject) => {
+      const blob = new Blob([buffer], { type: info.file.type })
+      const url = URL.createObjectURL(blob)
+      const video: HTMLVideoElement = document.createElement('video')
 
-      reader.onload = (): void => {
-        const blob = new Blob([reader.result], { type: info.file.type })
-        const url = URL.createObjectURL(blob)
-        const video: HTMLVideoElement = document.createElement('video')
+      video.addEventListener('loadeddata', () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+        canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const image = canvas.toDataURL()
+        info.preview = image
+        URL.revokeObjectURL(url)
+        resolve()
+      })
 
-        video.addEventListener('loadeddata', () => {
-          const canvas = document.createElement('canvas')
-          canvas.width = video.videoWidth
-          canvas.height = video.videoHeight
-          canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height)
-          const image = canvas.toDataURL()
-          info.preview = image
-          URL.revokeObjectURL(url)
-          resolve()
-        })
+      video.addEventListener('error', () => {
+        reject(new Error('Failed to load video preview'))
+      })
 
-        video.addEventListener('error', () => {
-          reject()
-        })
-
-        video.preload = 'metadata'
-        video.src = url
-        video.muted = true
-        video.play()
-      }
-
-      reader.readAsArrayBuffer(info.file)
-    })
+      video.preload = 'metadata'
+      video.src = url
+      video.muted = true
+      video.play().catch(() => reject(new Error('Failed to load video preview')))
+    }))
   }
 
   startUpload(): void {
@@ -136,7 +130,7 @@ export class AttachUploadComponent {
         if (response.status === 200) {
           this.upload.emit({ id: attachment.id, response: response.body })
         } else {
-          this.error.emit({ id: attachment.id })
+          this.uploadError.emit({ id: attachment.id })
         }
       } else if (response.type === HttpEventType.UploadProgress) {
         this.uploading.set(true)
