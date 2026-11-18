@@ -1,4 +1,4 @@
-import { Component, DestroyRef, EventEmitter, Input, Output, inject } from '@angular/core';
+import { Component, DestroyRef, EventEmitter, Input, Output, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription } from 'rxjs';
 import { AuthenticationStrategy } from '../../../api/api.entity';
@@ -16,10 +16,7 @@ export class IdpAuthenticationComponent {
   @Output() created = new EventEmitter<SignupEvent>()
   @Output() authenticated = new EventEmitter<{ user: User, token: string }>()
 
-  error: {
-    title: string,
-    message: string
-  }
+  readonly error = signal<{ title: string, message: string } | undefined>(undefined)
 
   private readonly destroyRef: DestroyRef = inject(DestroyRef)
   private signinSubscription?: Subscription
@@ -29,7 +26,7 @@ export class IdpAuthenticationComponent {
   ) {}
 
   signin() {
-    this.error = undefined
+    this.error.set(undefined)
 
     this.signinSubscription?.unsubscribe()
     this.signinSubscription = this.userService.idpSignin(this.strategy.name).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -45,16 +42,16 @@ export class IdpAuthenticationComponent {
             })
             break
           case 'popupBlocked':
-            this.error = {
+            this.error.set({
               title: 'Sign In Window Blocked',
               message: 'Your browser blocked the sign in window. Allow pop-ups for this site, then try again.'
-            }
+            })
             break
           case 'failed':
-            this.error = {
+            this.error.set({
               title: 'Error Signing In',
               message: 'There was a problem signing in, please try again or contact a Mage administrator for assistance.'
-            }
+            })
             break
         }
       }

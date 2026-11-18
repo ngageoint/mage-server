@@ -64,7 +64,6 @@ export class UserService {
       }
 
       const channel = new BroadcastChannel('mage-idp-signin');
-      // addEventListener, not onmessage, so zone.js runs change detection
       channel.addEventListener('message', (event: MessageEvent<{ user?: User; token?: string }>) => {
         const { user, token } = event.data ?? {};
         if (user && token) {

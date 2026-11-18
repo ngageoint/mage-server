@@ -97,8 +97,7 @@ describe('Idp Authentication Component', () => {
 
     expect(component.authenticated.emit).not.toHaveBeenCalled();
     expect(component.created.emit).not.toHaveBeenCalled();
-    expect(component.error).toBeTruthy();
-    expect(component.error.title).toBe('Error Signing In');
+    expect(component.error()?.title).toBe('Error Signing In');
   });
 
   it('should tell the user when the sign in window is blocked', () => {
@@ -111,7 +110,7 @@ describe('Idp Authentication Component', () => {
 
     expect(component.authenticated.emit).not.toHaveBeenCalled();
     expect(component.created.emit).not.toHaveBeenCalled();
-    expect(component.error.title).toBe('Sign In Window Blocked');
+    expect(component.error()?.title).toBe('Sign In Window Blocked');
     expect(fixture.nativeElement.querySelector('.error__message').textContent).toContain('Allow pop-ups for this site');
   });
 });
