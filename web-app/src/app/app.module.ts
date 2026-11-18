@@ -10,7 +10,7 @@ import { AppRoutingModule } from './routing.module';
 import { RouteReuseByComponentStrategy } from './route-reuse.strategy';
 import { LocalStorageService } from './http/local-storage.service';
 import { TokenInterceptorService } from './http/token.interceptor';
-import { BannerModule } from './banner/banner.module';
+import { BannerComponent } from './banner/baner.component';
 import { IngressModule } from './ingress/ingress.module';
 
 @NgModule({ declarations: [
@@ -20,7 +20,7 @@ import { IngressModule } from './ingress/ingress.module';
         CommonModule,
         BrowserModule,
         MatDialogModule,
-        BannerModule,
+        BannerComponent,
         IngressModule], providers: [
         provideAnimations(),
         LocalStorageService,
