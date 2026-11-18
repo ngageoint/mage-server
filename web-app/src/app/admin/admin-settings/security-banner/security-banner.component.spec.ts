@@ -22,7 +22,7 @@ import { SettingsService } from '../settings.service';
 })
 class MockColorPickerComponent {
   @Input() hexColor: string = '';
-  @Output() onColorChanged = new EventEmitter<{ color: string }>();
+  @Output() colorChanged = new EventEmitter<{ color: string }>();
 }
 
 class MockSettingsService {
@@ -104,7 +104,7 @@ describe('SecurityBannerComponent', () => {
     const headerTextColorPicker = fixture.debugElement.query(
       By.css('color-picker#headerTextColor')
     ).componentInstance as MockColorPickerComponent;
-    headerTextColorPicker.onColorChanged.emit({ color: '#111111' });
+    headerTextColorPicker.colorChanged.emit({ color: '#111111' });
 
     expect(component.headerTextColor()).toBe('#111111');
     expect(component.isDirty()).toBe(true);
