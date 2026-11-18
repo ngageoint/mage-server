@@ -1,6 +1,5 @@
 import { Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { DomSanitizer, SafeStyle } from '@angular/platform-browser';
 import { contentPathOfIcon, StaticIconService } from '@ngageoint/mage.web-core-lib/static-icon';
 
 export interface MaterialIconReference {
@@ -45,15 +44,14 @@ export class FeedIconComponent implements OnChanges, OnDestroy {
   @Input() size: number = 24
   @Input() badge: number = 0
 
-  iconMaskImage: SafeStyle | null = null
+  iconMaskImage: string | null = null
   isImageIcon = false
 
   private blobUrl: string | null = null
 
   constructor(
     private iconService: StaticIconService,
-    private httpClient: HttpClient,
-    private sanitizer: DomSanitizer
+    private httpClient: HttpClient
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -70,7 +68,7 @@ export class FeedIconComponent implements OnChanges, OnDestroy {
       } else if (this.icon.file) {
         const reader = new FileReader()
         reader.onload = (): void => {
-          this.iconMaskImage = this.sanitizer.bypassSecurityTrustStyle(`url(${reader.result})`)
+          this.iconMaskImage = `url(${reader.result})`
         }
 
         reader.readAsDataURL(this.icon.file)
@@ -86,7 +84,7 @@ export class FeedIconComponent implements OnChanges, OnDestroy {
     this.httpClient.get(contentPath, { responseType: 'blob' }).subscribe(blob => {
       this.disposeBlobUrl()
       this.blobUrl = URL.createObjectURL(blob)
-      this.iconMaskImage = this.sanitizer.bypassSecurityTrustStyle(`url(${this.blobUrl})`)
+      this.iconMaskImage = `url(${this.blobUrl})`
     })
   }
 

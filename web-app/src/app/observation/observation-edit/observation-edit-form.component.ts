@@ -1,95 +1,117 @@
-import { animate, state, style, transition, trigger } from '@angular/animations'
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, effect, input, output, signal } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
 import { FormPreference } from 'core-lib-src/user'
+import { MatButtonModule } from '@angular/material/button'
+import { MatCardModule } from '@angular/material/card'
+import { MatDividerModule } from '@angular/material/divider'
+import { MatIconModule } from '@angular/material/icon'
+import { GeometryModule } from '../../geometry/geometry.module'
+import { ObservationEditAttachmentComponent } from './observation-edit-attachment/observation-edit-attachment.component'
+import { ObservationEditCheckboxComponent } from './observation-edit-checkbox/observation-edit-checkbox.component'
+import { ObservationEditDateComponent } from './observation-edit-date/observation-edit-date.component'
+import { ObservationEditSelectComponent } from './observation-edit-select/observation-edit-select.component'
+import { ObservationEditMultiselectComponent } from './observation-edit-multiselect/observation-edit-multiselect.component'
+import { ObservationEditEmailComponent } from './observation-edit-email/observation-edit-email.component'
+import { ObservationEditNumberComponent } from './observation-edit-number/observation-edit-number.component'
+import { ObservationEditRadioComponent } from './observation-edit-radio/observation-edit-radio.component'
+import { ObservationEditTextComponent } from './observation-edit-text/observation-edit-text.component'
+import { ObservationEditTextareaComponent } from './observation-edit-textarea/observation-edit-textarea.component'
+import { ObservationEditPasswordComponent } from './observation-edit-password/observation-edit-password.component'
+import { GeometryEditEvent, ObservationEditGeometryComponent } from './observation-edit-geometry/observation-edit-geometry.component'
+import { activeFormFields, Form, FormField } from '../../entities/event/entities.event'
 
 @Component({
     selector: 'observation-edit-form',
     templateUrl: './observation-edit-form.component.html',
     styleUrls: ['./observation-edit-form.component.scss'],
-    animations: [
-        trigger('expand', [
-            transition(':enter', [
-                style({ height: 0, opacity: 0 }),
-                animate('300ms', style({ height: '*', opacity: 1 })),
-            ]),
-            transition(':leave', [
-                animate('300ms', style({ height: 0, opacity: 0 }))
-            ])
-        ]),
-        trigger('rotate', [
-            state('true', style({ transform: 'rotate(180deg)' })),
-            state('false', style({ transform: 'rotate(0)' })),
-            transition('* <=> *', animate('300ms ease-out'))
-        ])
-    ],
-    standalone: false
+    imports: [
+        MatButtonModule,
+        MatCardModule,
+        MatDividerModule,
+        MatIconModule,
+        GeometryModule,
+        ObservationEditAttachmentComponent,
+        ObservationEditCheckboxComponent,
+        ObservationEditDateComponent,
+        ObservationEditSelectComponent,
+        ObservationEditMultiselectComponent,
+        ObservationEditEmailComponent,
+        ObservationEditNumberComponent,
+        ObservationEditRadioComponent,
+        ObservationEditTextComponent,
+        ObservationEditTextareaComponent,
+        ObservationEditPasswordComponent,
+        ObservationEditGeometryComponent,
+    ]
 })
 export class ObservationEditFormComponent {
-  @Input() formGroup: UntypedFormGroup
-  @Input() formPreferences: FormPreference
-  @Input() definition: any
-  @Input() geometryStyle: any
-  @Input() attachmentUrl: string
-  @Input() observation: any
-  @Input() deletable = true
-  @Input() options: { expand: boolean, deletable: boolean }
+  formGroup = input.required<UntypedFormGroup>()
+  formPreferences = input<FormPreference>()
+  definition = input.required<Form>()
+  geometryStyle = input<any>()
+  attachmentUrl = input<string>()
+  observation = input<any>()
+  deletable = input(true)
+  options = input.required<{ expand: boolean, deletable: boolean }>()
 
-  @Output() remove = new EventEmitter<UntypedFormGroup>()
-  @Output() featureEdit = new EventEmitter<any>()
+  remove = output<UntypedFormGroup>()
+  featureEdit = output<GeometryEditEvent>()
 
-  fieldNames: string[]
-  fieldDefinitions: {}
-  primaryField: any = {}
-  primaryFieldValue: any
-  secondaryField: any = {}
-  secondaryFieldValue: any
+  fieldNames = signal<string[]>([])
+  fieldDefinitions = signal<Record<string, FormField>>({})
+  primaryField = signal<any>({})
+  primaryFieldValue = signal<any>(undefined)
+  secondaryField = signal<any>({})
+  secondaryFieldValue = signal<any>(undefined)
 
-  expand: boolean
+  expand = signal(false)
 
-  ngOnInit(): void {
-    this.expand = this.options.expand;
+  constructor() {
+    effect(() => {
+      const definition = this.definition()
+      const formGroup = this.formGroup()
 
-    this.fieldDefinitions = this.definition.fields.reduce((map, field) => {
-      map[field.name] = field
-      return map
-    }, {})
+      this.expand.set(this.options().expand)
 
-    const controlNames = Object.keys(this.formGroup.controls)
-    this.fieldNames = this.definition.fields
-      .filter(field => !field.archived)
-      .filter(field => controlNames.includes(field.name))
-      .sort((a, b) => a.id - b.id)
-      .map(field => field.name)
+      this.fieldDefinitions.set(definition.fields.reduce<Record<string, FormField>>((map, field) => {
+        map[field.name] = field
+        return map
+      }, {}))
 
-    this.updateView()
+      const controlNames = Object.keys(formGroup.controls)
+      this.fieldNames.set(
+        activeFormFields(definition.fields)
+          .filter(field => controlNames.includes(field.name))
+          .map(field => field.name)
+      )
+
+      this.updateView()
+    })
   }
-  
-  nonArchivedFields(fields: any[]): any[] {
-    return fields.filter(field => !field.archived).sort((a: any, b: any) => a.id - b.id );
-  }
 
-  onGeometryEdit(event): void {
+  onGeometryEdit(event: GeometryEditEvent): void {
     this.featureEdit.emit(event)
   }
 
   removeForm(): void {
-    this.remove.emit(this.formGroup)
+    this.remove.emit(this.formGroup())
   }
 
   private updateView(): void {
-    if (this.definition.primaryFeedField) {
-      this.primaryField = this.definition.fields.find(field => field.name === this.definition.primaryFeedField)
-      this.primaryFieldValue = this.getValue(this.definition.primaryFeedField)
+    const definition = this.definition()
+
+    if (definition.primaryFeedField) {
+      this.primaryField.set(definition.fields.find(field => field.name === definition.primaryFeedField))
+      this.primaryFieldValue.set(this.getValue(definition.primaryFeedField))
     }
 
-    if (this.definition.secondaryFeedField) {
-      this.secondaryField = this.definition.fields.find(field => field.name === this.definition.secondaryFeedField)
-      this.secondaryFieldValue = this.getValue(this.definition.secondaryFeedField)
+    if (definition.secondaryFeedField) {
+      this.secondaryField.set(definition.fields.find(field => field.name === definition.secondaryFeedField))
+      this.secondaryFieldValue.set(this.getValue(definition.secondaryFeedField))
     }
   }
 
   private getValue(fieldName: string): any {
-    return this.formGroup.get(fieldName).value
+    return this.formGroup().get(fieldName)?.value
   }
 }

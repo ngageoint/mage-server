@@ -1,7 +1,7 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { SidebarService } from '../../sidebar/sidebar.service';
-import moment from 'moment';
 import { MapService } from '../../map/map.service';
+import { UserWithLocation } from '../../entities/user/entities.user-location';
 
 @Component({
     selector: 'user-popup',
@@ -9,33 +9,23 @@ import { MapService } from '../../map/map.service';
     styleUrls: ['./user-popup.component.scss'],
     standalone: false
 })
-export class UserPopupComponent implements OnInit, OnChanges {
-  @Input() userWithLocation: any;
+export class UserPopupComponent {
+  @Input({ required: true }) userWithLocation: UserWithLocation;
 
-  user: any
-  location: any
-  date: string
-  followingUser: any
+  followingUser: MapService['followedFeature']
 
   constructor(
     private sidebarService: SidebarService,
-    private mapService: MapService) { }
-
-  ngOnInit(): void {
-    this.updateView()
+    private mapService: MapService) {
+    this.followingUser = mapService.followedFeature
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.updateView()
+  get user(): UserWithLocation['user'] {
+    return this.userWithLocation.user
   }
 
-  private updateView(): void {
-    if (!this.userWithLocation) return
-
-    this.user = this.userWithLocation.user
-    this.location = this.userWithLocation.location
-    this.followingUser = this.mapService.followedFeature
-    this.date = moment(this.location.properties.timestamp).format("YYYY-MM-DD HH:mm:ss")
+  get location(): UserWithLocation['location'] {
+    return this.userWithLocation.location
   }
 
   onInfo(): void {
@@ -43,10 +33,10 @@ export class UserPopupComponent implements OnInit, OnChanges {
   }
 
   onZoom(): void {
-    this.mapService.zoomToFeatureInLayer(this.user, 'People');
+    this.mapService.zoomToFeatureInLayer(this.user, 'people');
   }
 
   onFollow(): void {
-    this.mapService.followFeatureInLayer(this.user, 'People');
+    this.mapService.followFeatureInLayer(this.user, 'people');
   }
 }

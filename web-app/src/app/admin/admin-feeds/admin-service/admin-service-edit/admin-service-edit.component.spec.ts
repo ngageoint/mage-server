@@ -58,7 +58,8 @@ describe('AdminServiceEditComponent', () => {
     ]);
 
     await TestBed.configureTestingModule({
-      declarations: [TestHostComponent, AdminServiceEditComponent],
+      declarations: [TestHostComponent],
+      imports: [AdminServiceEditComponent],
       providers: [{ provide: FeedService, useValue: feedService }],
       schemas: [NO_ERRORS_SCHEMA]
     }).compileComponents();
@@ -80,8 +81,8 @@ describe('AdminServiceEditComponent', () => {
 
     expect(feedService.fetchServiceTypes).toHaveBeenCalled();
     expect(feedService.fetchServices).toHaveBeenCalled();
-    expect(component.serviceTypes.length).toBe(1);
-    expect(component.services.length).toBe(1);
+    expect(component.serviceTypes().length).toBe(1);
+    expect(component.services().length).toBe(1);
   });
 
   it('should emit cancelled', () => {

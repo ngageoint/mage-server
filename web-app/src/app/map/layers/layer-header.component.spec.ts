@@ -1,29 +1,22 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { LayerHeaderComponent } from './layer-header.component';
-import { MatCheckboxModule as MatCheckboxModule } from '@angular/material/checkbox';
-import { MatFormFieldModule as MatFormFieldModule } from '@angular/material/form-field';
-import { MatIconModule } from '@angular/material/icon';
-import { MatRadioModule as MatRadioModule } from '@angular/material/radio';
 import { Component, ViewChild } from '@angular/core';
 import { MapLayerService } from './layer.service';
-import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { By } from '@angular/platform-browser';
+import { RenderedMapLayer } from '../entities.map-layer';
+
+const gridLayer = { id: 'gars', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
 
 @Component({
     selector: `host-component`,
     template: `<layer-header [layer]="layer"></layer-header>`,
-    standalone: false
+    imports: [LayerHeaderComponent]
 })
 class TestHostComponent {
 
-  layer = {
-    layer: {
-      type: 'Tile'
-    }
-  };
+  layer = gridLayer;
 
-  @ViewChild(LayerHeaderComponent) layerHeader: LayerHeaderComponent;
+  @ViewChild(LayerHeaderComponent) layerHeader!: LayerHeaderComponent;
 }
 
 describe('LayerHeaderComponent', () => {
@@ -33,9 +26,8 @@ describe('LayerHeaderComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [ NoopAnimationsModule, MatFormFieldModule, MatCheckboxModule, MatRadioModule, MatIconModule ],
-      providers: [MapLayerService ],
-      declarations: [ LayerHeaderComponent, TestHostComponent ]
+      imports: [ TestHostComponent ],
+      providers: [MapLayerService ]
     })
     .compileComponents();
   }));
@@ -51,29 +43,13 @@ describe('LayerHeaderComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should have getBounds', () => {
-    component.layer.layer.getBounds = function(): any { return null; };
-    expect(component.hasBounds()).toBeTruthy();
-  });
-
-  it('should have bbox', () => {
-    component.layer.layer.table = {
-      bbox: [0,0,0,0]
-    };
-    expect(component.hasBounds()).toBeTruthy();
-  });
-
-  it('should not have bounds', () => {
-    expect(component.hasBounds()).toBeFalsy();
-  });
-
   it('should toggle check on', () => {
     spyOn(component['layerService'], 'toggle');
     const event: any = {
       checked: true
     };
     component.checkChanged(event);
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, true);
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer(), true);
   });
 
   it('should toggle check off', () => {
@@ -82,31 +58,12 @@ describe('LayerHeaderComponent', () => {
       checked: false
     };
     component.checkChanged(event);
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, false);
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer(), false);
   });
 
   it('should toggle radio on', () => {
     spyOn(component['layerService'], 'toggle');
     component.radioChanged();
-    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer, true);
-  });
-
-  it('should zoom', () => {
-    component.layer.layer.table = {
-      bbox: [0, 0, 0, 0]
-    };
-    fixture.detectChanges();
-    spyOn(component['layerService'], 'zoom');
-    const button = fixture.debugElement.queryAll(By.css('button'))[0];
-    button.nativeElement.click();
-    expect(component['layerService'].zoom).toHaveBeenCalledWith(component.layer);
-  });
-
-  it('should toggle expanded', () => {
-    spyOn(component.onToggle, 'emit');
-    component.expanded = false;
-    component.toggle();
-    expect(component.expanded).toBeTruthy();
-    expect(component.onToggle.emit).toHaveBeenCalled();
+    expect(component['layerService'].toggle).toHaveBeenCalledWith(component.layer(), true);
   });
 });

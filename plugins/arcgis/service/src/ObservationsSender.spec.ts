@@ -79,7 +79,7 @@ describe('ObservationsSender.sendAdds', () => {
       addResults: arcObjects.observations.map((_, i) => ({ objectId: i + 1, success: true }))
     });
 
-    const layerInfo = new LayerInfo('https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer/0', [4321], { id: 0, geometryType: 'esriGeometryPoint', fields: [] });
+    const layerInfo = new LayerInfo('https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer/0', 'https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer', '0', [4321], { id: 0, geometryType: 'esriGeometryPoint', fields: [] });
     const sender = new ObservationsSender(layerInfo, config, fakeIdentityManager, silentConsole);
 
     await sender.sendAdds(arcObjects);
@@ -115,7 +115,7 @@ describe('ObservationsSender.sendAdds', () => {
       addResults: [{ success: false, error: { code: 403, description: 'not authorized' } }]
     });
 
-    const layerInfo = new LayerInfo('https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer/0', [4321], { id: 0, geometryType: 'esriGeometryPoint', fields: [] });
+    const layerInfo = new LayerInfo('https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer/0', 'https://fake-arcgis.example.com/arcgis/rest/services/Incidents/FeatureServer', '0', [4321], { id: 0, geometryType: 'esriGeometryPoint', fields: [] });
     const sender = new ObservationsSender(layerInfo, config, fakeIdentityManager, silentConsole);
 
     await expect(sender.sendAdds(arcObjects)).resolves.not.toThrow();

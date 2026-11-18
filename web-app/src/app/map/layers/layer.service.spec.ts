@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { MapLayerService } from './layer.service';
+import { RenderedMapLayer } from '../entities.map-layer';
 
 describe('LayerService', () => {
   beforeEach(() => TestBed.configureTestingModule({
@@ -15,7 +16,7 @@ describe('LayerService', () => {
   it('should toggle on', (done) => {
     const service: MapLayerService = TestBed.inject(MapLayerService);
 
-    const layer = {};
+    const layer = { id: 'layer1', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
     const checked = true;
     service.toggle$.subscribe(event => {
       expect(event.layer).toEqual(layer);
@@ -30,7 +31,7 @@ describe('LayerService', () => {
   it('should toggle off', (done) => {
     const service: MapLayerService = TestBed.inject(MapLayerService);
 
-    const layer = {};
+    const layer = { id: 'layer1', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
     const checked = false;
     service.toggle$.subscribe(event => {
       expect(event.layer).toEqual(layer);
@@ -44,7 +45,7 @@ describe('LayerService', () => {
   it('should toggle zoom', (done) => {
     const service: MapLayerService = TestBed.inject(MapLayerService);
 
-    const layer = {};
+    const layer = { id: 'layer1', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
     service.zoom$.subscribe(event => {
       expect(event.layer).toEqual(layer);
       done();
@@ -56,7 +57,7 @@ describe('LayerService', () => {
   it('should change opacity', (done) => {
     const service: MapLayerService = TestBed.inject(MapLayerService);
 
-    const layer = {};
+    const layer = { id: 'layer1', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
     const opacity = .5;
     service.opacity$.subscribe(event => {
       expect(event.layer).toEqual(layer);
@@ -70,7 +71,7 @@ describe('LayerService', () => {
   it('should change style', (done) => {
     const service: MapLayerService = TestBed.inject(MapLayerService);
 
-    const layer = {};
+    const layer = { id: 'layer1', name: 'Layer One', type: 'grid', layer: {} } as unknown as RenderedMapLayer;
     const style = { stroke: '#FFFFFF', fill: '#000000', width: 2};
     service.style$.subscribe(event => {
       expect(event.layer).toEqual(layer);

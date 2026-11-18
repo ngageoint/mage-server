@@ -1,17 +1,21 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { Strategy } from '../../admin-authentication/admin-settings.model';
+import { AccountLockComponent } from './account-lock/account-lock.component';
+import { PasswordPolicyComponent } from './password-policy/password-policy.component';
 
 @Component({
     selector: 'admin-authentication-local',
     templateUrl: './admin-authentication-local.component.html',
     styleUrls: ['./admin-authentication-local.component.scss'],
-    standalone: false
+    imports: [
+      AccountLockComponent,
+      PasswordPolicyComponent
+    ]
 })
 export class AdminAuthenticationLocalComponent {
 
-  @Input() strategy: Strategy
-  @Input() editable = true
-  @Output() strategyDirty = new EventEmitter<boolean>();
+  readonly strategy = input.required<Strategy>();
+  readonly strategyDirty = output<boolean>();
 
   onStrategyDirty(isDirty: boolean): void {
     this.strategyDirty.emit(isDirty);

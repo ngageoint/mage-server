@@ -4,7 +4,7 @@
 
 import express from 'express'
 import { AnyPermission } from '../entities/authorization/entities.permissions'
-import { RoleModelInstance } from '../models/role'
+import { Role } from '../entities/authorization/entities.authorization'
 
 export = Object.freeze({
 
@@ -22,7 +22,7 @@ export = Object.freeze({
       if (!req.user) {
         return next()
       }
-      const role = req.user.roleId as RoleModelInstance
+      const role = req.user.roleId as Role
       if (!role) {
         return res.sendStatus(403)
       }

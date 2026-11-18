@@ -87,8 +87,7 @@ describe('FeedMetaDataComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
     declarations: [
-        TestFeedMetaDataHostComponent,
-        AdminFeedEditConfigurationComponent
+        TestFeedMetaDataHostComponent
     ],
     imports: [FormsModule,
         MatAutocompleteModule,
@@ -100,7 +99,8 @@ describe('FeedMetaDataComponent', () => {
         NoopAnimationsModule,
         ReactiveFormsModule,
         StaticIconModule,
-        FeedIconModule],
+        FeedIconModule,
+        AdminFeedEditConfigurationComponent],
     providers: [provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
 }).compileComponents();
   }));

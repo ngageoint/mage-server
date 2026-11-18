@@ -1,12 +1,19 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { MAT_DIALOG_DATA as MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA as MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { ObservationEditModule } from 'mage-web-app/observation/observation-edit/observation-edit.module';
 
 @Component({
     selector: 'admin-event-form-preview-dialog',
     templateUrl: './admin-event-form-preview-dialog.component.html',
     styleUrls: ['./admin-event-form-preview-dialog.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      MatDialogModule,
+      MatButtonModule,
+      ObservationEditModule
+    ]
 })
 export class AdminEventFormPreviewDialogComponent implements OnInit {
 

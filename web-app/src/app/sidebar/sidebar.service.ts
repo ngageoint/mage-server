@@ -2,13 +2,19 @@ import { Injectable } from '@angular/core';
 import { Feature } from 'geojson';
 import { Subject } from 'rxjs';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
+import { Observation, ObservationDraft } from '../entities/observation/entities.observation';
+import { UserWithLocation } from '../entities/user/entities.user-location';
 
 export interface ObservationEvent {
-  observation: any;
+  observation: Observation;
+}
+
+export interface EditObservationEvent {
+  observation: ObservationDraft;
 }
 
 export interface UserEvent {
-  user: any;
+  user: UserWithLocation;
 }
 
 export interface ExportEvent {
@@ -30,11 +36,11 @@ export interface FeedItemEvent {
   providedIn: 'root'
 })
 export class SidebarService {
-  private viewUserSource = new Subject<UserEvent>()
-  private viewObservationSource = new Subject<ObservationEvent>()
-  private viewExportSource = new Subject<ExportEvent>()
+  private readonly viewUserSource = new Subject<UserEvent>()
+  private readonly viewObservationSource = new Subject<ObservationEvent>()
+  private readonly viewExportSource = new Subject<ExportEvent>()
 
-  private editObservationSource = new Subject<ObservationEvent>()
+  private readonly editObservationSource = new Subject<EditObservationEvent>()
 
   viewUser$ = this.viewUserSource.asObservable()
   viewObservation$ = this.viewObservationSource.asObservable()
@@ -42,23 +48,23 @@ export class SidebarService {
 
   editObservation$ = this.editObservationSource.asObservable()
 
-  private itemSource = new Subject<FeedItemEvent>()
+  private readonly itemSource = new Subject<FeedItemEvent>()
 
   item$ = this.itemSource.asObservable()
 
-  viewObservation(observation: any): void {
+  viewObservation(observation: Observation): void {
     this.viewObservationSource.next({
       observation: observation
     });
   }
 
-  edit(observation: any): void {
+  edit(observation: ObservationDraft): void {
     this.editObservationSource.next({
       observation: observation
     });
   }
 
-  viewUser(user: any): void {
+  viewUser(user: UserWithLocation): void {
     this.viewUserSource.next({
       user: user
     });

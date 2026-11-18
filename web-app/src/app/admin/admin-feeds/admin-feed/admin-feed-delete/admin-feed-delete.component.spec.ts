@@ -16,8 +16,7 @@ describe('AdminFeedDeleteComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-    declarations: [AdminFeedDeleteComponent],
-    imports: [MatDialogModule],
+    imports: [MatDialogModule, AdminFeedDeleteComponent],
     providers: [
         { provide: MatDialogRef, useValue: {} },
         { provide: MAT_DIALOG_DATA, useValue: feedData },

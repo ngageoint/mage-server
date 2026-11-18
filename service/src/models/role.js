@@ -1,102 +1,102 @@
-const mongoose = require('mongoose')
-  , User = require('../models/user')
-  , { allPermissions: validPermissions } = require('../entities/authorization/entities.permissions');
+const mongoose = require('mongoose');
+const { RoleModel, MongooseRoleRepository } = require('../adapters/roles/adapters.roles.db.mongoose');
+const { allPermissions: validPermissions } = require('../entities/authorization/entities.permissions');
 
-// Creates a new Mongoose Schema object
-const Schema = mongoose.Schema;
+/**
+ * The Role schema now lives in adapters/roles/adapters.roles.db.mongoose.ts.
+ * Register it against the default connection the same way the old
+ * self-registering schema did, so legacy code that looks the model up
+ * directly by name keeps working. Migration scripts and the standalone
+ * `migration:run` CLI (bin/migration.js) call this module's functions
+ * directly and never call app.ts's initRepositories(), so this cannot
+ * depend on an explicit initialize() call to be usable.
+ */
+const roleModel = RoleModel(mongoose.connection);
 
-// Collection to hold roles
-const RoleSchema = new Schema(
-  {
-    name: { type: String, required: true, unique: true },
-    description: { type: String, required: false },
-    permissions: [Schema.Types.String]
-  },
-  {
-    versionKey: false,
-    toJSON: { transform },
-    toObject: { transform }
-  }
-);
+/**
+ * app.ts's initRepositories() overrides this with a MongooseRoleRepository
+ * wired the same way as every other repository in the app layer, but the
+ * default constructed here keeps this module self-sufficient for callers
+ * (migrations, the standalone migration CLI, auth strategies, legacy
+ * routes) that use its callback API directly without going through the app
+ * layer bootstrap.
+ */
+let roleRepo = new MongooseRoleRepository(roleModel);
 
-RoleSchema.pre('deleteOne', { document: true, query: false }, function (next) {
-  const role = this;
+/**
+ * This module is a thin bridge that keeps the legacy callback API working
+ * for the handful of callers (migrations, auth strategies, legacy routes)
+ * that have not been migrated to the new RoleRepository interface directly.
+ */
+exports.initialize = function (repos) {
+  roleRepo = repos.roleRepo;
+};
 
-  User.removeRoleFromUsers(role, function (err) {
-    next(err);
-  });
-});
-
-RoleSchema.pre('save', function (next) {
-  const role = this;
-
-  // only check for valid permission if the permissions have been modified (or is new)
-  if (!role.isModified('permissions')) {
-    return next();
-  }
-
-  for (const permission of role.permissions) {
+function assertValidPermissions(permissions) {
+  for (const permission of permissions || []) {
     if (!validPermissions[permission]) {
-      return next(new Error("Permission '" + permission + "' is not a valid permission"));
+      throw new Error("Permission '" + permission + "' is not a valid permission");
     }
   }
-
-  next();
-});
-
-function transform(role, ret) {
-  ret.id = ret._id;
-  delete ret._id;
 }
 
-// Creates the Model for the Role Schema
-const Role = mongoose.model('Role', RoleSchema);
-
 exports.getRoleById = function (id, callback) {
-  Role.findById(id).then(
+  roleRepo.findById(id).then(
     role => callback(null, role),
     err => callback(err)
   );
 };
 
 exports.getRole = function (name, callback) {
-  Role.findOne({ name: name }).then(
+  roleRepo.findByName(name).then(
     role => callback(null, role),
     err => callback(err)
   );
 };
 
 exports.getRoles = function (callback) {
-  const query = {};
-  Role.find(query).then(
+  roleRepo.findAll().then(
     roles => callback(null, roles),
     err => callback(err)
   );
 };
 
 exports.createRole = function (role, callback) {
-  const create = {
+  try {
+    assertValidPermissions(role.permissions);
+  } catch (err) {
+    return callback(err);
+  }
+
+  roleRepo.create({
     name: role.name,
     description: role.description,
     permissions: role.permissions
-  };
-
-  Role.create(create).then(
+  }).then(
     role => callback(null, role),
     err => callback(err)
   );
 };
 
 exports.updateRole = function (id, update, callback) {
-  Role.findByIdAndUpdate(id, update, { new: true }).then(
+  if (update.permissions) {
+    try {
+      assertValidPermissions(update.permissions);
+    } catch (err) {
+      return callback(err);
+    }
+  }
+
+  roleRepo.update({ id, ...update }).then(
     role => callback(null, role),
     err => callback(err)
   );
 };
 
 exports.deleteRole = function (role, callback) {
-  role.deleteOne().then(
-    () => callback(null, role),
+  const id = role.id || role._id;
+  roleRepo.removeById(id).then(
+    role => callback(null, role),
     err => callback(err)
   );
 };

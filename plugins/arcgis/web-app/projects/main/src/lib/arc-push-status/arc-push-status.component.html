@@ -25,7 +25,15 @@
     </div>
 
     <div class="table-container" *ngIf="!isLoading">
-      <div class="total-count" *ngIf="totalCount > 0">{{ totalCount }} observation{{ totalCount === 1 ? '' : 's' }} pushed to ArcGIS</div>
+      <div class="total-count" *ngIf="totalCount > 0">Total observations pushed to ArcGIS:  {{ totalCount }}</div>
+
+      <div class="layer-counts" *ngIf="layerCounts.length">
+        <span class="layer-count-chip" *ngFor="let layerCount of layerCounts"
+          [class.mismatch]="isMismatched(layerCount.count)"
+          [matTooltip]="layerCount.featureServiceUrl">
+          {{ layerCount.layerName }}: {{ layerCount.count }}
+        </span>
+      </div>
 
       <table mat-table [dataSource]="pushedObservations" class="push-status-table">
 

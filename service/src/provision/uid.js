@@ -11,7 +11,7 @@ module.exports = function(provision) {
 
     Device.getDeviceByUid(uid).then(device => {
       if (!device && req.query.createDevice === 'false') {
-        log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
+        log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered for user ' + req.user.username);
         return done(null, false, { message: 'Device ID is invalid, please check your device ID, and try again.' });
       } else if (!device) {
         log.info("Device " + uid + " does not exist. Checking request parameters to see if device can be created.");
@@ -27,16 +27,16 @@ module.exports = function(provision) {
 
         return Device.createDevice(newDevice).then(device => {
           if (!device) {
-            log.warn('Failed to create device ' + uid);
+            log.warn('Failed to create device ' + uid + ' for user ' + req.user.username);
             return done(null, false);
           } else if (!device.registered) {
-            log.warn('Successfully created device ' + uid + '. Device is not registered, device provision attempt has failed.');
+            log.warn('Successfully created device ' + uid + ' for user ' + req.user.username + '. Device is not registered, device provision attempt has failed.');
             return done(null, false);
           }
           done(null, device);
         }).catch(err => done(err));
       } else if (!device.registered) {
-        log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered');
+        log.warn('Failed device provision attempt: Device uid ' + uid + ' is not registered for user ' + req.user.username);
         return done(null, false, { message: 'Your device has been registered.  \nAn administrator has been notified to approve this device.'});
       }
 

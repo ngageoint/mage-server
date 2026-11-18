@@ -7,10 +7,14 @@
     (ngModelChange)="onUserInput($event)"
     [matAutocomplete]="userAuto"
     autocomplete="off" />
-  <button matSuffix matIconButton *ngIf="inputValue" (click)="clear()" type="button" aria-label="Clear">
-    <mat-icon>close</mat-icon>
-  </button>
+  @if (inputValue) {
+    <button matSuffix matIconButton (click)="clear()" type="button" aria-label="Clear">
+      <mat-icon>close</mat-icon>
+    </button>
+  }
   <mat-autocomplete #userAuto [displayWith]="displayUser" (optionSelected)="onOptionSelected($event.option.value)">
-    <mat-option *ngFor="let u of searchResults" [value]="u">{{ u.displayName }}</mat-option>
+    @for (u of searchResults(); track u.id) {
+      <mat-option [value]="u">{{ u.displayName }}</mat-option>
+    }
   </mat-autocomplete>
 </mat-form-field>

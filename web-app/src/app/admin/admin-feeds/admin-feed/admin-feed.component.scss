@@ -37,21 +37,12 @@
 }
 
 .feed-icon-placeholder {
-  width: 64px;
-  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--mat-sys-on-surface-variant);
 
   feed-icon {
     display: block;
-    width: 40px;
-    height: 40px;
-  }
-
-  ::ng-deep mat-icon {
-    font-size: 40px;
     width: 40px;
     height: 40px;
   }
@@ -141,15 +132,6 @@
 .card-actions {
   display: flex;
   gap: 8px;
-}
-
-.toolbar {
-  padding: 0 20px;
-  margin-bottom: 8px;
-}
-
-.search-field {
-  width: 100%;
 }
 
 .list-content {

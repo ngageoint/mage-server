@@ -1,0 +1,39 @@
+<div class="embedded-wrapper">
+  <mat-form-field appearance="fill" class="embedded-input">
+    <mat-label>{{ label() }}</mat-label>
+    <input
+      matInput
+      #searchInput
+      type="text"
+      [matAutocomplete]="auto"
+      (keydown.enter)="$event.stopPropagation(); $event.preventDefault(); search(searchInput.value)"
+    />
+    <mat-hint>{{ hint }}</mat-hint>
+
+    @if (searching) {
+      <mat-spinner diameter="20" class="search-spinner" matSuffix></mat-spinner>
+    } @else if (searchResults.length > 0) {
+      <button matSuffix matIconButton type="button" class="search-clear" aria-label="Clear search" (click)="clear($event)">
+        <mat-icon>close</mat-icon>
+      </button>
+    } @else {
+      <button matSuffix matIconButton type="button" aria-label="Search" (click)="search(searchInput.value)">
+        <mat-icon>search</mat-icon>
+      </button>
+    }
+
+    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="searchResultClick($event.option.value)">
+      @for (result of searchResults; track result) {
+        <mat-option [value]="result" class="multi-line-option">
+          <div class="option-container">
+            <div class="primary-text">{{ result.name }}</div>
+            <div class="secondary-text">
+              {{ result.position[1] | number: '1.5-5' }},
+              {{ result.position[0] | number: '1.5-5' }}
+            </div>
+          </div>
+        </mat-option>
+      }
+    </mat-autocomplete>
+  </mat-form-field>
+</div>

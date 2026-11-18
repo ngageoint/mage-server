@@ -248,9 +248,13 @@ exports.createDevice = function (device) {
     appVersion: device.appVersion
   };
 
-  log.info(`creating new device ${device.uid} for user ${device.userId}`);
   const options = { new: true, upsert: true, runValidators: true };
-  return Device.findOneAndUpdate({ uid: device.uid }, update, options).exec();
+  return Device.findOneAndUpdate({ uid: device.uid }, update, options).exec().then(createdDevice => {
+    return User.getUserById(createdDevice.userId).then(user => {
+      log.info(`creating new device ${createdDevice.uid} for user ${user ? user.username : createdDevice.userId}`);
+      return createdDevice;
+    });
+  });
 };
 
 exports.updateDevice = function (id, update) {

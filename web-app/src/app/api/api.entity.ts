@@ -11,6 +11,7 @@ export interface AuthenticationStrategy {
   title: string,
   textColor: string,
   buttonColor: string,
+  buttonText?: string,
   icon: string
 }
 
@@ -28,4 +29,9 @@ export interface Api {
   contactInfo: any,
   localAuthenticationStrategy: AuthenticationStrategy,
   authenticationStrategies: { string: AuthenticationStrategy }
+}
+
+export function authenticationButtonText(title: string | undefined, buttonText?: string): string {
+  const customText = buttonText?.trim()
+  return customText ? customText : `Sign in with ${title ?? ''}`
 }

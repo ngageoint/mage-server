@@ -1,18 +1,19 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import moment from 'moment';
+import { LoginFilter, LoginPage } from '../../entities/login/login';
 
 @Injectable({ providedIn: 'root' })
 export class LoginService {
 
-  constructor(private http: HttpClient) { }
+  private readonly http: HttpClient = inject(HttpClient);
 
   query(options?: {
-    filter?: any;
+    filter?: LoginFilter;
     limit?: number;
     url?: string;
-  }): Observable<any> {
+  }): Observable<LoginPage> {
     options = options || {};
     const filter = options.filter || {};
 
@@ -48,6 +49,6 @@ export class LoginService {
 
     const url = options.url || '/api/logins';
 
-    return this.http.get<any>(url, options.url ? {} : { params });
+    return this.http.get<LoginPage>(url, options.url ? {} : { params });
   }
 }

@@ -1,24 +1,28 @@
 import {
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
-  OnChanges,
-  OnInit,
   Output,
-  SimpleChanges,
   ViewEncapsulation,
+  inject,
 } from '@angular/core'
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatButtonModule } from '@angular/material/button'
 import { Subject } from 'rxjs'
 import { debounceTime } from 'rxjs/operators'
+import { JsonSchemaFormWithServiceComponent } from '../../../../json-schema/json-schema.component'
 
 @Component({
     selector: 'app-topic-configuration',
     templateUrl: './admin-feed-edit-topic-configuration.component.html',
     styleUrls: ['./admin-feed-edit-topic-configuration.component.scss'],
     encapsulation: ViewEncapsulation.None,
-    standalone: false
+    imports: [MatExpansionModule, MatButtonModule, JsonSchemaFormWithServiceComponent]
 })
-export class AdminFeedEditTopicConfigurationComponent implements OnChanges, OnInit {
+export class AdminFeedEditTopicConfigurationComponent {
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   @Input() fetchParametersSchema: any
   @Input() initialFetchParameters: any
@@ -40,14 +44,9 @@ export class AdminFeedEditTopicConfigurationComponent implements OnChanges, OnIn
 
   constructor() {
     this.debounceChange.pipe(
-      debounceTime(this.changeDebounceInterval)
+      debounceTime(this.changeDebounceInterval),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe(x => { this.fetchParametersChanged.emit(x) })
-  }
-
-  ngOnInit() {
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
   }
 
   onFetchParametersChanged($event: any): void {

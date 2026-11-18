@@ -19,31 +19,59 @@
   margin: 13px 19px;
 }
 
-.overlay-tooltip {
-  position: absolute;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: gray;
-  color: white;
-  opacity: 0.87;
-  border-radius: 3px;
-  border: none;
-}
-
-.leaflet-tooltip-left.overlay-tooltip::before {
-  border-left-color: transparent;
-}
-
-.leaflet-tooltip-right.overlay-tooltip::before {
-  border-right-color: transparent;
-}
-
 .observation-edit-marker {
   display: flex;
   flex-direction: row;
   gap: 8px;
+}
+
+.geojson-popup {
+  padding: 16px;
+  min-width: 220px;
+}
+
+.geojson-popup h6 {
+  margin: 0 0 14px;
+  font: var(--mat-sys-title-medium);
+  font-weight: 600;
+  color: var(--mat-sys-on-surface);
+}
+
+.geojson-popup__summary {
+  margin: 0;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.geojson-popup table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.geojson-popup table td {
+  display: block;
+  padding: 0;
+}
+
+.geojson-popup table tr + tr td.title {
+  padding-top: 12px;
+}
+
+.geojson-popup table td.title {
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--mat-sys-on-surface-variant) 65%, var(--mat-sys-on-surface) 35%);
+}
+
+.geojson-popup table td.text {
+  padding-top: 2px;
+  font: var(--mat-sys-body-medium);
+  line-height: 1.4;
+  color: color-mix(in srgb, var(--mat-sys-on-surface) 75%, var(--mat-sys-on-surface-variant) 25%);
+  word-break: break-word;
 }
 
 .observation-edit-marker__tooltip {
@@ -60,3 +88,69 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, .4)
 }
 
+
+.marker-pulse {
+  animation: marker-pulse-fade 4s forwards;
+}
+
+.marker-pulse__ring {
+  position: absolute;
+  border-radius: 50%;
+  left: -20px;
+  top: -20px;
+  width: 34px;
+  height: 34px;
+  border: 3px solid #1e88e5;
+  animation: marker-pulse-ring 1.2s ease-out infinite;
+}
+
+@keyframes marker-pulse-ring {
+  from { transform: scale(0.5); opacity: 1; }
+  to { transform: scale(2); opacity: 0; }
+}
+
+@keyframes marker-pulse-fade {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.search-highlight__dot {
+  position: absolute;
+  border-radius: 50%;
+  left: -6px;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  background-color: #1e88e5;
+}
+
+.search-highlight__label {
+  position: absolute;
+  left: 24px;
+  top: -11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.75);
+  color: white;
+  font: 12px/18px Roboto, "Helvetica Neue", sans-serif;
+  white-space: nowrap;
+}
+
+.leaflet-vertex-icon,
+.leaflet-middle-icon {
+  border-radius: 50%;
+}
+
+.leaflet-vertex-icon.selected-marker {
+  background-color: #1e88e5;
+  border-color: #1e88e5;
+}
+
+.shape-pulse {
+  animation: shape-pulse-stroke 1.2s ease-out infinite, marker-pulse-fade 4s forwards;
+}
+
+@keyframes shape-pulse-stroke {
+  from { stroke-width: 4px; stroke-opacity: 1; }
+  to { stroke-width: 16px; stroke-opacity: 0; }
+}

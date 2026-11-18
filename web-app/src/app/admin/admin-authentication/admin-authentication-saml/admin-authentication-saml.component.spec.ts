@@ -9,7 +9,7 @@ describe('AdminAuthenticationSAMLComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationSAMLComponent ],
+      imports: [ AdminAuthenticationSAMLComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
@@ -18,7 +18,7 @@ describe('AdminAuthenticationSAMLComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationSAMLComponent);
     component = fixture.componentInstance;
-    component.strategy = {
+    fixture.componentRef.setInput('strategy', {
       enabled: true,
       name: '',
       type: '',
@@ -37,7 +37,7 @@ describe('AdminAuthenticationSAMLComponent', () => {
         profile: {},
         options: {}
       }
-    }
+    });
     fixture.detectChanges();
   });
 

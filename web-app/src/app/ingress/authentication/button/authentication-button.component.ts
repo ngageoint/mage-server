@@ -1,18 +1,23 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core'
+import { Component, computed, input, output } from '@angular/core'
+import { MatButtonModule } from '@angular/material/button'
+import { authenticationButtonText } from '../../../api/api.entity'
 
 @Component({
     selector: 'authentication-button',
     templateUrl: './authentication-button.component.html',
     styleUrls: ['./authentication-button.component.scss'],
-    standalone: false
+    imports: [MatButtonModule]
 })
 export class AuthenticationButtonComponent {
-  @Input() icon: string
-  @Input() color: string
-  @Input() text: string
-  @Input() textColor: string
+  readonly icon = input<string>()
+  readonly color = input<string>()
+  readonly text = input<string>()
+  readonly buttonText = input<string>()
+  readonly textColor = input<string>()
 
-  @Output() authenticate = new EventEmitter<void>()
+  readonly authenticate = output<void>()
+
+  readonly label = computed(() => authenticationButtonText(this.text(), this.buttonText()))
 
   onClick(): void {
     this.authenticate.emit()

@@ -3,8 +3,8 @@ import { infrastructureError } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import * as api from '../../app.api/locations/app.api.locations'
 import { TeamRepository } from '../../entities/teams/entities.teams'
+import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
 import { FindRecentUserLocationsSpec, RecentUserLocationsRepository, UserLocationDomainEventType, UserLocationRepository } from '../../entities/locations/entities.locations'
-import { UserId } from '../../entities/users/entities.users'
 
 export function ReadAllUserLocations(
   permissionService: api.UserLocationPermissionService,
@@ -20,13 +20,7 @@ export function ReadAllUserLocations(
     const event = req.context.mageEvent
     const params = req.params
     try {
-      let userIsAnyOf: UserId[] | undefined = params.userIsAnyOf
-      if (params.teamIsAnyOf?.length) {
-        const teams = await teamRepo.findAllByIds(params.teamIsAnyOf)
-        const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
-        const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
-        userIsAnyOf = [...dedupedUserIds]
-      }
+      const userIsAnyOf = await resolveUserIsAnyOf(teamRepo, params.userIsAnyOf, params.teamIsAnyOf)
 
       const findSpec = {
         where: {
@@ -61,13 +55,7 @@ export function ReadLocationsGroupedByUser(
 
     const params = req.params
 
-    let userIsAnyOf: UserId[] | undefined = params.userIsAnyOf
-    if (params.teamIsAnyOf?.length) {
-      const teams = await teamRepo.findAllByIds(params.teamIsAnyOf)
-      const teamUserIds = Object.values(teams).flatMap(team => team?.userIds ?? [])
-      const dedupedUserIds = new Set([...(userIsAnyOf ?? []), ...teamUserIds])
-      userIsAnyOf = [...dedupedUserIds]
-    }
+    const userIsAnyOf = await resolveUserIsAnyOf(teamRepo, params.userIsAnyOf, params.teamIsAnyOf)
 
     const spec: FindRecentUserLocationsSpec = {
       where: {

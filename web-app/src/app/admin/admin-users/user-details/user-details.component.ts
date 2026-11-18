@@ -1,94 +1,75 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, DestroyRef, OnInit, OnDestroy, computed, effect, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
-import { map, Subject, takeUntil } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 import { UserService } from '../../../user/user.service';
 import { User } from '../user';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
+import { RouteReuse } from '../../../route-reuse.strategy';
+import { UserDetailsViewComponent } from './user-details-view/user-details-view.component';
+import { UserDetailsEditComponent } from './user-details-edit/user-details-edit.component';
 
 @Component({
     selector: 'mage-user-details',
     templateUrl: './user-details.component.html',
     styleUrls: ['./user-details.component.scss'],
-    standalone: false
+    imports: [MatIconModule, UserDetailsEditComponent, UserDetailsViewComponent]
 })
-/**
- * Admin component for viewing and managing a user's details, teams, events, devices, logins, and credentials.
- */
 export class UserDetailsComponent implements OnInit, OnDestroy {
-  private _user?: User;
-  set user(value: User | undefined) {
-    this._user = value;
-    this.breadcrumbs = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: value?.displayName || 'Unknown User' }];
-  }
-  get user(): User | undefined {
-    return this._user;
-  }
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
 
-  error: string | null = null;
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly userService: UserService = inject(UserService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  readonly userId: string = this.route.snapshot.paramMap.get('userId');
+
+  readonly user = signal<User | undefined>(undefined);
+  readonly error = signal<string | null>(null);
   isEditingUser = false;
 
-  private destroy$ = new Subject<void>();
+  readonly breadcrumbs = computed<AdminBreadcrumb[]>(() => [
+    { title: 'Users', icon: 'person', route: ['/admin/users'] },
+    { title: this.user()?.displayName || 'Unknown User' }
+  ]);
 
-  breadcrumbs: AdminBreadcrumb[] = [{ title: 'Users', icon: 'person', route: ['/admin/users'] }, { title: 'Unknown User' }];
-
-  constructor(
-    private route: ActivatedRoute,
-    private userService: UserService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
+  constructor() {
+    effect(() => this.breadcrumbService.setBreadcrumbs(this.breadcrumbs()));
+  }
 
   ngOnInit(): void {
-    this.route.paramMap
-      .pipe(
-        map((pm) => pm.get('userId')),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((userId) => {
-        if (!userId) {
-          this.error = 'Missing userId route param';
-          return;
+    this.userService
+      .getUser(this.userId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (user) => {
+          this.user.set(user);
+        },
+        error: (err) => {
+          this.error.set(err?.error?.message || 'Failed to load user');
         }
-        this.initForUser(userId);
       });
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setActions(null);
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
-
-  private initForUser(userId: string): void {
-    this.error = null;
-    this.user = undefined;
-
-    this.userService
-      .getUser(userId)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (user) => {
-          this.user = user;
-        },
-        error: (err) => {
-          this.error = err?.error?.message || 'Failed to load user';
-        }
-      });
   }
 
   toggleEditUser(): void {
-    this.error = null;
+    this.error.set(null);
     this.isEditingUser = !this.isEditingUser;
   }
 
   onUserSaved(updatedUser: User): void {
-    this.user = updatedUser;
+    this.user.set(updatedUser);
     this.isEditingUser = false;
   }
 
   onUserChanged(updatedUser: User): void {
-    this.user = updatedUser;
+    this.user.set(updatedUser);
   }
 
   onEditCancelled(): void {

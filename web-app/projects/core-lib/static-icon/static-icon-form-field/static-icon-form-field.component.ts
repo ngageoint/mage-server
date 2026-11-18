@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, SimpleChanges } from '@angular/core'
+import { ChangeDetectorRef, Component, Input, OnChanges, SimpleChanges } from '@angular/core'
 import { AbstractControl, ControlValueAccessor, UntypedFormControl, UntypedFormGroup, NG_VALIDATORS, NG_VALUE_ACCESSOR, ValidationErrors, Validator, Validators } from '@angular/forms'
 import { StaticIconReference } from '../static-icon.model'
 import { StaticIconService } from '../static-icon.service'
@@ -21,7 +21,7 @@ import { StaticIconService } from '../static-icon.service'
     ],
     standalone: false
 })
-export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, ControlValueAccessor, Validator {
+export class StaticIconFormFieldComponent implements OnChanges, ControlValueAccessor, Validator {
 
   iconRef: StaticIconReference = null
 
@@ -64,8 +64,6 @@ export class StaticIconFormFieldComponent implements OnChanges, OnDestroy, Contr
       this.updateIconSrc()
     }
   }
-
-  ngOnDestroy() { }
 
   onSelectIcon($event: any) {
     const inputElement = $event.target as HTMLInputElement

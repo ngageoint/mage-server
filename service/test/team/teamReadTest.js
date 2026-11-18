@@ -105,4 +105,49 @@ describe("team read tests", function () {
       .expect(200)
       .end(done);
   });
+
+  function mockFindTeam(teamId, { populate }) {
+    const mockTeam = new TeamModel({
+      _id: teamId,
+      name: 'Mock Team'
+    });
+    let mock = sinon.mock(TeamModel)
+      .expects('findOne').withArgs({ _id: teamId.toString() });
+    if (populate) {
+      mock = mock.chain('populate').withArgs('userIds');
+    }
+    mock.chain('exec').resolves(mockTeam);
+  }
+
+  function getTeam(teamId, query) {
+    return request(app)
+      .get('/api/teams/' + teamId.toString())
+      .query(query)
+      .set('Accept', 'application/json')
+      .set('Authorization', 'Bearer 12345');
+  }
+
+  it("should read team", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+    const teamId = new mongoose.Types.ObjectId();
+    mockFindTeam(teamId, { populate: true });
+
+    getTeam(teamId).expect(200).end(done);
+  });
+
+  it("should read team without populating users", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+    const teamId = new mongoose.Types.ObjectId();
+    mockFindTeam(teamId, { populate: false });
+
+    getTeam(teamId, 'populate=false').expect(200).end(done);
+  });
+
+  it("should not build team query from request query parameters", function (done) {
+    mockTokenWithPermission('READ_TEAM');
+    const teamId = new mongoose.Types.ObjectId();
+    mockFindTeam(teamId, { populate: true });
+
+    getTeam(teamId, 'access[user][_id]=1&access[permission]=read').expect(200).end(done);
+  });
 });

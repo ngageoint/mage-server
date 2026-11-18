@@ -1,18 +1,37 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, input, output } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
 import { Team } from '@ngageoint/mage.web-core-lib/team'
 import { Strategy, AdminChoice } from '../admin-authentication/admin-settings.model';
+import { AdminAuthenticationLocalComponent } from './admin-authentication-local/admin-authentication-local.component';
+import { AdminAuthenticationOidcComponent } from './admin-authentication-oidc/admin-authentication-oidc.component';
+import { AdminAuthenticationOAuth2Component } from './admin-authentication-oauth2/admin-authentication-oauth2.component';
+import { AdminAuthenticationLDAPComponent } from './admin-authentication-ldap/admin-authentication-ldap.component';
+import { AdminAuthenticationSAMLComponent } from './admin-authentication-saml/admin-authentication-saml.component';
+import { ButtonPreviewComponent } from './admin-authentication-create/button-preview/button-preview.component';
 
 @Component({
   selector: 'admin-authentication-settings',
   templateUrl: 'admin-authentication-settings.component.html',
   styleUrls: ['./admin-authentication-settings.component.scss'],
-  standalone: false
+  imports: [
+    FormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    AdminAuthenticationLocalComponent,
+    AdminAuthenticationOidcComponent,
+    AdminAuthenticationOAuth2Component,
+    AdminAuthenticationLDAPComponent,
+    AdminAuthenticationSAMLComponent,
+    ButtonPreviewComponent
+  ]
 })
 export class AdminAuthenticationSettingsComponent {
-  @Input() strategy: Strategy;
-  @Input() teams: Team[] = [];
-  @Input() events: any[] = [];
-  @Output() strategyDirty = new EventEmitter<boolean>();
+  readonly strategy = input.required<Strategy>();
+  readonly teams = input<Team[]>([]);
+  readonly events = input<any[]>([]);
+  readonly strategyDirty = output<boolean>();
 
   readonly usersReqAdminChoices: AdminChoice[] = [
     {
@@ -40,10 +59,7 @@ export class AdminAuthenticationSettingsComponent {
   ];
 
   setDirty(isDirty: boolean): void {
-    if (!this.strategy) {
-      return;
-    }
-    this.strategy.isDirty = isDirty;
+    this.strategy().isDirty = isDirty;
     this.onStrategyDirty(isDirty);
   }
 
@@ -52,7 +68,7 @@ export class AdminAuthenticationSettingsComponent {
   }
 
   userReqAdminChanged(): void {
-    const settings = this.strategy?.settings;
+    const settings = this.strategy().settings;
     if (!settings) {
       return;
     }

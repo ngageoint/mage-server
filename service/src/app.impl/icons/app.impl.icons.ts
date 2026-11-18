@@ -2,7 +2,7 @@ import { URL } from 'url'
 import { entityNotFound, infrastructureError, invalidInput } from '../../app.api/app.api.errors'
 import { KnownErrorsOf, withPermission } from '../../app.api/app.api.global'
 import { CreateLocalStaticIcon, CreateLocalStaticIconRequest, ListStaticIcons, ListStaticIconsRequest, GetStaticIcon, GetStaticIconContent, GetStaticIconContentRequest, GetStaticIconRequest, StaticIconPermissionService, iconSourceUrlFetchError, StaticIconWithContent } from '../../app.api/icons/app.api.icons'
-import { UrlResolutionError } from '../../entities/entities.global'
+import { PageOf, PagingParameters, UrlResolutionError } from '../../entities/entities.global'
 import { StaticIcon, StaticIconReference, StaticIconRepository, StaticIconStoreError } from '../../entities/icons/entities.icons'
 
 export function CreateStaticIcon(permissions: StaticIconPermissionService, repo: StaticIconRepository): CreateLocalStaticIcon {
@@ -73,12 +73,17 @@ export function GetStaticIconContent(permissions: StaticIconPermissionService, r
   }
 }
 
-export function ListStaticIcons(permissions: StaticIconPermissionService): ListStaticIcons {
+export function ListStaticIcons(permissions: StaticIconPermissionService, repo: StaticIconRepository): ListStaticIcons {
   return function findStaticIcons(req: ListStaticIconsRequest): ReturnType<ListStaticIcons> {
-    return withPermission(
+    return withPermission<PageOf<StaticIcon>, KnownErrorsOf<ListStaticIcons>>(
       permissions.ensureGetStaticIconPermission(req.context),
-      () => {
-        throw new Error('todo')
+      async () => {
+        const paging: PagingParameters = {
+          pageSize: req.paging?.pageSize ?? 100,
+          pageIndex: req.paging?.pageIndex ?? 0,
+          includeTotalCount: req.paging?.includeTotalCount
+        }
+        return await repo.find(paging)
       }
     )
   }

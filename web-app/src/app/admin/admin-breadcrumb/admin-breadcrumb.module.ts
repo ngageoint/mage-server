@@ -6,14 +6,13 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [
-    AdminBreadcrumbComponent
-  ],
+  declarations: [],
   imports: [
     CommonModule,
     MatIconModule,
     MatToolbarModule,
     RouterModule,
+    AdminBreadcrumbComponent
   ],
   exports: [
     AdminBreadcrumbComponent

@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatSelectChange as MatSelectChange } from '@angular/material/select';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { PollingService } from '../../event/polling.service';
 
 interface PollingOption {
@@ -13,7 +15,7 @@ interface PollingOption {
     styleUrls: ['./polling-interval.component.scss'],
     standalone: false
 })
-export class PollingIntervalComponent implements OnInit, OnDestroy  {
+export class PollingIntervalComponent implements OnInit, OnDestroy {
   pollingOptions: PollingOption[] = [{
     title: '5 Seconds',
     interval: 5000
@@ -29,30 +31,30 @@ export class PollingIntervalComponent implements OnInit, OnDestroy  {
   }]
   pollingOption: PollingOption
 
+  private destroy$ = new Subject<void>();
+
   constructor(
     private pollingService: PollingService
-  ) {
-    const pollingInterval = pollingService.getPollingInterval()
-    this.pollingOption = this.pollingOptions.find((option: PollingOption) => option.interval === pollingInterval)
-  }
+  ) { }
 
   ngOnInit(): void {
-    this.pollingService.addListener(this)
+    this.pollingService.pollingInterval$.pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(interval => {
+      this.pollingOption = this.pollingOptions.find((option: PollingOption) => option.interval === interval)
+    })
   }
 
   ngOnDestroy(): void {
-    this.pollingService.removeListener(this)
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   updatePollingInterval(change: MatSelectChange) {
     this.pollingService.setPollingInterval(change.value.interval)
   }
 
-  onPollingIntervalChanged(pollingInterval: number) {
-    this.pollingOption = this.pollingOptions.find((option: PollingOption) => option.interval === pollingInterval)
-  }
-
-  public compareOption = function (option, value): boolean {
+  public compareOption = function (option: Pick<PollingOption, 'interval'> | null, value: Pick<PollingOption, 'interval'> | null): boolean {
     return option?.interval === value?.interval
   }
 }

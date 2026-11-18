@@ -118,9 +118,7 @@ exports.getTeamById = function (id, options, callback) {
     options = {};
   }
 
-  const conditions = {
-    _id: id
-  };
+  let query = Team.findById(id);
   if (options.access) {
     const accesses = [{
       userIds: {
@@ -134,12 +132,10 @@ exports.getTeamById = function (id, options, callback) {
       accesses.push(access);
     });
 
-    conditions['$or'] = accesses;
+    query = query.or(accesses);
   }
 
-  let query = Team.findOne(conditions);
-
-  if (options.populate == null || options.populate == 'true') {
+  if (options.populate !== false) {
     query = query.populate('userIds');
   }
 
@@ -517,23 +513,11 @@ exports.updateUserInAcl = function (teamId, userId, role, callback) {
   Team.findOneAndUpdate({ _id: teamId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
-exports.updateUserInAclForEventTeam = function (eventId, userId, role, callback) {
-  const update = { ['acl.' + userId.toString()]: role };
-  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
-};
-
 exports.removeUserFromAcl = function (teamId, userId, callback) {
   const update = {
     $unset: { ['acl.' + userId.toString()]: true }
   };
   Team.findByIdAndUpdate(teamId, update, { new: true }).then(r => callback(null, r), e => callback(e));
-};
-
-exports.removeUserFromAclForEventTeam = function (eventId, userId, callback) {
-  const update = {
-    $unset: { ['acl.' + userId.toString()]: true }
-  };
-  Team.findOneAndUpdate({ teamEventId: eventId }, update, { new: true }).then(r => callback(null, r), e => callback(e));
 };
 
 exports.removeUserFromAllAcls = function (user, callback) {

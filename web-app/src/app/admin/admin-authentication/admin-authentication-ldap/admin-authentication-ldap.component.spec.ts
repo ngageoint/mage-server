@@ -9,7 +9,7 @@ describe('AdminAuthenticationLDAPComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationLDAPComponent ],
+      imports: [ AdminAuthenticationLDAPComponent ],
       schemas: [ CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA ]
     })
     .compileComponents();
@@ -18,7 +18,7 @@ describe('AdminAuthenticationLDAPComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationLDAPComponent);
     component = fixture.componentInstance;
-    component.strategy = {
+    fixture.componentRef.setInput('strategy', {
       enabled: true,
       name: '',
       type: '',
@@ -36,7 +36,7 @@ describe('AdminAuthenticationLDAPComponent', () => {
         headers: {},
         profile: {}
       }
-    }
+    });
     fixture.detectChanges();
   });
 

@@ -84,10 +84,10 @@ describe('AdminFeedEditItemPropertiesComponent', () => {
         JsonSchemaFormModule,
         JsonSchemaModule,
         NoopAnimationsModule,
+        AdminFeedEditItemPropertiesComponent,
       ],
       declarations: [
-        TestHostComponent,
-        AdminFeedEditItemPropertiesComponent
+        TestHostComponent
       ]
     })
     .compileComponents();

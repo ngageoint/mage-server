@@ -2,25 +2,26 @@ import _ from 'lodash'
 import uniqid from 'uniqid'
 import { expect } from 'chai'
 import { Substitute as Sub, Arg, SubstituteOf } from '@fluffy-spoon/substitute'
-import { copyMageEventAttrs, MageEvent, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
-import { AddFeedToEventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest, UserFeed } from '../../../lib/app.api/events/app.api.events'
+import { copyMageEventAttrs, EventAccessType, MageEvent, MageEventId, MageEventRepository } from '../../../lib/entities/events/entities.events'
+import { AddFeedToEventRequest, EventRequest, ListEventFeedsRequest, RemoveFeedFromEventRequest, UserFeed } from '../../../lib/app.api/events/app.api.events'
 import { AddFeedToEvent, ListEventFeeds, RemoveFeedFromEvent } from '../../../lib/app.impl/events/app.impl.events'
 import { MageError, ErrEntityNotFound, permissionDenied, ErrPermissionDenied, EntityNotFoundError, PermissionDeniedError } from '../../../lib/app.api/app.api.errors'
-import { AppRequest } from '../../../lib/app.api/app.api.global'
+import { MageEventPermission } from '../../../lib/entities/authorization/entities.permissions'
 import { Feed, FeedRepository, FeedServiceRepository, FeedServiceTypeRepository } from '../../../lib/entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../../lib/permissions/permissions.events'
 import { ContentLanguageKey, LanguageTag, Locale, Localized } from '../../../lib/entities/entities.i18n'
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 
 
-function requestBy<P extends object>(user: string, params: P, locale?: Locale): AppRequest<SubstituteOf<UserWithRole>> & P {
+function requestFor<P extends object>(mageEvent: MageEvent, params: P, locale?: Locale): EventRequest<SubstituteOf<UserWithRole>> & P {
   const userDoc = Sub.for<UserWithRole>()
   userDoc.id.returns!(uniqid())
   return {
     context: {
       requestToken: Symbol(),
       requestingPrincipal: () => userDoc,
-      locale() { return locale || null }
+      locale() { return locale || null },
+      mageEvent
     },
     ...params
   }
@@ -49,33 +50,29 @@ describe('event feeds use case interactions', function() {
 
     it('saves the feed to the event feeds list', async function() {
 
-      const req: AddFeedToEventRequest = requestBy('admin', {
-        feed: uniqid(),
-        event: event.id
+      const req: AddFeedToEventRequest = requestFor(event, {
+        feed: uniqid()
       })
       const updatedEvent = copyMageEventAttrs(event)
       updatedEvent.feedIds = [ req.feed ]
-      app.eventRepo.findById(event.id).resolves(new MageEvent(updatedEvent))
-      app.eventRepo.addFeedsToEvent(req.event, req.feed).resolves(updatedEvent)
-      app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
+      app.eventRepo.addFeedsToEvent(event.id, req.feed).resolves(updatedEvent)
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
 
       const res = await app.addFeedToEvent(req)
 
       expect(res.error).to.be.null
       expect(res.success).to.be.an('object')
       expect(res.success?.feedIds).to.deep.equal([ req.feed ])
-      app.eventRepo.received(1).addFeedsToEvent(req.event, req.feed)
+      app.eventRepo.received(1).addFeedsToEvent(event.id, req.feed)
     })
 
-    it('fails if the event id does not exist', async function() {
+    it('fails if the event was removed before updating', async function() {
 
-      const req: AddFeedToEventRequest = requestBy('admin', {
-        feed: uniqid(),
-        event: event.id
+      const req: AddFeedToEventRequest = requestFor(event, {
+        feed: uniqid()
       })
-      app.eventRepo.findById(Arg.all()).resolves(null)
       app.eventRepo.addFeedsToEvent(Arg.all()).resolves(null)
-      app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
 
       const res = await app.addFeedToEvent(req)
 
@@ -83,20 +80,18 @@ describe('event feeds use case interactions', function() {
       expect(res.error).to.be.instanceOf(MageError)
       expect(res.error?.code).to.equal(ErrEntityNotFound)
       const err = res.error as EntityNotFoundError
-      expect(err.data.entityId).to.equal(req.event)
+      expect(err.data.entityId).to.equal(event.id)
       expect(err.data.entityType).to.equal('MageEvent')
-      app.eventRepo.didNotReceive().addFeedsToEvent(Arg.all())
+      expect(err.message).to.equal('event removed before update')
     })
 
     it('checks permission for assigning a feed to the event', async function() {
 
-      const req: AddFeedToEventRequest = requestBy('admin', {
-        feed: uniqid(),
-        event: event.id
+      const req: AddFeedToEventRequest = requestFor(event, {
+        feed: uniqid()
       })
-      app.eventRepo.findById(req.event).resolves(event)
       app.eventRepo.addFeedsToEvent(Arg.all()).resolves(event)
-      app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(permissionDenied('update_event', 'admin'))
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(permissionDenied('update_event', 'admin'))
 
       const res = await app.addFeedToEvent(req)
 
@@ -104,7 +99,7 @@ describe('event feeds use case interactions', function() {
       expect(res.error).to.be.instanceOf(MageError)
       expect(res.error?.code).to.equal(ErrPermissionDenied)
       app.eventRepo.received(0).addFeedsToEvent(Arg.all())
-      app.permissionService.received(1).ensureEventUpdatePermission(req.context)
+      app.permissionService.received(1).authorizeEventAccess(event, Arg.any(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     })
   })
 
@@ -125,7 +120,6 @@ describe('event feeds use case interactions', function() {
         acl: {},
         feedIds: [ uniqid(), uniqid() ]
       })
-      app.eventRepo.findById(eventId).resolves(event)
     })
 
     it('returns feeds for an event', async function() {
@@ -151,8 +145,8 @@ describe('event feeds use case interactions', function() {
         }
       }
       app.feedRepo.findAllByIds(event.feedIds).resolves(feeds)
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {})
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -190,8 +184,8 @@ describe('event feeds use case interactions', function() {
       }
       event.feedIds.push(feed.id)
       app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {})
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -313,8 +307,8 @@ describe('event feeds use case interactions', function() {
         }
       ]
       app.feedRepo.findAllByIds(event.feedIds).resolves(feeds)
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [ new LanguageTag('es-419'), new LanguageTag('en-US') ]})
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {}, { languagePreferences: [ new LanguageTag('es-419'), new LanguageTag('en-US') ]})
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -361,8 +355,8 @@ describe('event feeds use case interactions', function() {
       }
       const localizedFeed: UserFeed = _.omit(feed, 'localization')
       app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [] })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {}, { languagePreferences: [] })
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -402,8 +396,8 @@ describe('event feeds use case interactions', function() {
       }
       const localizedFeed: UserFeed = _.omit(feed, 'localization')
       app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId }, { languagePreferences: [ new LanguageTag('en-GB') ] })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {}, { languagePreferences: [ new LanguageTag('en-GB') ] })
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -443,8 +437,8 @@ describe('event feeds use case interactions', function() {
       }
       const localizedFeed: UserFeed = _.omit(feed, 'localization')
       app.feedRepo.findAllByIds(event.feedIds).resolves({ [feed.id]: feed })
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(null)
-      const req: ListEventFeedsRequest = requestBy('admin', { event: eventId })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
+      const req: ListEventFeedsRequest = requestFor(event, {})
       const res = await app.listEventFeeds(req)
 
       expect(res.error).to.be.null
@@ -452,34 +446,18 @@ describe('event feeds use case interactions', function() {
       expect(res.success).to.deep.equal([ localizedFeed ])
     })
 
-    it('fails if the event does not exist', async function() {
-
-      const req: ListEventFeedsRequest = requestBy('admin', {
-        event: eventId + 1
-      })
-      app.eventRepo.findById(req.event).resolves(null)
-      const res = await app.listEventFeeds(req)
-
-      expect(res.success).to.be.null
-      expect(res.error).to.be.instanceOf(MageError)
-      expect(res.error?.code).to.equal(ErrEntityNotFound)
-      const err = res.error as EntityNotFoundError
-      expect(err.data.entityId).to.equal(req.event)
-      expect(err.data.entityType).to.equal('MageEvent')
-    })
-
     it('checks permission for listing event feeds', async function() {
 
-      const req: ListEventFeedsRequest = requestBy('admin', { event: event.id })
+      const req: ListEventFeedsRequest = requestFor(event, {})
       app.feedRepo.findAllByIds(event.feedIds).resolves({})
-      app.permissionService.ensureEventReadPermission(Arg.all()).resolves(permissionDenied('read_event_user', 'admin'))
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(permissionDenied('read_event_user', 'admin'))
       const res = await app.listEventFeeds(req)
 
       expect(res.success).to.be.null
       expect(res.error).to.be.instanceOf(MageError)
       expect(res.error?.code).to.equal(ErrPermissionDenied)
       app.feedRepo.didNotReceive().findAllByIds(Arg.all())
-      app.permissionService.received(1).ensureEventReadPermission(req.context)
+      app.permissionService.received(1).authorizeEventAccess(event, Arg.any(), MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
     })
   })
 
@@ -489,10 +467,9 @@ describe('event feeds use case interactions', function() {
 
       const before = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [ uniqid(), uniqid() ]})
       const after = new MageEvent({ ...copyMageEventAttrs(before), feedIds: [ before.feedIds[1] ] })
-      app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
-      app.eventRepo.findById(before.id).resolves(before)
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
       app.eventRepo.removeFeedsFromEvent(before.id, before.feedIds[0]).resolves(copyMageEventAttrs(after))
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: before.id, feed: before.feedIds[0] })
+      const req: RemoveFeedFromEventRequest = requestFor(before, { feed: before.feedIds[0] })
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.error).to.be.null
@@ -500,29 +477,12 @@ describe('event feeds use case interactions', function() {
       app.eventRepo.received(1).removeFeedsFromEvent(before.id, before.feedIds[0])
     })
 
-    it('fails if the event does not exist', async function() {
-
-      app.eventRepo.findById(event.id).resolves(null)
-      app.eventRepo.removeFeedsFromEvent(Arg.all()).resolves(null)
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: event.id, feed: uniqid() })
-      const res = await app.removeFeedFromEvent(req)
-
-      expect(res.success).to.be.null
-      expect(res.error).to.be.instanceOf(MageError)
-      expect(res.error?.code).to.equal(ErrEntityNotFound)
-      const err = res.error as EntityNotFoundError
-      expect(err.data.entityId).to.equal(event.id)
-      expect(err.data.entityType).to.equal('MageEvent')
-      app.eventRepo.didNotReceive().removeFeedsFromEvent(Arg.all())
-    })
-
     it('fails if the event was removed before udpating', async function() {
 
       const before = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [ uniqid(), uniqid() ] })
-      app.permissionService.ensureEventUpdatePermission(Arg.all()).resolves(null)
-      app.eventRepo.findById(before.id).resolves(before)
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
       app.eventRepo.removeFeedsFromEvent(before.id, before.feedIds[0]).resolves(null)
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: before.id, feed: before.feedIds[0] })
+      const req: RemoveFeedFromEventRequest = requestFor(before, { feed: before.feedIds[0] })
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.success).to.be.null
@@ -537,10 +497,8 @@ describe('event feeds use case interactions', function() {
 
     it('checks permission for removing the feed from the event', async function() {
 
-      app.eventRepo.findById(Arg.any()).resolves(event)
-      app.permissionService.ensureEventUpdatePermission(Arg.any()).resolves(permissionDenied('update_event', 'admin', String(event.id)))
-      const req: RemoveFeedFromEventRequest = requestBy('admin',
-        { event: event.id, feed: uniqid() })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(permissionDenied('update_event', 'admin', String(event.id)))
+      const req: RemoveFeedFromEventRequest = requestFor(event, { feed: uniqid() })
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.success).to.be.null
@@ -550,17 +508,15 @@ describe('event feeds use case interactions', function() {
       expect(err.data.subject).to.equal('admin')
       expect(err.data.permission).to.equal('update_event')
       expect(err.data.object).to.equal(String(event.id))
-      app.eventRepo.received(1).findById(event.id)
-      app.permissionService.received(1).ensureEventUpdatePermission(req.context)
+      app.permissionService.received(1).authorizeEventAccess(event, Arg.any(), MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
       app.eventRepo.didNotReceive().removeFeedsFromEvent(Arg.all())
     })
 
     it('fails if the feed id is not in the event feeds list', async function() {
 
       const noFeeds = new MageEvent({ ...copyMageEventAttrs(event), feedIds: [] })
-      app.eventRepo.findById(event.id).resolves(noFeeds)
-      const req: RemoveFeedFromEventRequest = requestBy('admin', { event: event.id, feed: uniqid() })
-      app.permissionService.ensureEventUpdatePermission(Arg.deepEquals(req.context)).resolves(null)
+      const req: RemoveFeedFromEventRequest = requestFor(noFeeds, { feed: uniqid() })
+      app.permissionService.authorizeEventAccess(Arg.all()).resolves(null)
       const res = await app.removeFeedFromEvent(req)
 
       expect(res.success).to.be.null
@@ -569,7 +525,6 @@ describe('event feeds use case interactions', function() {
       const err = res.error as EntityNotFoundError
       expect(err.data.entityId).to.equal(req.feed)
       expect(err.data.entityType).to.equal('MageEvent.feedIds')
-      app.eventRepo.received(1).findById(event.id)
       app.eventRepo.didNotReceive().removeFeedsFromEvent(Arg.all())
     })
   })
@@ -584,6 +539,6 @@ class EventsUseCaseInteractions {
   readonly permissionService = Sub.for<EventPermissionServiceImpl>()
 
   readonly addFeedToEvent = AddFeedToEvent(this.permissionService, this.eventRepo)
-  readonly listEventFeeds = ListEventFeeds(this.permissionService, this.eventRepo, this.feedRepo)
+  readonly listEventFeeds = ListEventFeeds(this.permissionService, this.feedRepo)
   readonly removeFeedFromEvent = RemoveFeedFromEvent(this.permissionService, this.eventRepo)
 }

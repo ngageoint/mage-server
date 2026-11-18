@@ -15,11 +15,26 @@ module.exports = function(app, security) {
     verification = require('../authentication/verification'),
     userTransformer = require('../transformers/user'),
     pageTransformer = require('../transformers/pageinfo'),
-    { defaultHandler: upload } = require('../upload'),
+    { Upload } = require('../upload'),
+    environment = require('../environment/env'),
     {
       defaultEventPermissionsService: eventPermissions
     } = require('../permissions/permissions.events'),
     passport = security.authentication.passport;
+
+  // separate multer instance since defaultHandler's limits can't be set after construction
+  const userContentUpload = Upload({ fileSize: environment.userContentMaxSize });
+
+  // wherever this is registered in a route, it must be the handler placed
+  // immediately after userContentUpload's call - otherwise a size-limit
+  // rejection falls through to express.ts's generic 500 instead of here
+  function handleUserContentUploadError(err, req, res, next) {
+    // Captures file-size errors as 400, all other errors are defaulted to 500
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).send(`avatar/icon upload exceeds maximum size of ${environment.userContentMaxSize} bytes`);
+    }
+    next(err);
+  }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\./;
   const JWTService = verification.JWTService;
@@ -172,7 +187,8 @@ module.exports = function(app, security) {
     '/api/users',
     isAuthenticated('bearer'),
     access.authorize('CREATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     validateUsername,
     validateAccount,
     parseIconUpload,
@@ -293,7 +309,7 @@ module.exports = function(app, security) {
 
         const user = {
           username: req.payload.subject,
-          roleId: req.userRole._id,
+          roleId: req.userRole.id,
           displayName: req.account.displayName,
           email: req.account.email,
           phones: req.account.phones,
@@ -402,7 +418,8 @@ module.exports = function(app, security) {
   app.put(
     '/api/users/myself',
     security.authentication.bearerAuthentication,
-    upload.single('avatar'),
+    userContentUpload.single('avatar'),
+    handleUserContentUploadError,
     function(req, res, next) {
       if (req.param('username')) req.user.username = req.param('username');
       if (req.param('displayName'))
@@ -459,6 +476,11 @@ module.exports = function(app, security) {
 
       Authentication.updateAuthentication(req.user.authentication)
         .then(() => {
+          log.info('user changed own password', {
+            user: req.user.username,
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
           res.sendStatus(200);
         })
         .catch(err => next(err));
@@ -516,7 +538,8 @@ module.exports = function(app, security) {
     '/api/users/:userId',
     security.authentication.bearerAuthentication,
     access.authorize('UPDATE_USER'),
-    upload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    userContentUpload.fields([{ name: 'avatar' }, { name: 'icon' }]),
+    handleUserContentUploadError,
     parseIconUpload,
     function(req, res, next) {
       const user = req.userParam;
@@ -531,8 +554,10 @@ module.exports = function(app, security) {
         user.active = true;
       }
 
+      let enabled = false;
       let disabled = false;
       if (req.param('enabled') === true || req.param('enabled') === 'true') {
+        enabled = user.enabled !== true;
         user.enabled = true;
       } else if (
         req.param('enabled') === false ||
@@ -574,6 +599,15 @@ module.exports = function(app, security) {
             userId: updatedUser._id.toString(),
             activatedBy: req.user.username,
             activatedTime: new Date().toISOString()
+          });
+        }
+
+        if (enabled) {
+          log.info('user account enabled', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            enabledBy: req.user.username,
+            enabledTime: new Date().toISOString()
           });
         }
 
@@ -638,6 +672,11 @@ module.exports = function(app, security) {
 
       Authentication.updateAuthentication(user.authentication)
         .then(() => {
+          log.info('user password changed', {
+            user: user.username,
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
           res.sendStatus(200);
         })
         .catch(err => next(err));

@@ -1,13 +1,21 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { UserService } from '../../user/user.service';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpEvent, HttpEventType } from '@angular/common/http';
 import { zxcvbn, zxcvbnOptions } from '@zxcvbn-ts/core'
 import * as zxcvbnCommonPackage from '@zxcvbn-ts/language-common'
 import * as zxcvbnEnPackage from '@zxcvbn-ts/language-en'
-import { MatDialog as MatDialog } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { UserAvatarModule } from '../user-avatar/user-avatar.module';
 import { PasswordResetSuccessDialog } from '../password/password-reset-success-dialog';
 import { PasswordStrength, passwordStrengthScores } from '../../entities/password/password';
 import { SessionService } from 'mage-web-app/http/session.service';
@@ -17,12 +25,28 @@ import { emailValidator } from 'mage-web-app/email/email';
     selector: 'profile',
     templateUrl: './profile.component.html',
     styleUrls: ['./profile.component.scss'],
-    standalone: false
+    imports: [
+      ReactiveFormsModule,
+      MatButtonModule,
+      MatCardModule,
+      MatFormFieldModule,
+      MatIconModule,
+      MatInputModule,
+      MatProgressBarModule,
+      MatToolbarModule,
+      UserAvatarModule
+    ]
 })
 export class ProfileComponent implements OnInit {
-  user: any
+  private readonly dialog: MatDialog = inject(MatDialog)
+  private readonly router: Router = inject(Router)
+  private readonly userService: UserService = inject(UserService)
+  private readonly sessionService: SessionService = inject(SessionService)
+  private readonly snackbar: MatSnackBar = inject(MatSnackBar)
+
+  readonly user = signal<any>(null)
   avatar: any
-  saving = false
+  readonly saving = signal(false)
 
   profile = new FormGroup({
     username: new FormControl<string>({ value: '', disabled: true }, []),
@@ -30,28 +54,19 @@ export class ProfileComponent implements OnInit {
     email: new FormControl<string>('', [emailValidator]),
     phone: new FormControl<string>('', []),
   })
-  profileError?: string
 
   password = new FormGroup({
     currentPassword: new FormControl<string>('', [Validators.required]),
     newPassword: new FormControl<string>('', [Validators.required]),
     newPasswordConfirm: new FormControl<string>('', [Validators.required])
   })
-  passwordError?: string
+  readonly passwordError = signal<string | undefined>(undefined)
 
   passwordStrength?: PasswordStrength
 
-  constructor(
-    public dialog: MatDialog,
-    private router: Router,
-    private userService: UserService,
-    private sessionService: SessionService,
-    private snackbar: MatSnackBar
-  ) { }
-
   ngOnInit(): void {
-    this.user = this.sessionService.user
-    this.setProfile(this.user)
+    this.user.set(this.sessionService.user)
+    this.setProfile(this.user())
 
     zxcvbnOptions.setOptions({
       dictionary: {
@@ -69,8 +84,7 @@ export class ProfileComponent implements OnInit {
       return
     }
 
-    this.saving = true
-    this.profileError = undefined
+    this.saving.set(true)
 
     this.userService.saveProfile({
       avatar: this.avatar,
@@ -80,16 +94,19 @@ export class ProfileComponent implements OnInit {
     }).subscribe({
       next: (event: HttpEvent<any>) => {
         if (event.type === HttpEventType.Response) {
-          this.saving = false
-          this.user = event.body
+          this.saving.set(false)
+          this.user.set(event.body)
           this.snackbar.open('Profile updated successfully', undefined, {
             duration: 3000
           })
         }
       },
-      error: () => {
-        this.saving = false
-        this.profileError = 'Error updating profile, please try again later.'
+      error: (err) => {
+        this.saving.set(false)
+        const message = (typeof err.error === 'string' && err.error) || 'Error updating profile, please try again later.'
+        this.snackbar.open(message, undefined, {
+          duration: 6000
+        })
       }
     })
   }
@@ -103,7 +120,8 @@ export class ProfileComponent implements OnInit {
 
   onPasswordChanged(password: string) {
     if (password && password.length > 0) {
-      const userInputs = [this.user.username, this.user.displayName, this.user.email].filter(Boolean)
+      const user = this.user()
+      const userInputs = [user.username, user.displayName, user.email].filter(Boolean)
       const score = password && password.length ? zxcvbn(password, userInputs).score : 0;
       this.passwordStrength = passwordStrengthScores[score]
     } else {
@@ -144,7 +162,7 @@ export class ProfileComponent implements OnInit {
           if (response.status === 401) {
             this.password.controls.currentPassword.setErrors({invalid: true})
           } else {
-            this.passwordError = response.error
+            this.passwordError.set(response.error)
           }
         }
       })
@@ -152,7 +170,7 @@ export class ProfileComponent implements OnInit {
   }
 
   onCancel(): void {
-    this.setProfile(this.user)
+    this.setProfile(this.user())
   }
 
   onBack(): void {

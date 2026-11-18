@@ -1,35 +1,45 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
 import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
-import { ZoomDirection } from '../../app/map/controls/zoom.component'
+import { ZoomDirection, ZoomEvent as ZoomControlEvent } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
 import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
-import { MapService } from './map.service'
+import { FeatureEdit, FeatureEditDelegate, MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { map, latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, latLngBounds, LatLng, markerClusterGroup, Layer, Map, DomEvent } from "leaflet"
-import { OpacityEvent, ZoomEvent } from './layers/layer.service'
+import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent, divIcon, DomUtil, Marker } from "leaflet"
+import { OpacityEvent, ZoomEvent as LayerZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
-import { locationMarker } from './marker/LocationMarker'
-import { observationMarker } from './marker/ObservationMarker'
+import { locationMarker, LocationMarker } from './marker/LocationMarker'
+import { observationMarker, ObservationMarker } from './marker/ObservationMarker'
+import { pulseShape } from './marker/ShapePulse'
 import { COUNTRIES as countries } from './layers/static/layers'
 import 'leaflet-editable'
 import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
+import { PlacenameSearchResult } from '../geocoder/search/search.service'
 import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
-import { UserService } from '../user/user.service'
-import { FilterComponent } from '../filter/filter.component'
-import { MatDialog as MatDialog } from '@angular/material/dialog'
-import _ from 'underscore'
+import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerGroup, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
+import { MatDialog } from '@angular/material/dialog'
+import * as _ from 'lodash'
 import moment from 'moment';
-import { Subscription } from 'rxjs'
+import { Subscription, interval } from 'rxjs'
 import { ContactDialogComponent } from '../contact/contact-dialog.component'
 import { SessionService } from 'mage-web-app/http/session.service'
 
 Icon.Default.imagePath = '/'
+
+const GROUP_PANE_Z_INDEX: Record<MapLayerGroup, number> = {
+  base: 10000,
+  tile: 25000,
+  grid: 35000,
+  feature: 65000,
+  feed: 75000,
+  mage: 76000
+}
 
 @Component({
     selector: 'map',
@@ -40,78 +50,58 @@ Icon.Default.imagePath = '/'
 })
 export class MapComponent implements OnDestroy, AfterViewInit {
 
-  public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000
-  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-
   @Output() addObservation = new EventEmitter<any>()
 
-  @ViewChild('map') mapElement: ElementRef<any>
-  @ViewChild('mapControlsLeft') mapControlsLeft: ElementRef<HTMLElement>
-  @ViewChild('mapControlsRight') mapControlsRight: ElementRef<HTMLElement>
+  @ViewChild('map') mapElement!: ElementRef<any>
+  @ViewChild('mapControlsLeft') mapControlsLeft!: ElementRef<HTMLElement>
+  @ViewChild('mapControlsRight') mapControlsRight!: ElementRef<HTMLElement>
   mapReizeObserver?: ResizeObserver
+  private listenerTimeout?: ReturnType<typeof setTimeout>
 
-  map: Map
-  groups: any = {
-    'base': {
-      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'mage': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feed': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'tile': {
-      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feature': {
-      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'grid': {
-      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
+  map!: Map
+  groups: Record<MapLayerGroup, RenderedMapLayer[]> = {
+    base: [],
+    tile: [],
+    grid: [],
+    feature: [],
+    feed: [],
+    mage: []
   }
-  layers: any = {}
+  layers: Record<string, RenderedMapLayer> = {}
   geoPackageLayers: any
-  temporalLayers: any = []
-  spiderfyState: any = null
+  temporalLayers: Extract<RenderedMapLayer, { type: 'vector' }>[] = []
   currentLocation: any = null
   locationLayer = locationMarker([0, 0], { color: '#136AEC', radius: 16 })
   locationState = LocationState.Off
   searchMarker: any
-  featurePanes = []
-  BASE_LAYER_PANE = 'baseLayerPane'
-  listener: any
-  pollListener: any
+  searchHighlight?: Marker
+  searchHighlightTimeout?: ReturnType<typeof setTimeout>
+  featurePanes: string[] = []
 
   toggleSubscription: Subscription
   zoomSubscription: Subscription
   opacitySubscription: Subscription
   styleSubscription: Subscription
+  temporalLayerSubscription: Subscription
+
+  private static readonly TEMPORAL_LAYER_REFRESH_INTERVAL_MS = 60000
 
   constructor(
     public dialog: MatDialog,
-    private mapService: MapService,
-    private sessionService: SessionService,
-    private layerService: MapLayerService,
-    private eventService: EventService,
-    private filterService: FilterService,
-    private localStorageService: LocalStorageService
+    private readonly mapService: MapService,
+    private readonly sessionService: SessionService,
+    mapLayerService: MapLayerService,
+    private readonly layerService: LayerService,
+    private readonly eventService: EventService,
+    private readonly filterService: FilterService,
+    private readonly localStorageService: LocalStorageService
   ) {
-    this.toggleSubscription = layerService.toggle$.subscribe(event => this.layerTogged(event));
-    this.zoomSubscription = layerService.zoom$.subscribe(event => this.zoom(event));
-    this.opacitySubscription = layerService.opacity$.subscribe(event => this.opacityChanged(event));
-    this.styleSubscription = layerService.style$.subscribe(event => this.styleChanged(event));
+    this.toggleSubscription = mapLayerService.toggle$.subscribe(event => this.layerTogged(event));
+    this.zoomSubscription = mapLayerService.zoom$.subscribe(event => this.zoom(event));
+    this.opacitySubscription = mapLayerService.opacity$.subscribe(event => this.opacityChanged(event));
+    this.styleSubscription = mapLayerService.style$.subscribe(event => this.styleChanged(event));
+    this.temporalLayerSubscription = interval(MapComponent.TEMPORAL_LAYER_REFRESH_INTERVAL_MS)
+      .subscribe(() => this.adjustTemporalLayers());
 
     this.mapReizeObserver = new ResizeObserver(() => {
       this.map.invalidateSize({ pan: false, debounceMoveend: true })
@@ -133,7 +123,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       mapPosition = this.localStorageService.getMapPosition()
     }
 
-    this.map = map('map', {
+     this.map = new Map('map', {
       center: mapPosition.center,
       zoom: mapPosition.zoom,
       zoomControl: false,
@@ -145,22 +135,22 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     })
 
     // Spread out map panes
-    // To easily adjust zIndex across all types of layers each feature group,
-    // overlay map, etc, will be placed in its own map pane
-    this.map.createPane(this.BASE_LAYER_PANE)
-    this.map.getPane(this.BASE_LAYER_PANE).style.zIndex = `${100 * 100}`
+    Object.entries(GROUP_PANE_Z_INDEX).forEach(([group, zIndex]) => {
+      this.map.createPane(this.groupPaneName(group as MapLayerGroup)).style.zIndex = `${zIndex}`
+    })
 
-    this.map.getPane('tilePane').style.zIndex = `${200 * 100}`
-    this.map.getPane('overlayPane').style.zIndex = `${400 * 100}`
-    this.map.getPane('shadowPane').style.zIndex = `${500 * 100}`
-    this.map.getPane('markerPane').style.zIndex = `${600 * 100}`
-    this.map.getPane('tooltipPane').style.zIndex = `${700 * 100}`
-    this.map.getPane('popupPane').style.zIndex = `${800 * 100}`
+    const panes = this.map.getPanes()
+    panes.tilePane.style.zIndex = `${200 * 100}`
+    panes.overlayPane.style.zIndex = `${400 * 100}`
+    panes.shadowPane.style.zIndex = `${500 * 100}`
+    panes.markerPane.style.zIndex = `${600 * 100}`
+    panes.tooltipPane.style.zIndex = `${700 * 100}`
+    panes.popupPane.style.zIndex = `${800 * 100}`
 
     // Add in a base layer of styled GeoJSON in case the tiles do not load
     const FALLBACK_LAYER_PANE = 'fallbackLayerPane'
-    this.map.createPane(FALLBACK_LAYER_PANE)
-    this.map.getPane(FALLBACK_LAYER_PANE).style.zIndex = '1'
+    const fallbackLayerPane = this.map.createPane(FALLBACK_LAYER_PANE)
+    fallbackLayerPane.style.zIndex = '1'
 
     this.map.addLayer(
       geoJSON(countries, {
@@ -183,14 +173,14 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       console.log('LOCATION ERROR', err)
     })
 
-    function saveMapPosition() {
+    const saveMapPosition = () => {
       const center = this.map.getCenter()
       this.localStorageService.setMapPosition({
         center: latLng(Util.formatNum(center.lat), Util.formatNum(center.lng)),
         zoom: this.map.getZoom()
       })
     }
-    this.map.on('moveend', saveMapPosition, this)
+    this.map.on('moveend', saveMapPosition)
 
     this.geoPackageLayers = new GeoPackageLayers(
       this.map,
@@ -199,20 +189,16 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.sessionService
     )
 
-    this.pollListener = {
-      onPoll: this.onPoll.bind(this)
-    }
-
     // Ensure that any changes made by listener callbacks are processed in a digest cycle
     // TODO this can be removed when the services use rxjs rather than custom change detection w/  callbacks
-    setTimeout(() => {
+    this.listenerTimeout = setTimeout(() => {
       this.mapService.setDelegate(this)
       this.mapService.addListener(this)
-      this.eventService.addPollListener(this.pollListener)
     })
   }
 
   ngOnDestroy(): void {
+    clearTimeout(this.listenerTimeout)
     this.mapService.removeListener(this)
     this.mapReizeObserver?.unobserve(this.mapElement.nativeElement)
 
@@ -220,6 +206,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     this.zoomSubscription.unsubscribe()
     this.opacitySubscription.unsubscribe()
     this.styleSubscription.unsubscribe()
+    this.temporalLayerSubscription.unsubscribe()
+
+    this.map?.remove()
   }
 
   saveMapPosition() {
@@ -230,51 +219,42 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     })
   }
 
-  $onDestroy() {
-    this.mapService.removeListener(this.listener)
-    this.eventService.removePollListener(this.pollListener)
-  }
-
   opacityChanged(event: OpacityEvent): void {
-    const pane = this.map.getPanes()[event.layer.layer.pane]
-    pane.style.opacity = `${event.opacity}`
-    if (event.layer.layer.setOpacity) {
-      event.layer.layer.setOpacity(event.opacity)
+    const layer = event.layer
+    if (layer.type === 'vector') {
+      this.map.getPanes()[layer.layer.options.pane].style.opacity = `${event.opacity}`
+    } else {
+      layer.layer.setOpacity(event.opacity)
     }
   }
 
   styleChanged(event: StyleEvent): void {
-    event.layer.layer.setStyle(event.style);
+    if (event.layer.type === 'GeoPackage') {
+      event.layer.layer.setStyle(event.style)
+    }
   }
 
   reorder($event: ReorderEvent): void {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex)
-    const offset =
-      $event.type === 'feature'
-        ? MapComponent.FEATURE_PANE_Z_INDEX_OFFSET
-        : MapComponent.TILE_PANE_Z_INDEX_OFFSET
-
-    $event.layers.forEach((layer: any, index: number) => {
-      layer.zIndex = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1)
-      const pane = this.map.getPanes()[layer.layer.pane]
-      pane.style.zIndex = layer.zIndex
-    })
+    this.restackGroup($event.group)
   }
 
-  zoom($event: ZoomEvent): void {
-    const layer = $event.layer.layer
-    if (layer.getBounds) {
-      const bounds = layer.getBounds()
-      this.map.fitBounds(bounds)
-    } else if (layer.table && layer.table.bbox) {
+  zoom($event: LayerZoomEvent): void {
+    const layer = $event.layer
+    if ('getBounds' in layer.layer) {
+      const bounds = layer.layer.getBounds()
+      if (bounds.isValid()) {
+        this.map.fitBounds(bounds)
+      }
+    } else if (layer.type === 'GeoPackage' && layer.bbox) {
       this.map.fitBounds([
-        [layer.table.bbox[1], layer.table.bbox[0]],
-        [layer.table.bbox[3], layer.table.bbox[2]]
+        [layer.bbox[1], layer.bbox[0]],
+        [layer.bbox[3], layer.bbox[2]]
       ])
     }
   }
 
-  onZoom($event) {
+  onZoom($event: ZoomControlEvent) {
     if ($event.direction === ZoomDirection.IN) {
       this.map.zoomIn(1)
     } else {
@@ -282,18 +262,62 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onSearch($event) {
+  onSearch(result: PlacenameSearchResult) {
     this.onSearchClear()
 
     this.map.fitBounds(
       latLngBounds(
-        latLng($event.result.bbox[1], $event.result.bbox[0]),
-        latLng($event.result.bbox[3], $event.result.bbox[2])
+        latLng(result.bbox[1], result.bbox[0]),
+        latLng(result.bbox[3], result.bbox[2])
       )
     )
 
-    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent($event.result.name)
-    this.searchMarker = marker([$event.result.position[1], $event.result.position[0]])
+    this.addSearchMarker(result)
+  }
+
+  showSearchResultForEdit(result: PlacenameSearchResult, editor: FeatureEditor) {
+    this.clearSearchHighlight()
+
+    const resultBounds = latLngBounds(
+      latLng(result.bbox[1], result.bbox[0]),
+      latLng(result.bbox[3], result.bbox[2])
+    )
+    const position = latLng(result.position[1], result.position[0])
+    const shapeBounds = editor.getBounds()
+    const bounds = shapeBounds ? shapeBounds.extend(position) : resultBounds
+    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 })
+
+    this.addSearchHighlight(position, result.name)
+  }
+
+  private addSearchHighlight(position: LatLng, name: string) {
+    const html = DomUtil.create('div')
+    DomUtil.create('div', 'marker-pulse__ring', html)
+    DomUtil.create('div', 'search-highlight__dot', html)
+    DomUtil.create('div', 'search-highlight__label', html).textContent = name
+
+    this.searchHighlight = marker(position, {
+      icon: divIcon({ className: 'marker-pulse', html, iconSize: [0, 0] }),
+      interactive: false,
+      keyboard: false
+    }).addTo(this.map)
+
+    this.searchHighlightTimeout = setTimeout(() => this.clearSearchHighlight(), 4000)
+    this.map.on('click', this.clearSearchHighlight, this)
+  }
+
+  private clearSearchHighlight() {
+    clearTimeout(this.searchHighlightTimeout)
+    this.map.off('click', this.clearSearchHighlight, this)
+    if (this.searchHighlight) {
+      this.map.removeLayer(this.searchHighlight)
+      this.searchHighlight = undefined
+    }
+  }
+
+  private addSearchMarker(result: PlacenameSearchResult) {
+    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent(result.name)
+    this.searchMarker = marker([result.position[1], result.position[0]])
       .addTo(this.map)
       .bindPopup(markerPopup)
       .openPopup()
@@ -303,17 +327,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker)
     }
-  }
-
-  onFilter() {
-    this.dialog.open(FilterComponent, {
-      height: '580px',
-      width: '675px'
-    });
-  }
-
-  onPoll() {
-    this.adjustTemporalLayers()
+    this.clearSearchHighlight()
   }
 
   onAddObservation() {
@@ -357,12 +371,11 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onLocation(location) {
+  onLocation(location: LeafletLocationEvent) {
     // skip if the location has not changed
     if (
       this.locationState === LocationState.Off ||
-      (this.currentLocation &&
-        this.currentLocation.latitude === location.latlng.lat &&
+      (this.currentLocation?.latitude === location.latlng.lat &&
         this.currentLocation.longitude === location.latlng.lng &&
         this.currentLocation.accuracy === location.accuracy)
     ) {
@@ -381,7 +394,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onLayersChanged({ id, added = [], removed = [] }) {
+  onLayersChanged({ added = [] }: { added?: MapLayer[] }) {
     added.forEach(added => {
       switch (added.type) {
         case 'GeoPackage':
@@ -390,7 +403,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         case 'Imagery':
           this.createRasterLayer(added)
           break
-        case 'geojson':
+        case 'vector':
           this.createGeoJsonLayer(added)
           break
         case 'grid':
@@ -398,32 +411,15 @@ export class MapComponent implements OnDestroy, AfterViewInit {
           break
       }
     })
-
-    removed.forEach(removed => {
-      const layer = this.layers[id]
-      if (layer) {
-        this.map.removeLayer(layer.layer)
-        delete layer.layer
-        delete this.layers[removed.layerId]
-        this.removeLayer(layer)
-      }
-    })
   }
 
   // TODO move into leaflet service, this and map clip both use it
-  createRasterLayer(layerInfo) {
-    let paneName = this.BASE_LAYER_PANE
-    if (!layerInfo.base) {
-      paneName = `pane-${layerInfo.id}`
-      this.map.createPane(paneName)
-    }
+  createRasterLayer(layerInfo: RasterLayer) {
+    const paneName = this.createLayerPane(layerInfo)
 
-    let options: any = {}
-    if (layerInfo.format === 'XYZ' || layerInfo.format === 'TMS') {
-      options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: paneName }
-      layerInfo.layer = tileLayer(layerInfo.url, options)
-    } else if (layerInfo.format === 'WMS') {
-      options = {
+    let layer: TileLayer | TileLayer.WMS
+    if (layerInfo.format === 'WMS') {
+      const options: any = {
         layers: layerInfo.wms.layers,
         version: layerInfo.wms.version,
         format: layerInfo.wms.format,
@@ -432,129 +428,115 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       }
 
       if (layerInfo.wms.styles) options.styles = layerInfo.wms.styles
-      layerInfo.layer = new TileLayer.WMS(layerInfo.url, options)
+      layer = new TileLayer.WMS(layerInfo.url, options)
+    } else {
+      const options = { tms: layerInfo.format === 'TMS', maxZoom: 18, pane: paneName }
+      layer = tileLayer(layerInfo.url, options)
     }
 
-    layerInfo.layer.pane = paneName
-    this.layers[layerInfo.id] = layerInfo
-    this.addLayer(layerInfo)
+    const rendered = { ...layerInfo, layer } as RenderedMapLayer
+    this.layers[layerInfo.id] = rendered
+    this.addLayer(rendered)
   }
 
-  createGeoPackageLayer(layerInfo) {
-    layerInfo.tables.forEach(table => {
-      const pane = `pane-${layerInfo.id}-${table.name}`
-      this.map.createPane(pane)
-      if (table.type === 'feature') {
-        this.featurePanes.push(pane)
-      }
+  createGeoPackageLayer(layerInfo: GeoPackageLayer) {
+    const pane = this.createLayerPane(layerInfo)
+    if (layerInfo.renderAs === 'feature') {
+      this.featurePanes.push(pane)
+    }
 
-      table.layer = this.geoPackageLayers.createGeoPackageLayer(table, layerInfo.id, pane)
-      this.layers[layerInfo.id + table.name] = table
-
-      this.addLayer({
-        type: 'GeoPackage',
-        name: table.name,
-        table: table,
-        layer: table.layer
-      })
-    })
+    const layer = this.geoPackageLayers.createGeoPackageLayer(layerInfo, pane)
+    const rendered = { ...layerInfo, layer } as RenderedMapLayer
+    this.layers[layerInfo.id] = rendered
+    this.addLayer(rendered)
   }
 
-  createGeoJsonLayer(layerInfo) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+  createGeoJsonLayer(layerInfo: VectorLayer) {
+    const pane = this.createLayerPane(layerInfo)
     this.featurePanes.push(pane)
 
-    layerInfo.featureIdToLayer = {}
-    const geojson = this.createGeoJsonForLayer(layerInfo.geojson, layerInfo, pane)
+    const withFeatures = { ...layerInfo, featureIdToLayer: {} }
+    const geojson = this.createGeoJsonForLayer(null, withFeatures, pane)
 
-    if (layerInfo.options.cluster) {
-      layerInfo.layer = markerClusterGroup({
+    let layer: GeoJSONLayer | MarkerClusterGroup
+    if (layerInfo.cluster) {
+      layer = markerClusterGroup({
         pane: pane,
         clusterPane: pane
       }).addLayer(geojson)
-
-      layerInfo.layer.on('spiderfied', function () {
-        if (this.spiderfyState) {
-          this.spiderfyState.layer.openPopup()
-        }
-      })
     } else {
-      layerInfo.layer = geojson
+      layer = geojson
     }
 
-    layerInfo.layer.pane = pane
-    this.layers[layerInfo.id] = layerInfo
+    const rendered = { ...withFeatures, layer } as Extract<RenderedMapLayer, { type: 'vector' }>
+    this.layers[layerInfo.id] = rendered
 
-    if (layerInfo.options.temporal) {
-      this.temporalLayers.push(layerInfo)
+    if (layerInfo.temporal) {
+      this.temporalLayers.push(rendered)
     }
 
-    if (!layerInfo.options.hidden) {
-      this.addLayer(layerInfo)
+    if (!layerInfo.hidden) {
+      this.addLayer(rendered)
     }
   }
 
-  createGeoJsonForLayer(json, layerInfo, pane, editMode?: any) {
-    const popup = layerInfo.options.popup
-    const geojson = geoJSON(json, {
+  createGeoJsonForLayer(json: GeoJSON.GeoJsonObject | null, layerInfo: VectorLayer & { featureIdToLayer: Record<string, MapFeatureLayer> }, pane: string, editMode?: any) {
+    const popup = layerInfo.renderHooks.popup
+    const geojson = geoJSON(json ?? undefined, {
       pane: pane,
-      onEachFeature: function (feature, layer) {
+      onEachFeature: (feature: MapFeature, layer) => {
         if (popup) {
-          if (_.isFunction(popup.html)) {
+          if (_.isFunction((popup as any).html)) {
             const options: any = { autoPan: false, maxWidth: 400 }
-            if (popup.closeButton !== undefined) options.closeButton = popup.closeButton
-            layer.bindPopup(popup.html(feature, layer), options)
+            if ((popup as any).closeButton !== undefined) options.closeButton = (popup as any).closeButton
+            layer.bindPopup((popup as any).html(feature, layer), options)
           }
-          if (_.isFunction(popup.onOpen)) {
+          if (_.isFunction((popup as any).onOpen)) {
             layer.on('popupopen', function () {
-              popup.onOpen(feature)
+              (popup as any).onOpen(feature)
             })
           }
-          if (_.isFunction(popup.onClose)) {
+          if (_.isFunction((popup as any).onClose)) {
             layer.on('popupclose', function () {
-              popup.onClose(feature)
+              (popup as any).onClose(feature)
             })
           }
         }
-        if (layerInfo.options.onLayer) {
-          layerInfo.options.onLayer(layer, feature)
+        if (layerInfo.renderHooks.onLayer) {
+          layerInfo.renderHooks.onLayer(layer as any, feature)
         }
-        layerInfo.featureIdToLayer[feature.id] = layer
+        layerInfo.featureIdToLayer[feature.id] = layer as any
       },
-      pointToLayer: (feature: any, latlng: LatLng) => {
-        let layer: Layer
+      pointToLayer: (geoJsonPoint: GeoJSON.Feature<GeoJSON.Point>, latlng: LatLng) => {
+        const feature = geoJsonPoint as MapFeature
+        let layer: MapFeatureLayer
 
-        if (layerInfo.options.temporal) {
+        if (layerInfo.temporal) {
           const temporalOptions: any = {
             pane: pane,
-            accuracy: feature.properties.accuracy,
-            color: this.colorForFeature(feature, layerInfo.options.temporal)
+            accuracy: (feature.properties as any)?.accuracy,
+            color: this.colorForFeature(feature, layerInfo.temporal)
           }
-          if (feature.style && feature.style.iconUrl) {
+          if (feature.style?.iconUrl) {
             temporalOptions.iconUrl = feature.style.iconUrl
           }
           layer = locationMarker(latlng, temporalOptions)
         } else {
           const options: any = {
             pane: pane,
-            accuracy: feature.properties.accuracy
+            accuracy: (feature.properties as any)?.accuracy
           }
-          if (layerInfo.options.iconUrl) {
-            options.iconUrl = layerInfo.options.iconUrl
-          } else if (feature.style && feature.style.iconUrl) {
+          if (layerInfo.iconUrl) {
+            options.iconUrl = layerInfo.iconUrl
+          } else if (feature.style?.iconUrl) {
             options.iconUrl = feature.style.iconUrl
           }
 
-          if (layerInfo.options.iconWidth) {
+          if (layerInfo.iconWidth) {
             options.iconWidth = 24
           }
           options.tooltip = editMode
           layer = observationMarker(latlng, options)
-        }
-
-        if (layerInfo.options.onLayer) {
-          layerInfo.options.onLayer(layer, feature)
         }
 
         return layer
@@ -567,23 +549,16 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     return geojson
   }
 
-  createGridLayer(layerInfo) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+  createGridLayer(layerInfo: GridOverlay) {
+    const pane = this.createLayerPane(layerInfo)
 
-    this.layers[layerInfo.id] = layerInfo
-    if (layerInfo.id === 'gars') {
-      layerInfo.layer = new GARSLayer()
-      layerInfo.layer.pane = pane
-    } else if (layerInfo.id === 'mgrs') {
-      layerInfo.layer = new MGRSLayer()
-      layerInfo.layer.pane = pane
-    }
-
-    this.addLayer(layerInfo)
+    const layer = layerInfo.id === 'gars' ? new GARSLayer({ pane }) : new MGRSLayer({ pane })
+    const rendered = { ...layerInfo, layer } as RenderedMapLayer
+    this.layers[layerInfo.id] = rendered
+    this.addLayer(rendered)
   }
 
-  addLayer(layerInfo: any) {
+  addLayer(layerInfo: RenderedMapLayer) {
     if (this.isSelected(layerInfo)) {
       layerInfo.selected = true
       const toggleEvent: ToggleEvent = {
@@ -593,171 +568,167 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.layerTogged(toggleEvent)
     }
 
-    const groupName = this.getGroup(layerInfo)
-    const group = this.groups[groupName]
-    layerInfo.zIndex = group.offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1)
-    const pane = this.map.getPanes()[layerInfo.layer.pane]
-    pane.style.zIndex = layerInfo.zIndex
-    group.layers.push(layerInfo)
+    const group = this.getGroup(layerInfo)
+    this.groups[group].push(layerInfo)
+    this.restackGroup(group)
   }
 
-  onFeaturesChanged({ id, added = [], updated = [], removed = [] }) {
-    const featureLayer = this.layers[id]
-    const pane = featureLayer.layer.pane
+  private groupPaneName(group: MapLayerGroup): string {
+    return `${group}GroupPane`
+  }
+
+  private createLayerPane(layer: MapLayer): string {
+    const pane = `pane-${layer.id}`
+    this.map.createPane(pane, this.map.getPane(this.groupPaneName(this.getGroup(layer))))
+    return pane
+  }
+
+  private restackGroup(group: MapLayerGroup): void {
+    const layers = this.groups[group]
+    layers.forEach((layer, index) => {
+      this.map.getPanes()[layer.layer.options.pane].style.zIndex = `${layers.length - index}`
+    })
+  }
+
+  onFeaturesChanged({ id, added = [], updated = [], removed = [] }: { id: string, added?: MapFeature[], updated?: MapFeature[], removed?: Pick<MapFeature, 'id'>[] }) {
+    const featureLayer = this.layers[id] as Extract<RenderedMapLayer, { type: 'vector' }>
+    const layer = featureLayer.layer
+    const pane = layer.options.pane
     added.forEach(feature => {
-      if (featureLayer.options.cluster) {
-        const layer = this.createGeoJsonForLayer(feature, featureLayer, pane)
-        featureLayer.layer.addLayer(layer)
+      if (featureLayer.cluster) {
+        const created = this.createGeoJsonForLayer(feature, featureLayer, pane)
+        layer.addLayer(created)
       } else {
-        featureLayer.layer.addData(feature)
+        (layer as GeoJSONLayer).addData(feature)
       }
     })
 
     updated.forEach(feature => {
-      const layer = featureLayer.featureIdToLayer[feature.id]
-      if (layer) {
-        featureLayer.layer.removeLayer(layer)
+      const existing = featureLayer.featureIdToLayer[feature.id]
+      if (existing) {
+        layer.removeLayer(existing)
       }
 
-      if (featureLayer.options.cluster) {
-        featureLayer.layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane))
+      if (featureLayer.cluster) {
+        layer.addLayer(this.createGeoJsonForLayer(feature, featureLayer, pane))
       } else {
-        featureLayer.layer.addData(feature)
+        (layer as GeoJSONLayer).addData(feature)
       }
     })
 
     removed.forEach(feature => {
-      const layer = featureLayer.featureIdToLayer[feature.id]
-      if (layer) {
+      const existing = featureLayer.featureIdToLayer[feature.id]
+      if (existing) {
         delete featureLayer.featureIdToLayer[feature.id]
-        featureLayer.layer.removeLayer(layer)
+        layer.removeLayer(existing)
       }
     })
   }
 
-  onFeatureZoom(zoom) {
-    const featureLayer = this.layers[zoom.id]
+  onFeatureZoom(zoom: { id: string, feature: Pick<MapFeature, 'id'> }) {
+    const featureLayer = this.layers[zoom.id] as Extract<RenderedMapLayer, { type: 'vector' }>
     const layer = featureLayer.featureIdToLayer[zoom.feature.id]
-    if (!this.map.hasLayer(featureLayer.layer)) return
+    if (!layer || !this.map.hasLayer(featureLayer.layer)) return
 
-    if (featureLayer.options.cluster) {
+    if (featureLayer.cluster) {
+      const clusterLayer = featureLayer.layer as MarkerClusterGroup
       if (this.map.getZoom() < 17) {
-        if (layer.getBounds) {
+        if ('getBounds' in layer) {
           // Zoom and center polyline/polygon
           this.map.fitBounds(layer.getBounds(), {
             maxZoom: 17
           })
+          if (layer instanceof Polyline) pulseShape(layer, this.map)
           this.openPopup(layer, {})
         } else {
           // Zoom and center point
           this.map.once('zoomend', () => {
-            featureLayer.layer.zoomToShowLayer(layer, () => {
+            clusterLayer.zoomToShowLayer(layer, () => {
+              if (layer instanceof ObservationMarker) layer.pulse()
               this.openPopup(layer, { zoomToLocation: false })
             })
           })
           this.map.setView(layer.getLatLng(), 17)
         }
       } else {
-        if (layer.getBounds) {
+        if ('getBounds' in layer) {
           this.map.fitBounds(layer.getBounds(), {
             maxZoom: 17
           })
+          if (layer instanceof Polyline) pulseShape(layer, this.map)
           this.openPopup(layer, {})
         } else {
-          featureLayer.layer.zoomToShowLayer(layer, () => {
+          clusterLayer.zoomToShowLayer(layer, () => {
+            if (layer instanceof ObservationMarker) layer.pulse()
             this.openPopup(layer, { zoomToLocation: false })
           })
         }
       }
     } else {
+      if (layer instanceof LocationMarker) layer.pulse()
       this.openPopup(layer, { zoomToLocation: true })
     }
   }
 
-  onFeatureDeselect(deselected) {
-    const featureLayer = this.layers[deselected.id]
+  onFeatureDeselect(deselected: { id: string, feature: Pick<MapFeature, 'id'> }) {
+    const featureLayer = this.layers[deselected.id] as Extract<RenderedMapLayer, { type: 'vector' }>
     const layer = featureLayer.featureIdToLayer[deselected.feature.id]
-    if (!this.map.hasLayer(featureLayer.layer)) return
+    if (!layer || !this.map.hasLayer(featureLayer.layer)) return
     layer.closePopup()
   }
 
-  onFeedRemoved(feed) {
-    const layerInfo = this.layers[feed.id]
-    if (layerInfo) {
-      this.removeLayer(layerInfo)
+  onFeedRemoved(feed: { id: string }) {
+    if (this.layers[feed.id]) {
+      this.removeLayer(feed.id)
     }
   }
 
-  onLayerRemoved(layer) {
-    switch (layer.type) {
-      case 'GeoPackage':
-        this.removeGeoPackage(layer)
-        break
-      default:
-        this.removeLayer(layer)
-    }
+  onLayerRemoved(layer: MapLayer) {
+    this.removeLayer(layer.id)
   }
 
-  removeLayer(layer) {
-    const layerInfo = this.layers[layer.id]
+  removeLayer(id: MapLayerId) {
+    const layerInfo = this.layers[id]
     if (layerInfo) {
       this.map.removeLayer(layerInfo.layer)
-      delete this.layers[layer.id]
+      delete this.layers[id]
 
-      Object.values(this.groups).forEach((group: any) => {
-        group.layers = group.layers.filter(groupLayer => {
-          return layer.layer !== groupLayer.layer;
-        });
-      });
+      const group = this.getGroup(layerInfo)
+      this.groups[group] = this.groups[group].filter(groupLayer => groupLayer !== layerInfo)
     }
-  }
-
-  removeGeoPackage(layer) {
-    layer.tables.forEach(table => {
-      const id = layer.id + table.name
-      const layerInfo = this.layers[id]
-      if (layerInfo) {
-        this.map.removeLayer(table.layer)
-        delete this.layers[id]
-        this.removeLayer(layerInfo)
-      }
-    })
-  }
-
-  onHideFeed() {
-    this.map.invalidateSize({ pan: false })
   }
 
   adjustTemporalLayers() {
     this.temporalLayers.forEach(temporalLayer => {
-      Object.values(temporalLayer.featureIdToLayer).forEach((layer: any) => {
-        const color = this.colorForFeature(layer.feature, temporalLayer.options.temporal)
-        layer.setColor(color)
+      Object.values(temporalLayer.featureIdToLayer).forEach((layer) => {
+        if (temporalLayer.temporal && 'feature' in layer && 'setColor' in layer) {
+          const color = this.colorForFeature(layer.feature as MapFeature, temporalLayer.temporal)
+          layer.setColor(color)
+        }
       })
     })
   }
 
-  openPopup(layer, options) {
-    options = options || {}
+  openPopup(layer: MapFeatureLayer, options: { zoomToLocation?: boolean } = {}) {
     if (options.zoomToLocation) {
       this.map.once('moveend', function () {
         layer.fire('click')
       })
-      this.map.setView(layer.getLatLng(), options.zoomToLocation ? 17 : this.map.getZoom())
+      this.map.setView((layer as LocationMarker | ObservationMarker).getLatLng(), Math.max(this.map.getZoom(), 17))
     } else {
       layer.fire('click')
     }
   }
 
-  colorForFeature(feature, options) {
-    const age = Date.now() - moment(feature.properties[options.property]).valueOf()
-    const bucket = _.find(options.colorBuckets, function (bucket) {
+  colorForFeature(feature: MapFeature, options: { property: string, colorBuckets: any[] }) {
+    const age = Date.now() - moment((feature.properties as any)?.[options.property]).valueOf()
+    const bucket = _.find(options.colorBuckets, function (bucket: any) {
       return age > bucket.min && age <= bucket.max
     })
     return bucket ? bucket.color : null
   }
 
-  createFeature(feature, delegate) {
+  createFeature(feature: MapFeature, delegate: FeatureEditDelegate): FeatureEdit {
     // TODO put Observations in its own pane maybe??
     // TODO pass in layer collection id 'Observations'
     let editor = new FeatureEditor(this.map, feature, delegate)
@@ -765,26 +736,34 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     // TODO save feature pane opacitis
     const featurePaneOpacities = this.featurePanes.map(pane => {
       const mapPane = this.map.getPanes()[pane]
-      return mapPane.style.opacity || 1
+      return mapPane.style.opacity || "1"
     })
     this.setPaneOpacity(this.featurePanes, 0.5)
 
-    const layer = this.layers['observations'].featureIdToLayer[feature.id]
+    const observations = this.layers['observations'] as Extract<RenderedMapLayer, { type: 'vector' }>
+    const layer = observations.featureIdToLayer[feature.id]
     if (layer) {
       this.map.removeLayer(layer)
     }
 
     return {
-      update: feature => {
+      update: (feature: MapFeature) => {
         editor.stopEdit()
         editor = new FeatureEditor(this.map, feature, delegate)
       },
+      selectVertex: (index: number) => {
+        editor.selectVertex(index)
+      },
+      showSearchResult: (result: PlacenameSearchResult) => {
+        this.showSearchResultForEdit(result, editor)
+      },
       cancel: () => {
         editor.stopEdit()
-        if (layer) {
+        this.clearSearchHighlight()
+        if (layer?.feature) {
           this.onFeaturesChanged({
             id: 'observations',
-            updated: [layer.feature]
+            updated: [layer.feature as MapFeature]
           })
         }
 
@@ -792,11 +771,12 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       },
       save: () => {
         const newFeature = editor.stopEdit()
-        if (layer) {
-          layer.feature.geometry = newFeature.geometry
+        this.clearSearchHighlight()
+        if (layer?.feature) {
+          (layer.feature as MapFeature).geometry = newFeature.geometry
           this.onFeaturesChanged({
             id: 'observations',
-            updated: [layer.feature]
+            updated: [layer.feature as MapFeature]
           })
         }
 
@@ -805,15 +785,15 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  setPaneOpacity(panes, opacityFactor) {
+  setPaneOpacity(panes: string[], opacityFactor: number) {
     panes.forEach(pane => {
       const mapPane = this.map.getPanes()[pane]
       const opacity = mapPane.style.opacity || "1"
-      mapPane.style.opacity = `${parseInt(opacity)} * ${opacityFactor}`
+      mapPane.style.opacity = `${Number.parseFloat(opacity) * opacityFactor}`
     })
   }
 
-  resetPaneOpacity(panes, opacities) {
+  resetPaneOpacity(panes: string[], opacities: string[]) {
     panes.forEach((pane, index) => {
       const mapPane = this.map.getPanes()[pane]
       mapPane.style.opacity = opacities[index]
@@ -821,28 +801,29 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   layerTogged(event: ToggleEvent): void {
-    if (event.layer.base) {
-      this.baseToggled(event)
+    if (event.layer.type === 'Imagery' && event.layer.base) {
+      this.baseToggled(event.layer)
     } else {
       this.overlayToggled(event)
     }
   }
 
-  baseToggled(event: ToggleEvent): void {
-    const baseLayers = this.groups['base'].layers
-    const previousBaseLayer = baseLayers.find((layer: any) => layer.selected)
+  baseToggled(layer: RenderedRasterLayer): void {
+    const baseLayers = this.groups.base
+    const previousBaseLayer = baseLayers.find(baseLayer => baseLayer.selected)
     if (previousBaseLayer) {
       previousBaseLayer.selected = false
       this.map.removeLayer(previousBaseLayer.layer)
     }
 
-    event.layer.selected = true
-    this.map.addLayer(event.layer.layer)
+    layer.selected = true
+    this.map.addLayer(layer.layer)
 
-    this.mapService.selectBaseLayer(event.layer)
+    this.mapService.selectBaseLayer(layer)
   }
 
   overlayToggled(event: ToggleEvent): void {
+    event.layer.selected = event.value
     if (event.value) {
       this.map.addLayer(event.layer.layer)
     } else {
@@ -850,20 +831,20 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private getGroup(layer): string {
+  private getGroup(layer: MapLayer): MapLayerGroup {
     switch (layer.type) {
       case 'GeoPackage':
-        return layer.layer.table.type === 'tile' ? 'tile' : 'feature'
+        return layer.renderAs === 'tile' ? 'tile' : 'feature'
       case 'Imagery':
         return layer.base ? 'base' : 'tile'
-      case 'geojson':
+      case 'vector':
         return layer.group
       case 'grid':
-        return layer.group
+        return 'grid'
     }
   }
 
-  private isSelected(layer): boolean {
-    return layer.options && layer.options.selected
+  private isSelected(layer: RenderedMapLayer): boolean {
+    return layer.selectedByDefault ?? false
   }
 }

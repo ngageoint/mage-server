@@ -1,10 +1,26 @@
 import fs from 'fs'
+import mime from 'mime-types'
 import path from 'path'
 import stream from 'stream'
-import util from 'util'
 import uniqid from 'uniqid'
-import { Attachment, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, copyThumbnailAttrs, Observation, patchAttachment, StagedAttachmentContent, StagedAttachmentContentRef, Thumbnail, AttachmentContentPatchAttrs, ThumbnailContentPatchAttrs, AttachmentPatchAttrs, StagedAttachmentContentId } from '../../entities/observations/entities.observations'
-import mime from 'mime-types'
+import util from 'util'
+import {
+  Attachment,
+  AttachmentContentPatchAttrs,
+  AttachmentPatchAttrs,
+  AttachmentStore,
+  AttachmentStoreError,
+  AttachmentStoreErrorCode,
+  copyThumbnailAttrs,
+  Observation,
+  StagedAttachmentContent,
+  StagedAttachmentContentId,
+  StagedAttachmentContentRef,
+  Thumbnail,
+  ThumbnailContentPatchAttrs
+} from '../../entities/observations/entities.observations'
+
+const FileSystemAttachmentStoreConstructorToken = Symbol('FileSystemAttachmentStoreConstructorToken')
 
 export class FileSystemAttachmentStore implements AttachmentStore {
 
@@ -128,7 +144,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     const thumbnails = attachment.thumbnails
     const contentRelPath = relativeReadPathForAttachment(attachment, observation)
     const contentPath = path.join(this.baseDirPath, contentRelPath)
-    const rm = async (path: string) => {
+    const rm = async (path: string): Promise<void> => {
       if (!this.#baseDirIsAncestorOf(path)) {
         throw new Error(`cannot remove path ${path} because it is not a descendant of store base dir ${this.baseDirPath}`)
       }
@@ -174,14 +190,14 @@ export class FileSystemAttachmentStore implements AttachmentStore {
       return Promise.resolve(new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, `content destination ${dest} is not a descendent of base dir ${this.baseDirPath}`))
     }
     const destBaseDirPath = path.dirname(destResolved)
-    const mkdir: (() => Promise<void>) = () => util.promisify(fs.mkdir)(destBaseDirPath, { recursive: true }).then(_ => void(0))
+    const mkdir: (() => Promise<void>) = () => util.promisify(fs.mkdir)(destBaseDirPath, { recursive: true }).then(() => void(0))
     const statSize = ((path: string) => util.promisify(fs.stat)(path).then(x => x.size)) as (path: string) => Promise<number>
     if (content instanceof StagedAttachmentContentRef) {
       const move = util.promisify(fs.rename)
       const tempPath = path.join(this.pendingDirPath, content.id as string)
       return mkdir()
-        .then(_ => move(tempPath, dest))
-        .then(_ => statSize(dest), err => {
+        .then(() => move(tempPath, dest))
+        .then(() => statSize(dest), err => {
           const message = `error moving staged content ${tempPath} to ${dest}`
           console.error(message, err)
           return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
@@ -189,9 +205,9 @@ export class FileSystemAttachmentStore implements AttachmentStore {
     }
     const pipe = util.promisify(stream.pipeline)
     return mkdir()
-      .then(_ => fs.createWriteStream(dest))
+      .then(() => fs.createWriteStream(dest))
       .then(dest => pipe(content, dest))
-      .then(_ => statSize(dest), err => {
+      .then(() => statSize(dest), err => {
         const message = `error saving source stream to path ${dest}`
         console.error(message, err)
         return new AttachmentStoreError(AttachmentStoreErrorCode.StorageError, message)
@@ -211,7 +227,7 @@ export class FileSystemAttachmentStore implements AttachmentStore {
  * @param baseDirPath
  * @returns {@link FileSystemAttachmentStore} or {@link FileSystemAttachmentStoreInitError}
  */
-export async function intializeAttachmentStore(baseDirPath: string): Promise<FileSystemAttachmentStore | FileSystemAttachmentStoreInitError> {
+export async function initializeAttachmentStore(baseDirPath: string): Promise<FileSystemAttachmentStore | FileSystemAttachmentStoreInitError> {
   const mkdir = util.promisify(fs.mkdir)
   baseDirPath = path.resolve(baseDirPath)
   const pendingDirPath = path.resolve(baseDirPath, 'pending')
@@ -227,7 +243,7 @@ export class FileSystemAttachmentStoreInitError extends Error {}
 /**
  * Return a path relative to the store's base directory suitable to write the
  * file for the given attachment's main content bytes.  If the attachment has
- * a {@link Attachment.contentLocator contentLocator}, simply return that as
+ * a {@link Attachment.contentLocator}, simply return that as
  * the relative path.  Otherwise, construct a relative path based on the
  * property values of the attachment and its parent observation.
  * @returns `string`
@@ -238,14 +254,13 @@ function relativeWritePathForAttachment(attachment: Attachment, observation: Obs
   }
   const created = observation.createdAt
   const ext = mime.extension(attachment.contentType || '')
-  const baseDirPath = path.join(
+  return path.join(
     `event-${observation.eventId}`,
     String(created.getUTCFullYear()),
     String(created.getUTCMonth() + 1).padStart(2, '0'),
     String(created.getUTCDate()).padStart(2, '0'),
     observation.id,
     attachment.id + (ext ? `.${ext}` : ''))
-  return baseDirPath
 }
 
 /**
@@ -275,5 +290,3 @@ function relativeReadPathForThumbnail(thumbnail: Thumbnail, attachment: Attachme
   }
   return relativeWritePathForThumbnail(thumbnail, attachment, observation)
 }
-
-const FileSystemAttachmentStoreConstructorToken = Symbol('FileSystemAttachmentStoreConstructorToken')

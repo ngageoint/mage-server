@@ -1,65 +1,232 @@
-import { TestBed } from '@angular/core/testing';
-import { ObservationService } from './observation.service';
-import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { TestBed } from '@angular/core/testing'
+import { ObservationService } from './observation.service'
+import { HttpTestingController, HttpClientTestingModule } from '@angular/common/http/testing'
+import { SessionService } from '../http/session.service'
+import { BinaryCondition } from '../entities/observation/filter/entities.observation.filter'
 
-describe('Observation Service', () => {
-  let service: ObservationService;
-  let httpMock: HttpTestingController;
-  const event: any = { id: 1, forms: [] };
+const mockEvent: any = { id: 1, name: 'Test Event', forms: [], style: {} }
+
+const mockSessionService = {
+  getToken: jasmine.createSpy('getToken').and.returnValue('test-token')
+}
+
+describe('ObservationService', () => {
+  let service: ObservationService
+  let httpTestingController: HttpTestingController
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-    imports: [],
-    providers: [ObservationService, provideHttpClient(withInterceptorsFromDi()), provideHttpClientTesting()]
-});
-    service = TestBed.inject(ObservationService);
-    httpMock = TestBed.inject(HttpTestingController);
-  });
+      providers: [
+        ObservationService,
+        { provide: SessionService, useValue: mockSessionService }
+      ],
+      imports: [HttpClientTestingModule]
+    })
+    service = TestBed.inject(ObservationService)
+    httpTestingController = TestBed.inject(HttpTestingController)
+  })
 
   afterEach(() => {
-    httpMock.verify();
-  });
+    httpTestingController.verify()
+  })
 
-   it('should be created', () => {
-     expect(service).toBeTruthy();
-   });
+  it('should be created', () => {
+    expect(service).toBeTruthy()
+  })
 
-  it('should not include date params when no interval is provided', () => {
-    service.getObservationsForEvent(event, {}).subscribe();
+  describe('getObservationsForMap', () => {
 
-    const req = httpMock.expectOne(r => r.url === '/api/events/1/observations');
-    expect(req.request.params.has('observationStartDate')).toBeFalse();
-    expect(req.request.params.has('observationEndDate')).toBeFalse();
-    req.flush([]);
-  });
+    it('uses GET when no filter provided', () => {
+      service.getObservationsForMap(mockEvent, {}).subscribe()
 
-  it('should not send literal "undefined" or "null" date params when the interval has no start or end', () => {
-    service.getObservationsForEvent(event, { interval: { start: null, end: undefined } }).subscribe();
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations`)
+      req.flush([])
+    })
 
-    const req = httpMock.expectOne(r => r.url === '/api/events/1/observations');
-    expect(req.request.params.has('observationStartDate')).toBeFalse();
-    expect(req.request.params.has('observationEndDate')).toBeFalse();
-    req.flush([]);
-  });
+    it('requests the map view', () => {
+      service.getObservationsForMap(mockEvent, {}).subscribe()
 
-  it('should include only the date params that are present on the interval', () => {
-    service.getObservationsForEvent(event, { interval: { start: '2026-01-01T00:00:00.000Z' } }).subscribe();
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      expect(req.request.params.get('view')).toBe('map')
+      req.flush([])
+    })
 
-    const req = httpMock.expectOne(r => r.url === '/api/events/1/observations');
-    expect(req.request.params.get('observationStartDate')).toBe('2026-01-01T00:00:00.000Z');
-    expect(req.request.params.has('observationEndDate')).toBeFalse();
-    req.flush([]);
-  });
+    it('converts the server style to map style and adds the access token to the icon url', () => {
+      let result: any[] = []
+      service.getObservationsForMap(mockEvent, {}).subscribe(features => result = features)
 
-  it('should include both date params when the interval has a start and end', () => {
-    service.getObservationsForEvent(event, {
-      interval: { start: '2026-01-01T00:00:00.000Z', end: '2026-01-02T00:00:00.000Z' }
-    }).subscribe();
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      req.flush([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: {
+          eventId: 1,
+          lastModified: '2024-01-01T00:00:00Z',
+          state: 'active',
+          accuracy: 10,
+          style: { stroke: '#111111', strokeOpacity: 0.5, strokeWidth: 2, fill: '#222222', fillOpacity: 0.25, iconUrl: '/api/events/1/icons/5/a' }
+        }
+      }])
 
-    const req = httpMock.expectOne(r => r.url === '/api/events/1/observations');
-    expect(req.request.params.get('observationStartDate')).toBe('2026-01-01T00:00:00.000Z');
-    expect(req.request.params.get('observationEndDate')).toBe('2026-01-02T00:00:00.000Z');
-    req.flush([]);
-  });
-});
+      expect(result).toEqual([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', state: 'active', accuracy: 10 },
+        style: {
+          color: '#111111',
+          opacity: 0.5,
+          weight: 2,
+          fillColor: '#222222',
+          fillOpacity: 0.25,
+          iconUrl: '/api/events/1/icons/5/a?access_token=test-token'
+        }
+      }])
+    })
+
+    it('unwraps line strings that cross the antimeridian', () => {
+      let result: any[] = []
+      service.getObservationsForMap(mockEvent, {}).subscribe(features => result = features)
+
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      req.flush([{
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [[179, 0], [-179, 0]] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', style: { iconUrl: '/api/events/1/icons' } }
+      }])
+
+      expect((result[0].geometry as any).coordinates).toEqual([[179, 0], [181, 0]])
+    })
+
+    it('uses GET when filter is empty object', () => {
+      service.getObservationsForMap(mockEvent, { filter: {} }).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'GET')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations`)
+      req.flush([])
+    })
+
+    it('uses POST to search endpoint when keyword filter provided', () => {
+      service.getObservationsForMap(mockEvent, { filter: { keyword: 'flood' } }).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'POST')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations/search`)
+      expect(req.request.body.keyword).toBe('flood')
+      expect(req.request.body.condition).toBeUndefined()
+      req.flush([])
+    })
+
+    it('uses POST to search endpoint when condition filter provided', () => {
+      const condition: BinaryCondition = { formId: 1, field: 'status', operator: '=', value: 'open' }
+      service.getObservationsForMap(mockEvent, { filter: { condition } }).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'POST')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations/search`)
+      expect(req.request.body.condition).toEqual(condition)
+      expect(req.request.body.keyword).toBeUndefined()
+      req.flush([])
+    })
+
+    it('uses POST with both keyword and condition when both provided', () => {
+      const condition: BinaryCondition = { formId: 1, field: 'status', operator: '=', value: 'open' }
+      service.getObservationsForMap(mockEvent, { filter: { keyword: 'flood', condition } }).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'POST')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations/search`)
+      expect(req.request.body.keyword).toBe('flood')
+      expect(req.request.body.condition).toEqual(condition)
+      req.flush([])
+    })
+
+    it('includes base options as query params on search POST', () => {
+      service.getObservationsForMap(mockEvent, { filter: { keyword: 'flood' }, states: 'active' }).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'POST')
+      expect(req.request.params.get('states')).toBe('active')
+      req.flush([])
+    })
+  })
+
+  describe('paging options', () => {
+    it('has none until they are set', () => {
+      expect(service.getPagingOptions()).toBeNull()
+    })
+
+    it('clears the options and tells subscribers', () => {
+      const emitted: any[] = []
+      service.paging$.subscribe(paging => emitted.push(paging))
+      service.setPagingOptions({ page: 2, page_size: 25 })
+
+      service.clearPagingOptions()
+
+      expect(service.getPagingOptions()).toBeNull()
+      expect(emitted[emitted.length - 1]).toBeNull()
+    })
+  })
+
+  describe('archiveObservationForEvent', () => {
+    it('posts the server\'s archive state name', () => {
+      const observation: any = { id: 'o1' }
+
+      service.archiveObservationForEvent(mockEvent, observation).subscribe()
+
+      const req = httpTestingController.expectOne(r => r.method === 'POST')
+      expect(req.request.url).toBe(`/api/events/${mockEvent.id}/observations/o1/states`)
+      expect(req.request.body).toEqual({ name: 'archive' })
+      req.flush({})
+    })
+  })
+
+  describe('getObservationIconUrlForEvent', () => {
+    const iconUrl = (formId: number | null, primary: string | null, variant: string | null) =>
+      service.getObservationIconUrlForEvent(1, formId, primary, variant)
+
+    it('uses only the event when there is no form', () => {
+      expect(iconUrl(null, null, null)).toBe('/api/events/1/icons?access_token=test-token')
+    })
+
+    it('adds each segment in form, primary, variant order', () => {
+      expect(iconUrl(5, null, null)).toBe('/api/events/1/icons/5?access_token=test-token')
+      expect(iconUrl(5, 'a', null)).toBe('/api/events/1/icons/5/a?access_token=test-token')
+      expect(iconUrl(5, 'a', 'b')).toBe('/api/events/1/icons/5/a/b?access_token=test-token')
+    })
+
+    it('drops a segment that has no preceding segment, since the route is positional', () => {
+      expect(iconUrl(5, null, 'b')).toBe('/api/events/1/icons/5?access_token=test-token')
+      expect(iconUrl(null, 'a', 'b')).toBe('/api/events/1/icons?access_token=test-token')
+    })
+
+    it('encodes the primary and variant values', () => {
+      expect(iconUrl(5, 'Fire Truck', 'Red/Blue')).toBe('/api/events/1/icons/5/Fire%20Truck/Red%2FBlue?access_token=test-token')
+    })
+  })
+
+  describe('mapFeatureForObservation', () => {
+    it('keeps only the map properties and the resolved style', () => {
+      const style = { color: '#111111', iconUrl: '/api/events/1/icons?access_token=test-token' }
+      const observation: any = {
+        id: 'o1',
+        eventId: 1,
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        lastModified: '2024-01-01T00:00:00Z',
+        state: { id: 's1', name: 'active', url: '' },
+        properties: { timestamp: new Date(), accuracy: 10, forms: [{ id: 'f1', formId: 5, notes: 'not for the map' }] },
+        attachments: [],
+        favoriteUserIds: [],
+        style
+      }
+
+      expect(service.mapFeatureForObservation(observation)).toEqual({
+        id: 'o1',
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [0, 0] },
+        properties: { eventId: 1, lastModified: '2024-01-01T00:00:00Z', state: 'active', accuracy: 10 },
+        style
+      })
+    })
+  })
+})

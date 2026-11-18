@@ -1,6 +1,10 @@
-import { Component, Input, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { GeometryModule } from '../../geometry/geometry.module';
+import { MomentModule } from '../../moment/moment.module';
 import { SidebarService } from '../../sidebar/sidebar.service';
-import moment from 'moment';
 import { MapService } from '../../map/map.service';
 import { EventService } from '../../event/event.service';
 
@@ -8,67 +12,44 @@ import { EventService } from '../../event/event.service';
     selector: 'observation-map-popup',
     templateUrl: './observation-popup.component.html',
     styleUrls: ['./observation-popup.component.scss'],
-    standalone: false
+    imports: [MatButtonModule, MatIconModule, MatProgressSpinnerModule, GeometryModule, MomentModule]
 })
-export class ObservationPopupComponent implements OnInit, OnChanges {
-  @Input() observation: any;
+export class ObservationPopupComponent {
+  private readonly sidebarService: SidebarService = inject(SidebarService)
+  private readonly mapService: MapService = inject(MapService)
+  private readonly eventService: EventService = inject(EventService)
 
-  hasContent = false;
-  date: string;
-  primary: string;
-  primaryField: any;
-  secondary: string;
-  secondaryField: any;
+  observation = input<any>();
+  failed = input(false);
 
-  constructor(
-    private sidebarService: SidebarService,
-    private mapService: MapService,
-    private eventService: EventService) { }
+  primaryField = computed(() => this.feedField('primaryFeedField'))
+  secondaryField = computed(() => this.feedField('secondaryFeedField'))
 
-  ngOnInit(): void {
-    this.updateView();
-  }
+  private feedField(key: 'primaryFeedField' | 'secondaryFeedField'): { field: any, value: any } | undefined {
+    const observation = this.observation()
+    if (!observation || observation.properties.forms.length === 0) return undefined
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.updateView();
-  }
+    const firstForm = observation.properties.forms[0]
+    const forms = this.eventService.getForms(observation) || []
+    const observationForm = forms.find(form => {
+      return form.id === firstForm.formId;
+    })
 
-  private updateView(): void {
-    if (!this.observation) return
-
-    if (this.observation.properties.forms.length > 0) {
-      const firstForm = this.observation.properties.forms[0]
-
-      const forms = this.eventService.getForms(this.observation) || []
-      const observationForm = forms.find(form => {
-        return form.id === this.observation.properties.forms[0].formId;
-      })
-
-      if (observationForm.primaryFeedField && firstForm[observationForm.primaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.primaryFeedField)
-        this.primaryField = {
-          field: field,
-          value: firstForm[observationForm.primaryFeedField]
-        }
-      }
-
-      if (observationForm.secondaryFeedField && firstForm[observationForm.secondaryFeedField]) {
-        const field = observationForm.fields.find(field => field.name === observationForm.secondaryFeedField)
-        this.secondaryField = {
-          field: field,
-          value: firstForm[observationForm.secondaryFeedField]
-        }
+    if (observationForm[key] && firstForm[observationForm[key]]) {
+      const field = observationForm.fields.find(field => field.name === observationForm[key])
+      return {
+        field: field,
+        value: firstForm[observationForm[key]]
       }
     }
-
-    this.date = moment(this.observation.properties.timestamp).format("YYYY-MM-DD HH:mm:ss");
+    return undefined
   }
 
   onInfo(): void {
-    this.sidebarService.viewObservation(this.observation)
+    this.sidebarService.viewObservation(this.observation())
   }
 
   onZoom(): void {
-    this.mapService.zoomToFeatureInLayer(this.observation, 'observations');
+    this.mapService.zoomToFeatureInLayer(this.observation(), 'observations');
   }
 }

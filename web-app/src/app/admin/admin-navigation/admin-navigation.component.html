@@ -103,20 +103,28 @@
     </div>
   </div>
 
-  <div class="nav-group" *ngIf="pluginTabs.length > 0">
+  @if (pluginTabs.length > 0) {
+  <div class="nav-group">
     <button class="nav-group-header" (click)="pluginsExpanded = !pluginsExpanded">
       <span class="nav-group-title">Plugins</span>
       <mat-icon class="nav-group-chevron" fontSet="material-symbols-outlined" [class.expanded]="pluginsExpanded">expand_more</mat-icon>
     </button>
     <div class="nav-group-content" [class.collapsed]="!pluginsExpanded">
       <div>
-        <a class="nav-item nav-item--child" *ngFor="let plugin of pluginTabs" [routerLink]="['./plugins', plugin.id]" routerLinkActive="active">
-          <img *ngIf="plugin.icon?.path" class="nav-plugin-icon" [src]="'/ui_plugins/' + plugin.id + '/' + plugin.icon.path" [alt]="plugin.title" />
-          <mat-icon *ngIf="plugin.icon?.matIconName" fontSet="material-symbols-outlined">{{ plugin.icon.matIconName }}</mat-icon>
-          <mat-icon *ngIf="!plugin.icon?.path && !plugin.icon?.matIconName" fontSet="material-symbols-outlined">extension</mat-icon>
+        @for (plugin of pluginTabs; track plugin.id) {
+        <a class="nav-item nav-item--child" [routerLink]="['./plugins', plugin.id]" routerLinkActive="active">
+          @if (plugin.icon?.path) {
+          <img class="nav-plugin-icon" [src]="'/ui_plugins/' + plugin.id + '/' + plugin.icon.path" [alt]="plugin.title" />
+          } @else if (plugin.icon?.matIconName) {
+          <mat-icon fontSet="material-symbols-outlined">{{ plugin.icon.matIconName }}</mat-icon>
+          } @else {
+          <mat-icon fontSet="material-symbols-outlined">extension</mat-icon>
+          }
           <span class="nav-label nav-label--truncate">{{ plugin.title }}</span>
         </a>
+        }
       </div>
     </div>
   </div>
+  }
 </nav>

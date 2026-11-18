@@ -5,11 +5,11 @@
   right: 0;
   left: 0;
   overflow-y: auto;
-  background: var(--mat-sys-surface-container);
+  background: var(--mat-sys-surface-container-low);
 }
 
 mat-toolbar {
-  background-color: white;
+  background-color: var(--mat-sys-surface-container-lowest);
 }
 
 .feed {
@@ -26,7 +26,7 @@ mat-toolbar {
 }
 
 .items {
-  background: var(--mat-sys-surface-container);
+  background: var(--mat-sys-surface-container-low);
   padding: 8px;
   flex: 1;
   overflow-y: auto;

@@ -13,7 +13,6 @@ const mongoose = require('mongoose')
   , log = require('../logger').child({ component: 'users' })
   , FilterParser = require('../utilities/filterParser');
 
-// Creates a new Mongoose Schema object
 const Schema = mongoose.Schema;
 
 const PhoneSchema = new Schema({
@@ -24,7 +23,6 @@ const PhoneSchema = new Schema({
   _id: false
 });
 
-// Collection to hold users
 const UserSchema = new Schema(
   {
     username: { type: String, required: true, unique: true },
@@ -389,7 +387,8 @@ exports.removeRolesForUser = function (user, callback) {
 };
 
 exports.removeRoleFromUsers = function (role, callback) {
-  User.updateMany({ role: role._id }, { roles: undefined }).then(
+  const roleId = role.id || role._id;
+  User.updateMany({ roleId }, { $unset: { roleId: 1 } }).then(
     number => callback(null, number),
     err => callback(err)
   );

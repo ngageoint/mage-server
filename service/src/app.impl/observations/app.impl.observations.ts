@@ -7,11 +7,74 @@ import * as api from '../../app.api/observations/app.api.observations'
 import { Logger, NoopLogger } from '../../entities/entities.logging'
 import { MageEvent } from '../../entities/events/entities.events'
 import { FormFieldType } from '../../entities/events/entities.events.forms'
-import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationRepositoryErrorCode, ObservationSavedDomainEvent, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
+import { addAttachment, AttachmentContentPatchAttrs, AttachmentCreateAttrs, AttachmentNotFoundError, AttachmentPatchAttrs, AttachmentsRemovedDomainEvent, AttachmentStore, AttachmentStoreError, AttachmentStoreErrorCode, EventScopedObservationRepository, FindObservationsSpec, FindObservationsWhere, FormEntry, FormEntryId, FormFieldEntry, Observation, ObservationAttrs, ObservationDomainEventType, ObservationEmitted, ObservationFieldFilter, ObservationId, ObservationRepositoryErrorCode, ObservationRepositoryForEvent, ObservationSavedDomainEvent, ObservationSearchRepository, removeAttachment, StagedAttachmentContentRef, thumbnailIndexForTargetDimension, UsersExpandedObservationAttrs, validationResultMessage, AttachmentProcessingStatus } from '../../entities/observations/entities.observations'
 import { AddRecentFormFieldChoiceEntry, UserId, UserPreferenceRepository, UserRepository } from '../../entities/users/entities.users'
+import { TeamRepository } from '../../entities/teams/entities.teams'
+import { resolveUserIsAnyOf } from '../teams/app.impl.teams'
 import { AttachmentHook } from '../../plugins.api/plugins.api.attachments'
 
 const pipeline = util.promisify(stream.pipeline)
+
+export function ReadObservations(
+  permissionService: api.ObservationPermissionService,
+  obsRepoFactory: ObservationRepositoryForEvent,
+  teamRepo: TeamRepository,
+  observationSearchRepo: ObservationSearchRepository,
+): api.ReadObservations {
+  return async function readObservations<T>(req: api.ReadObservationsRequest<T>) {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    try {
+      const mapper = req.mapping || ((x: api.ExoObservation | api.ExoObservationMapView) => x)
+      const search = req.search
+      const event = req.context.mageEvent
+
+      const userIsAnyOf = await resolveUserIsAnyOf(teamRepo, search.userIsAnyOf, search.teamIsAnyOf)
+
+      const searchIds = await findSearchIds(req.context.mageEvent, search.filter, observationSearchRepo)
+
+      const where: FindObservationsWhere = {
+        ids: searchIds,
+        lastModifiedAfter: search.lastModifiedAfter,
+        lastModifiedBefore: search.lastModifiedBefore,
+        timestampAfter: search.timestampAfter,
+        timestampBefore: search.timestampBefore,
+        geometryIntersects: search.geometryIntersects,
+        stateIsAnyOf: search.stateIsAnyOf,
+        isFlaggedImportant: search.isFlaggedImportant,
+        isFavoriteOfUser: search.isFavoriteOfUser,
+        hasAttachments: search.hasAttachments,
+        userIsAnyOf
+      }
+      const findSpec: FindObservationsSpec = {
+        where,
+        orderBy: search.orderBy,
+        paging: search.paging,
+        populateUserNames: search.populateUserNames === true,
+        view: search.view,
+      }
+
+      const repo = await obsRepoFactory(event.id)
+      const result = await repo.find(findSpec,
+        (obs: ObservationAttrs | UsersExpandedObservationAttrs) => {
+          if (search.view === 'map') {
+            return mapper(api.exoObservationMapViewFor(obs, event))
+          }
+          const expanded = obs as UsersExpandedObservationAttrs
+          return mapper(api.exoObservationFor(obs, expanded.user, expanded.important?.user))
+        }
+      )
+      switch (result.type) {
+        case 'all': return AppResponse.success(result.observations)
+        case 'paged': return AppResponse.success(result.page)
+      }
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
+  }
+}
 
 function principalIdentifier(req: api.SaveObservationRequest): string {
   const principal = req.context.requestingPrincipal() as { id?: unknown, username?: unknown } | null | undefined
@@ -21,21 +84,55 @@ function principalIdentifier(req: api.SaveObservationRequest): string {
   return 'unknown'
 }
 
-export function AllocateObservationId(permissionService: api.ObservationPermissionService): api.AllocateObservationId {
+async function findSearchIds(
+  event: MageEvent,
+  filter: ObservationFieldFilter | undefined,
+  repo: ObservationSearchRepository
+): Promise<ObservationId[] | undefined> {
+  if (filter) {
+    return repo.findIdsByFilter(filter, event)
+  }
+}
+
+export function AllocateObservationId(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent): api.AllocateObservationId {
   return async function allocateObservationId(req: api.AllocateObservationIdRequest): ReturnType<api.AllocateObservationId> {
     const denied = await permissionService.ensureCreateObservationPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const id = await repo.allocateObservationId()
     return AppResponse.success(id)
   }
 }
 
-export function SaveObservation(permissionService: api.ObservationPermissionService, userRepo: UserRepository, log: Logger = NoopLogger): api.SaveObservation {
+export function ReadObservation(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, userRepo: UserRepository): api.ReadObservation {
+  return async function readObservation<T>(req: api.ReadObservationRequest<T>) {
+    const denied = await permissionService.ensureReadObservationPermission(req.context)
+    if (denied) {
+      return AppResponse.error(denied)
+    }
+    try {
+      const mapper = req.mapping || ((x: api.ExoObservation) => x as T)
+      const repo = await obsRepoFactory(req.context.mageEvent.id)
+      const observation = await repo.findById(req.observationId)
+      if (!observation) {
+        return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
+      }
+      const userIds = { creator: observation.userId, importantFlagger: observation.important?.userId }
+      const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
+      const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
+      const exoObs = api.exoObservationFor(observation, usersFound[userIds.creator || ''] ?? undefined, usersFound[userIds.importantFlagger || ''] ?? undefined)
+      return AppResponse.success(mapper(exoObs))
+    } catch (err) {
+      return AppResponse.error(infrastructureError(err instanceof Error ? err : String(err)))
+    }
+  }
+}
+
+export function SaveObservation(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, userRepo: UserRepository, log: Logger = NoopLogger): api.SaveObservation {
   return async function saveObservation(req: api.SaveObservationRequest): ReturnType<api.SaveObservation> {
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const mod = req.observation
     const existingObservation = await repo.findById(mod.id)
     const denied = existingObservation ?
@@ -44,7 +141,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
     if (denied) {
       return AppResponse.error(denied)
     }
-    const obs = await prepareObservationMod(mod, existingObservation, req.context)
+    const obs = await prepareObservationMod(mod, existingObservation, req.context, repo)
     if (obs instanceof MageError) {
       return AppResponse.error(obs)
     }
@@ -56,8 +153,7 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
       const userIds = { creator: saved.userId, importantFlagger: saved.important?.userId }
       const userIdsLookup = Object.values(userIds).filter(x => !!x) as UserId[]
       const usersFound = userIdsLookup.length ? await userRepo.findAllByIds(userIdsLookup) : {}
-      const users = { creator: usersFound[userIds.creator || ''], importantFlagger: usersFound[userIds.importantFlagger || ''] }
-      const exoObs: api.ExoObservation = api.exoObservationFor(saved, users)
+      const exoObs: api.ExoObservation = api.exoObservationFor(saved, usersFound[userIds.creator || ''] ?? undefined, usersFound[userIds.importantFlagger || ''] ?? undefined)
       return AppResponse.success(exoObs)
     }
     switch (saved.code) {
@@ -69,9 +165,9 @@ export function SaveObservation(permissionService: api.ObservationPermissionServ
   }
 }
 
-export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
+export function StoreAttachmentContent(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, attachmentStore: AttachmentStore, attachmentHooks: AttachmentHook[]): api.StoreAttachmentContent {
   return async function storeAttachmentContent(req: api.StoreAttachmentContentRequest): ReturnType<api.StoreAttachmentContent> {
-    const obsRepo = req.context.observationRepository
+    const obsRepo = await obsRepoFactory(req.context.mageEvent.id)
     const obsBefore = await obsRepo.findById(req.observationId)
     if (!obsBefore) {
       return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
@@ -148,13 +244,13 @@ export function StoreAttachmentContent(permissionService: api.ObservationPermiss
   }
 }
 
-export function ReadAttachmentContent(permissionService: api.ObservationPermissionService, attachmentStore: AttachmentStore): api.ReadAttachmentContent {
+export function ReadAttachmentContent(permissionService: api.ObservationPermissionService, obsRepoFactory: ObservationRepositoryForEvent, attachmentStore: AttachmentStore): api.ReadAttachmentContent {
   return async function readAttachmentContent(req: api.ReadAttachmentContentRequest): ReturnType<api.ReadAttachmentContent> {
     const denied = await permissionService.ensureReadObservationPermission(req.context)
     if (denied) {
       return AppResponse.error(denied)
     }
-    const repo = req.context.observationRepository
+    const repo = await obsRepoFactory(req.context.mageEvent.id)
     const obs = await repo.findById(req.observationId)
     if (!obs) {
       return AppResponse.error(entityNotFound(req.observationId, 'Observation'))
@@ -269,9 +365,8 @@ export function registerRecordRecentFormFieldChoicesHandler(domainEvents: EventE
  * an `isPending` property.  That should be reasonable to implement, but no
  * time now, as usual.
  */
-async function prepareObservationMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext): Promise<Observation | InvalidInputError> {
+async function prepareObservationMod(mod: api.ExoObservationMod, observationToUpdate: Observation | null, context: api.ObservationRequestContext, repo: EventScopedObservationRepository): Promise<Observation | InvalidInputError> {
   const event = context.mageEvent
-  const repo = context.observationRepository
   const modAttrs = baseObservationAttrsForMod(mod, observationToUpdate, context)
   // first get new form entry ids so new attachments have a proper id to reference
   const [removedFormEntries, newFormEntries] = mod.properties.forms.reduce(([removed, added], entryMod) => {
@@ -348,8 +443,7 @@ function baseObservationAttrsForMod(mod: api.ExoObservationMod, observationToUpd
       timestamp: mod.properties.timestamp,
       forms: []
     },
-    attachments: [],
-    noGeometry: !!mod.noGeometry,
+    attachments: []
   }
   assignFirstDefined('accuracy', attrs.properties, mod.properties, observationToUpdate?.properties)
   assignFirstDefined('delta', attrs.properties, mod.properties, observationToUpdate?.properties)

@@ -1,13 +1,25 @@
 import {
   Component,
+  DestroyRef,
   EventEmitter,
   Output,
-  OnDestroy,
-  OnInit
+  OnInit,
+  inject,
+  signal
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import type { PageEvent } from '@angular/material/paginator';
-import { Subject, takeUntil } from 'rxjs';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatCardModule } from '@angular/material/card';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { AdminBreadcrumb } from '../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../admin-breadcrumb/admin-breadcrumb.service';
@@ -19,14 +31,37 @@ import { UserService } from '../../user/user.service';
 import { UserPagingService } from '../services/user-paging.service';
 import { platformLabel, deviceIconName } from '../../entities/device/device';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { LoginsComponent } from '../admin-logins/admin-logins.component';
 
 @Component({
     selector: 'admin-dashboard',
     templateUrl: './admin-dashboard.html',
     styleUrls: ['./admin-dashboard.scss'],
-    standalone: false
+    imports: [
+      FormsModule,
+      RouterModule,
+      LoginsComponent,
+      MatCardModule,
+      MatBadgeModule,
+      MatFormFieldModule,
+      MatInputModule,
+      MatListModule,
+      MatIconModule,
+      MatButtonModule,
+      MatTooltipModule,
+      MatPaginatorModule
+    ]
 })
-export class AdminDashboardComponent implements OnInit, OnDestroy {
+export class AdminDashboardComponent implements OnInit {
+  private userService = inject(UserService);
+  private sessionService = inject(SessionService);
+  private deviceService = inject(AdminDeviceService);
+  private userPagingService = inject(UserPagingService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private breadcrumbService = inject(AdminBreadcrumbService);
+  private destroyRef = inject(DestroyRef);
+
   @Output() onUserActivated = new EventEmitter<any>();
   @Output() onDeviceEnabled = new EventEmitter<any>();
 
@@ -38,13 +73,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   stateAndData!: ReturnType<UserPagingService['constructDefault']>;
 
-  inactiveUsers: Array<ReturnType<UserPagingService['users']>[number]> = [];
-  unregisteredDevices: any[] = [];
+  readonly inactiveUsers = signal<
+    Array<ReturnType<UserPagingService['users']>[number]>
+  >([]);
+  readonly unregisteredDevices = signal<any[]>([]);
 
   readonly userPageSize = 5;
   readonly devicePageSize = 5;
 
-  userPageIndex = 0;
+  readonly userPageIndex = signal(0);
   loadingUsersPage = false;
   loadingDevicesPage = false;
 
@@ -52,26 +89,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     ReturnType<UserPagingService['users']>[number]
   > = [];
 
-  deviceStart = 0;
-  deviceNextStart: number | null = null;
-  devicePrevStart: number | null = null;
-  deviceTotalCount = 0;
+  readonly deviceStart = signal(0);
+  readonly deviceNextStart = signal<number | null>(null);
+  readonly devicePrevStart = signal<number | null>(null);
+  readonly deviceTotalCount = signal(0);
 
   private devicePageCache = new Map<number, DashboardDevicePageInfo>();
 
   breadcrumbs: AdminBreadcrumb[] = [{ title: 'Dashboard', icon: 'analytics' }];
-
-  private destroy$ = new Subject<void>();
-
-  constructor(
-    private userService: UserService,
-    private sessionService: SessionService,
-    private deviceService: AdminDeviceService,
-    private userPagingService: UserPagingService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
 
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
@@ -80,11 +105,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     this.refreshDevices();
     this.refreshUsers();
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   goToUser(user: any): void {
@@ -112,53 +132,55 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   deviceCount(): number {
-    return this.deviceTotalCount || this.unregisteredDevices.length;
+    return this.deviceTotalCount() || this.unregisteredDevices().length;
   }
 
   hasNext(): boolean {
-    return (this.userPageIndex + 1) * this.userPageSize < this.count();
+    return (this.userPageIndex() + 1) * this.userPageSize < this.count();
   }
 
   next(): void {
     if (!this.hasNext() || this.loadingUsersPage) return;
 
-    this.userPageIndex += 1;
+    this.userPageIndex.update((i) => i + 1);
     this.applyUserPage();
   }
 
   hasPrevious(): boolean {
-    return this.userPageIndex > 0;
+    return this.userPageIndex() > 0;
   }
 
   previous(): void {
     if (!this.hasPrevious() || this.loadingUsersPage) return;
 
-    this.userPageIndex -= 1;
+    this.userPageIndex.update((i) => i - 1);
     this.applyUserPage();
   }
 
   hasNextDevice(): boolean {
-    return this.deviceNextStart !== null && !this.loadingDevicesPage;
+    return this.deviceNextStart() !== null && !this.loadingDevicesPage;
   }
 
   nextDevice(): void {
-    if (!this.hasNextDevice() || this.deviceNextStart === null) return;
+    const next = this.deviceNextStart();
+    if (!this.hasNextDevice() || next === null) return;
 
-    this.loadDevicePage(this.deviceNextStart);
+    this.loadDevicePage(next);
   }
 
   hasPreviousDevice(): boolean {
-    return this.devicePrevStart !== null && !this.loadingDevicesPage;
+    return this.devicePrevStart() !== null && !this.loadingDevicesPage;
   }
 
   previousDevice(): void {
-    if (!this.hasPreviousDevice() || this.devicePrevStart === null) return;
+    const prev = this.devicePrevStart();
+    if (!this.hasPreviousDevice() || prev === null) return;
 
-    this.loadDevicePage(this.devicePrevStart);
+    this.loadDevicePage(prev);
   }
 
   onUserPage(event: PageEvent): void {
-    this.userPageIndex = event.pageIndex;
+    this.userPageIndex.set(event.pageIndex);
     this.applyUserPage();
   }
 
@@ -171,12 +193,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   search(): void {
-    this.userPageIndex = 0;
+    this.userPageIndex.set(0);
     this.loadingUsersPage = true;
 
     this.userPagingService
       .search(this.stateAndData[this.userState], this.userSearch)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (users) => {
           this.setUsers(users);
@@ -212,7 +234,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     this.userService
       .updateUser(user.id, user)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         this.refreshUsers();
         this.onUserActivated.emit({ user });
@@ -227,7 +249,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
     this.deviceService
       .updateDevice(device.id, { registered: true })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((updatedDevice) => {
         this.devicePageCache.clear();
         this.refreshDevices();
@@ -236,12 +258,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   private refreshUsers(): void {
-    this.userPageIndex = 0;
+    this.userPageIndex.set(0);
     this.loadingUsersPage = true;
 
     this.userPagingService
       .refresh(this.stateAndData)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           const users = this.userPagingService.users(
@@ -281,7 +303,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         includePagination: true,
         term: this.deviceSearch || undefined
       })
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (page) => {
           this.devicePageCache.set(start, page);
@@ -289,20 +311,20 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.loadingDevicesPage = false;
         },
         error: () => {
-          this.unregisteredDevices = [];
-          this.deviceNextStart = null;
-          this.devicePrevStart = null;
+          this.unregisteredDevices.set([]);
+          this.deviceNextStart.set(null);
+          this.devicePrevStart.set(null);
           this.loadingDevicesPage = false;
         }
       });
   }
 
   private applyDevicePage(page: DashboardDevicePageInfo): void {
-    this.deviceStart = page.start;
-    this.deviceNextStart = page.nextStart;
-    this.devicePrevStart = page.prevStart;
-    this.deviceTotalCount = page.totalCount;
-    this.unregisteredDevices = page.devices || [];
+    this.deviceStart.set(page.start);
+    this.deviceNextStart.set(page.nextStart);
+    this.devicePrevStart.set(page.prevStart);
+    this.deviceTotalCount.set(page.totalCount);
+    this.unregisteredDevices.set(page.devices || []);
   }
 
   private setUsers(
@@ -314,17 +336,17 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   private applyUserPage(): void {
-    const start = this.userPageIndex * this.userPageSize;
+    const start = this.userPageIndex() * this.userPageSize;
     const end = start + this.userPageSize;
 
-    this.inactiveUsers = this.allInactiveUsers.slice(start, end);
+    this.inactiveUsers.set(this.allInactiveUsers.slice(start, end));
   }
 
   private clampUserPageIndex(): void {
     const maxPageIndex = this.maxUserPageIndex();
 
-    if (this.userPageIndex > maxPageIndex) {
-      this.userPageIndex = maxPageIndex;
+    if (this.userPageIndex() > maxPageIndex) {
+      this.userPageIndex.set(maxPageIndex);
     }
   }
 

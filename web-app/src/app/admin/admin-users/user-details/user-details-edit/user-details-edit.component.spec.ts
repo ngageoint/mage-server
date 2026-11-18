@@ -1,5 +1,15 @@
 import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { of, throwError } from 'rxjs';
 
 import { UserDetailsEditComponent } from './user-details-edit.component';
@@ -44,11 +54,23 @@ describe('UserDetailsEditComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule],
-      declarations: [UserDetailsEditComponent],
+      imports: [
+        UserDetailsEditComponent,
+        CommonModule,
+        FormsModule,
+        NoopAnimationsModule,
+        MatCardModule,
+        MatIconModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule
+      ],
       providers: [
         { provide: UserService, useValue: mockUserService },
-        { provide: SessionService, useValue: mockSessionService }
+        { provide: SessionService, useValue: mockSessionService },
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     }).compileComponents();
 
@@ -61,6 +83,35 @@ describe('UserDetailsEditComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  function canvasHasPixels(): boolean {
+    const canvas: HTMLCanvasElement | null = fixture.nativeElement.querySelector('canvas');
+    if (!canvas) return false;
+    const { data } = canvas.getContext('2d')!.getImageData(0, 0, canvas.width, canvas.height);
+    return data.some((value, i) => i % 4 === 3 && value > 0);
+  }
+
+  it('should draw the created map icon after the first render', async () => {
+    component.user = { ...mockUser, icon: { type: 'create', text: 'TU', color: '#ff0000' } };
+
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(canvasHasPixels()).toBeTrue();
+  });
+
+  it('should draw the map icon after switching the icon type to create', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.iconMetadata.type).toBe('upload');
+
+    component.iconMetadata.type = 'create';
+    component.iconTypeChanged();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(canvasHasPixels()).toBeTrue();
+  });
+
   it('should initialize editUser and load roles on init', fakeAsync(() => {
     component.ngOnInit();
     tick();
@@ -68,7 +119,7 @@ describe('UserDetailsEditComponent', () => {
     expect(mockUserService.getRoles as jasmine.Spy).toHaveBeenCalled();
     expect(component.editUser).toBeTruthy();
     expect(component.editUser.displayName).toBe(mockUser.displayName);
-    expect(component.roles.length).toBe(2);
+    expect(component.roles().length).toBe(2);
   }));
 
   it('should update the phone number on the draft user', () => {
@@ -91,7 +142,7 @@ describe('UserDetailsEditComponent', () => {
 
     expect(mockUserService.updateUser as jasmine.Spy).toHaveBeenCalled();
     expect(emitted).toBeTruthy();
-    expect(component.saving).toBeFalse();
+    expect(component.saving()).toBeFalse();
   }));
 
   it('should set an error and stop saving when the update fails', fakeAsync(() => {
@@ -105,8 +156,8 @@ describe('UserDetailsEditComponent', () => {
     component.saveUser();
     tick();
 
-    expect(component.error).toBe('boom');
-    expect(component.saving).toBeFalse();
+    expect(component.error()).toBe('boom');
+    expect(component.saving()).toBeFalse();
   }));
 
   it('should emit cancelled when cancel is requested', () => {
@@ -118,15 +169,38 @@ describe('UserDetailsEditComponent', () => {
     expect(cancelled).toBeTrue();
   });
 
-  it('should compute authenticated icon/avatar preview URLs', () => {
+  it('should compute the authenticated icon preview URL', () => {
     const iconUrl = component.userIconImgUrl as string;
-    const avatarUrl = component.userAvatarImgUrl as string;
 
     expect(iconUrl).toContain('access_token=token-123');
     expect(iconUrl).toContain('_dc=123');
+  });
 
-    expect(avatarUrl).toContain('access_token=token-123');
-    expect(avatarUrl).toContain('_dc=123');
+  it('should load the avatar with the user avatar component instead of a token URL', () => {
+    fixture.detectChanges();
+
+    TestBed.inject(HttpTestingController).expectOne('/api/users/test-user-id/avatar');
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).not.toBeNull();
+    expect(avatar.innerHTML).not.toContain('access_token');
+  });
+
+  it('should show the selected avatar file preview', () => {
+    component.avatarPreviewUrl.set('data:image/png;base64,AAAA');
+    fixture.detectChanges();
+
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).toBeNull();
+    expect(avatar.querySelector('img.avatar-image')?.getAttribute('src')).toBe('data:image/png;base64,AAAA');
+  });
+
+  it('should show the placeholder when the user has no avatar', () => {
+    component.user = { ...mockUser, avatarUrl: undefined };
+    fixture.detectChanges();
+
+    const avatar: HTMLElement = fixture.nativeElement.querySelector('.media-edit');
+    expect(avatar.querySelector('user-avatar')).toBeNull();
+    expect(avatar.querySelector('.avatar-placeholder')).not.toBeNull();
   });
 
 });

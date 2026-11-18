@@ -33,8 +33,8 @@ describe('AdminEventFormPreviewComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, MatDialogModule],
-      declarations: [AdminEventFormPreviewComponent, TestHostComponent],
+      imports: [BrowserAnimationsModule, MatDialogModule, AdminEventFormPreviewComponent],
+      declarations: [TestHostComponent],
       providers: [{
         provide: MatDialog, useClass: MatDialogMock
       }]

@@ -1,5 +1,14 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatTableModule } from '@angular/material/table';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import * as Papa from 'papaparse';
 import { EMPTY, Subject, from, lastValueFrom } from 'rxjs';
 import { catchError, finalize, mergeMap, tap } from 'rxjs/operators';
@@ -14,7 +23,19 @@ export type BulkPhase = 'configure' | 'importing' | 'done';
     selector: 'app-bulk-user',
     templateUrl: './bulk-user.component.html',
     styleUrls: ['./bulk-user.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+      FormsModule,
+      MatDialogModule,
+      MatFormFieldModule,
+      MatSelectModule,
+      MatIconModule,
+      MatButtonModule,
+      MatTooltipModule,
+      MatTableModule,
+      MatMenuModule,
+      MatProgressBarModule
+    ]
 })
 export class BulkUserComponent implements OnInit, OnDestroy {
   readonly dialogRef: MatDialogRef<BulkUserComponent> = inject(MatDialogRef);

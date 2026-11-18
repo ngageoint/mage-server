@@ -1,9 +1,36 @@
 import express from 'express'
 import { ErrEntityNotFound, ErrInfrastructure, ErrInvalidInput, ErrPermissionDenied, MageError, PermissionDeniedError } from '../app.api/app.api.errors'
 import { AppRequest } from '../app.api/app.api.global'
+import { MageEvent, MageEventId, MageEventRepository } from '../entities/events/entities.events'
 
 export interface WebAppRequestFactory<Req extends AppRequest = AppRequest> {
   <RequestParams extends object = {}>(webReq: express.Request, params?: RequestParams): Req & RequestParams
+}
+
+export const eventScopeKey = 'eventScope' as const
+
+export function ensureEventScope(eventRepo: MageEventRepository): express.RequestHandler {
+  return async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<void> => {
+    const eventIdFromPath = req.params[eventScopeKey]
+    const eventId: MageEventId = parseInt(eventIdFromPath)
+    const mageEvent = Number.isInteger(eventId)
+      ? await eventRepo.findById(eventId)
+      : null
+    if (mageEvent) {
+      req[eventScopeKey] = { mageEvent }
+      next()
+      return
+    }
+    res.status(404).json(`event not found: ${eventIdFromPath}`)
+  }
+}
+
+declare module 'express' {
+  interface Request {
+    [eventScopeKey]?: {
+      mageEvent: MageEvent
+    }
+  }
 }
 
 /**

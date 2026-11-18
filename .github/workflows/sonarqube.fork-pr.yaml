@@ -1,0 +1,26 @@
+name: SonarQube fork pull request
+
+# pull requests from forks get no secrets, so this only records the pull request number for
+# sonarqube.fork-scan.yaml, which scans the pull request from the trusted base repository
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  pr-info:
+    name: save pull request info
+    if: github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: save pull request number
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          echo "${PR_NUMBER}" > pr-number.txt
+      - name: upload pull request info
+        uses: actions/upload-artifact@v7
+        with:
+          name: sonarqube-pr-info
+          path: pr-number.txt
+          retention-days: 1

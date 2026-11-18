@@ -1,4 +1,4 @@
-import { DOMParser, Document } from '@xmldom/xmldom';
+import { DOMParser, Document, Element, Node, LiveNodeList } from '@xmldom/xmldom'
 
 interface KmlStyle {
     iconStyle?: any;
@@ -28,7 +28,7 @@ function kml(docString: string, images: Record<string, string> = {}): KmlFeature
     const styleIndex = getStyles(document, images);
 
     // Pull all placemarks regards of depth level
-    const placemarks = Array.from(getElementsByNamespace(document, 'Placemark'));
+    const placemarks = Array.from<Element>(getElementsByNamespace(document, 'Placemark'));
 
     return placemarks.map((placemark) => {
         return getPlacemark(placemark, styleIndex, images);
@@ -296,8 +296,8 @@ function getPolygonStyle(node: Element): any {
     }
 }
 
-function getElementsByNamespace(x: Document | Element, y: string): HTMLCollectionOf<Element> {
-    return (x as Element).getElementsByTagNameNS("*", y);
+function getElementsByNamespace(x: Document | Element, y: string): LiveNodeList<Element> {
+    return x.getElementsByTagNameNS("*", y);
 }
 
 function attr(x: Element, y: string): string | null { return x.getAttribute(y); }

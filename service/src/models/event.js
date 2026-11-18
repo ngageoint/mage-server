@@ -22,6 +22,15 @@ const OptionSchema = new Schema({
   _id: false
 });
 
+const PatternSchema = new Schema(
+  {
+    spec: { type: String, required: true },
+    description: { type: String },
+    examples: { type: [String] },
+  },
+  { _id: false }
+)
+
 const FieldSchema = new Schema({
   id: { type: Number, required: true },
   archived: { type: Boolean, required: false },
@@ -34,7 +43,8 @@ const FieldSchema = new Schema({
   maxRecent: { type: Number, required: false, default: 5 },
   allowedAttachmentTypes: [{ type: String, required: false, enum: ['image', 'video', 'audio'] }],
   min: { type: Number, required: false },
-  max: { type: Number, required: false }
+  max: { type: Number, required: false },
+  pattern: { type: PatternSchema, required: false },
 }, {
   _id: false
 });
@@ -60,8 +70,8 @@ const FormSchema = new Schema({
   name: { type: String, required: true },
   description: { type: String, required: false },
   default: { type: Boolean, default: false },
-  min: { type: Number, required: false },
-  max: { type: Number, required: false },
+  min: { type: Number, required: false, min: [0, 'Form minimum cannot be negative'] },
+  max: { type: Number, required: false, min: [0, 'Form maximum cannot be negative'] },
   color: { type: String, required: true },
   archived: { type: Boolean, required: true, default: false },
   primaryField: { type: String, required: false },
@@ -77,15 +87,15 @@ const EventSchema = new Schema({
   _id: { type: Number, required: true },
   name: { type: String, required: true, unique: true },
   description: { type: String, required: false },
-  // noGeometry: { type: Boolean, default: false },
   complete: { type: Boolean },
   collectionName: { type: String, required: true },
   teamIds: [{ type: Schema.Types.ObjectId, ref: 'Team' }],
   layerIds: [{ type: Number, ref: 'Layer' }],
   feedIds: [{ type: String, ref: 'Feed' }],
   forms: [FormSchema],
-  minObservationForms: { type: Number },
-  maxObservationForms: { type: Number },
+  minObservationForms: { type: Number, min: [0, 'Minimum forms per observation cannot be negative'] },
+  maxObservationForms: { type: Number, min: [0, 'Maximum forms per observation cannot be negative'] },
+  observationSearchStatus: { type: String, enum: ['pending', 'running', 'indexed'] },
   style: {
     type: Schema.Types.Mixed,
     required: true,
@@ -471,9 +481,6 @@ exports.getById = function (id, options, callback) {
   );
 };
 
-// TODO probably should live in event api
-exports.filterEventsByUserId = filterEventsByUserId;
-
 function createObservationCollection(event) {
   log.info("Creating observation collection: " + event.collectionName + ' for event ' + event.name);
   mongoose.connection.db.createCollection(event.collectionName).then(() => {
@@ -540,7 +547,7 @@ exports.update = function (id, event, options, callback) {
     options = {};
   }
 
-  const update = ['name', 'description', 'noGeometry', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function (o, k) {
+  const update = ['name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms'].reduce(function (o, k) {
     if (Object.prototype.hasOwnProperty.call(event, k)) {
       o[k] = event[k];
     }
@@ -603,61 +610,54 @@ exports.updateForm = function (event, form, callback) {
 };
 
 exports.getMembers = async function (eventId, options) {
-  const query = { _id: eventId };
-  if (options.access) {
-    const accesses = [{
-      userIds: {
-        '$in': [options.access.user._id]
-      }
-    }];
-
-    rolesWithPermission(options.access.permission).forEach(role => {
-      const access = {};
-      access['acl.' + options.access.user._id.toString()] = role;
-      accesses.push(access);
-    });
-
-    query['$or'] = accesses;
-  }
-  const event = await Event.findOne(query)
-
-  if (event) {
-    const { searchTerm } = options || {}
-    const searchRegex = new RegExp(searchTerm, 'i')
-    const params = searchTerm ? {
-      '$or': [
-        { username: searchRegex },
-        { displayName: searchRegex },
-        { email: searchRegex },
-        { 'phones.number': searchRegex }
-      ]
-    } : {}
-
-    const eventTeam = await Team.getTeamForEvent(event);
-    params._id = { '$in': eventTeam.userIds.toObject() }
-
-    // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
-    // add _id to sort to ensure consistent ordering
-    const members = await User.Model.find(params)
-      .sort('displayName _id')
-      .limit(options.pageSize)
-      .skip(options.pageIndex * options.pageSize)
-
-    const page = {
-      pageSize: options.pageSize,
-      pageIndex: options.pageIndex,
-      items: members
-    }
-
-    const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
-    if (includeTotalCount) {
-      page.totalCount = await User.Model.countDocuments(params);
-    }
-
-    return page;
-  } else {
+  const event = await Event.findOne({ _id: eventId })
+  if (!event) {
     return null;
   }
+
+  const eventTeam = await Team.getTeamForEvent(event);
+
+  if (options.access) {
+    const userId = options.access.user._id.toString();
+    const isEventMember = eventTeam.userIds.some(id => id.toString() === userId);
+    const hasAclRole = rolesWithPermission(options.access.permission).some(role => role === event.acl[userId]);
+    if (!isEventMember && !hasAclRole) {
+      return null;
+    }
+  }
+
+  const { searchTerm } = options || {}
+  const searchRegex = new RegExp(searchTerm, 'i')
+  const params = searchTerm ? {
+    '$or': [
+      { username: searchRegex },
+      { displayName: searchRegex },
+      { email: searchRegex },
+      { 'phones.number': searchRegex }
+    ]
+  } : {}
+
+  params._id = { '$in': eventTeam.userIds.toObject() }
+
+  // per https://docs.mongodb.com/v5.0/reference/method/cursor.sort/#sort-consistency,
+  // add _id to sort to ensure consistent ordering
+  const members = await User.Model.find(params)
+    .sort('displayName _id')
+    .limit(options.pageSize)
+    .skip(options.pageIndex * options.pageSize)
+
+  const page = {
+    pageSize: options.pageSize,
+    pageIndex: options.pageIndex,
+    items: members
+  }
+
+  const includeTotalCount = typeof options.includeTotalCount === 'boolean' ? options.includeTotalCount : options.pageIndex === 0
+  if (includeTotalCount) {
+    page.totalCount = await User.Model.countDocuments(params);
+  }
+
+  return page;
 };
 
 exports.getNonMembers = async function (eventId, options) {
@@ -882,51 +882,6 @@ exports.removeTeamFromEvents = function (team, callback) {
   };
   Event.updateMany({}, update).then(
     () => callback(null),
-    err => callback(err)
-  );
-};
-
-exports.updateUserInAcl = function (eventId, userId, role, callback) {
-  // validate userId
-  if (!mongoose.Types.ObjectId.isValid(userId)) {
-    const err = new Error('Invalid userId');
-    err.status = 400;
-    return callback(err);
-  }
-
-  // validate role
-  if (Object.keys(EventRolePermissions).indexOf(role) === -1) {
-    const err = new Error('Invalid role');
-    err.status = 400;
-    return callback(err);
-  }
-
-  const update = {};
-  update['acl.' + userId] = role;
-
-  Event.findOneAndUpdate({ _id: eventId }, update, { new: true, runValidators: true }).then(
-    event => {
-      Team.updateUserInAclForEventTeam(eventId, userId, role, function (err) {
-        callback(err, event);
-      });
-    },
-    err => callback(err)
-  );
-};
-
-
-exports.removeUserFromAcl = function (eventId, userId, callback) {
-  const update = {
-    $unset: {}
-  };
-  update.$unset['acl.' + userId] = true;
-
-  Event.findByIdAndUpdate(eventId, update, { new: true, runValidators: true }).then(
-    event => {
-      Team.removeUserFromAclForEventTeam(eventId, userId, function (err) {
-        callback(err, event);
-      });
-    },
     err => callback(err)
   );
 };

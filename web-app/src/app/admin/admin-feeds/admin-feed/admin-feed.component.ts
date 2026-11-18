@@ -1,28 +1,28 @@
-import { Component, OnInit, OnDestroy, TemplateRef, ViewChild } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { Observable } from 'rxjs';
+import { Component, DestroyRef, OnInit, OnDestroy, TemplateRef, ViewChild, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Observable, map } from 'rxjs';
 import {
-  ServiceType,
-  FeedTopic,
   Service,
   FeedExpanded,
   FeedService
 } from 'core-lib-src/feed';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatSnackBar as MatSnackBar } from '@angular/material/snack-bar';
-import {
-  trigger,
-  state,
-  transition,
-  style,
-  animate
-} from '@angular/animations';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatCardModule } from '@angular/material/card';
+import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { AdminBreadcrumb } from '../../admin-breadcrumb/admin-breadcrumb.model';
 import { AdminBreadcrumbService } from '../../admin-breadcrumb/admin-breadcrumb.service';
 import { AdminFeedDeleteComponent } from './admin-feed-delete/admin-feed-delete.component';
 import { AdminEventsService } from '../../services/admin-events.service';
 import { EventService } from '../../../event/event.service';
-import { Event } from 'mage-web-app/filter/filter.types';
+import { MageEvent } from 'mage-web-app/entities/event/entities.event';
 import {
   SearchModalComponent,
   SearchModalData,
@@ -30,28 +30,38 @@ import {
   SearchModalColumn
 } from '../../search-modal/search-modal.component';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { RouteReuse } from '../../../route-reuse.strategy';
 
 @Component({
     selector: 'app-admin-feed',
     templateUrl: './admin-feed.component.html',
     styleUrls: ['./admin-feed.component.scss'],
-    animations: [
-        trigger('slide', [
-            state('1', style({ height: '*', opacity: 1 })),
-            state('0', style({ height: '0', opacity: 0 })),
-            transition('1 => 0', animate('400ms ease-in-out')),
-            transition('0 => 1', animate('400ms ease-in-out'))
-        ]),
-        trigger('rotate', [
-            state('0', style({ transform: 'rotate(0)' })),
-            state('1', style({ transform: 'rotate(45deg)' })),
-            transition('1 => 0', animate('250ms ease-out')),
-            transition('0 => 1', animate('250ms ease-in'))
-        ])
-    ],
-    standalone: false
+    imports: [
+        RouterModule,
+        MatCardModule,
+        MatDividerModule,
+        MatIconModule,
+        MatButtonModule,
+        MatListModule,
+        MatPaginatorModule,
+        MatProgressSpinnerModule,
+        FeedIconModule
+    ]
 })
 export class AdminFeedComponent implements OnInit, OnDestroy {
+  static readonly routeReuse: RouteReuse = RouteReuse.RecreateOnParamChange;
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly feedService: FeedService = inject(FeedService);
+  private readonly dialog: MatDialog = inject(MatDialog);
+  private readonly snackBar: MatSnackBar = inject(MatSnackBar);
+  private readonly eventsService: AdminEventsService = inject(AdminEventsService);
+  private readonly eventService: EventService = inject(EventService);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly breadcrumbService: AdminBreadcrumbService = inject(AdminBreadcrumbService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
   breadcrumbs: AdminBreadcrumb[] = [{
     title: 'Feeds',
     icon: 'rss_feed',
@@ -61,18 +71,10 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   @ViewChild('breadcrumbActions', { static: true })
   breadcrumbActions!: TemplateRef<unknown>;
 
-  feedsRoute: any[] = ['../../feeds'];
-  feedEditRoute: any[] | null = null;
+  readonly feedId: string = this.route.snapshot.paramMap.get('feedId');
 
-  feedId: string | null = null;
-
-  feedLoaded!: Promise<boolean>;
-  feed!: FeedExpanded;
-  fullFeed = '';
-
-  get hasFeedCreatePermission(): boolean {
-    return this.sessionService.hasPermission('FEEDS_CREATE_FEED');
-  }
+  readonly feed = signal<FeedExpanded | null>(null);
+  readonly service = computed(() => this.feed()?.service as Service | undefined);
 
   get hasFeedEditPermission(): boolean {
     return this.sessionService.hasPermission('FEEDS_CREATE_FEED');
@@ -87,14 +89,10 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   }
 
   eventsPerPage = 10;
-  eventsPage = 0;
-  totalFeedEvents = 0;
-  feedEvents: any[] = [];
-  loadingEvents = false;
-
-  service!: Service;
-  feedServiceType!: ServiceType;
-  feedTopic!: FeedTopic;
+  readonly eventsPage = signal(0);
+  readonly totalFeedEvents = signal(0);
+  readonly feedEvents = signal<any[]>([]);
+  readonly loadingEvents = signal(false);
 
   private allFeedEvents: any[] = [];
 
@@ -102,23 +100,10 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
     return this.sessionService.user;
   }
 
-  constructor(
-    private feedService: FeedService,
-    private route: ActivatedRoute,
-    private router: Router,
-    public dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private eventsService: AdminEventsService,
-    private sessionService: SessionService,
-    private eventService: EventService,
-    private breadcrumbService: AdminBreadcrumbService
-  ) {}
-
   ngOnInit(): void {
     this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
     this.breadcrumbService.setActions(this.breadcrumbActions);
 
-    this.feedId = this.route.snapshot.paramMap.get('feedId');
     this.initFeed();
   }
 
@@ -127,72 +112,54 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   }
 
   private initFeed(): void {
-    if (!this.feedId) return;
-
-    this.feedService.fetchFeed(this.feedId).subscribe((feed) => {
-      this.feed = feed;
+    this.feedService.fetchFeed(this.feedId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe((feed) => {
+      this.feed.set(feed);
 
       this.breadcrumbs = [{
         title: 'Feeds',
         icon: 'rss_feed',
         route: ['/admin/feeds']
       },{
-        title: this.feed.title
+        title: feed.title
       }];
       this.breadcrumbService.setBreadcrumbs(this.breadcrumbs);
-
-      this.feedEditRoute = ['../feedEdit', this.feed.id];
-
-      this.fullFeed = JSON.stringify(feed, null, 2);
-      this.feedLoaded = Promise.resolve(true);
-      this.service = this.feed.service as Service;
-      this.feedTopic = this.feed.topic as FeedTopic;
-
-      this.feedService
-        .fetchServiceType(this.service.serviceType as string)
-        .subscribe((serviceType) => {
-          this.feedServiceType = serviceType;
-        });
 
       this.loadAllEvents();
     });
   }
 
   loadAllEvents(): void {
-    if (!this.feed?.id) return;
-
-    this.loadingEvents = true;
+    this.loadingEvents.set(true);
 
     this.eventsService
       .getEvents({
-        feedId: this.feed.id,
+        feedId: this.feedId,
         page: 0,
         page_size: 1000
       })
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
           const events = response.items || [];
 
           this.allFeedEvents = events.filter((event) =>
-            this.eventHasFeed(event, this.feed.id)
+            this.eventHasFeed(event, this.feedId)
           );
 
-          this.totalFeedEvents = this.allFeedEvents.length;
+          this.totalFeedEvents.set(this.allFeedEvents.length);
           this.clampEventsPage();
           this.applyEventsPage();
 
-          this.loadingEvents = false;
+          this.loadingEvents.set(false);
         },
         error: (err) => {
           console.error('Error loading feed events:', err);
-          this.loadingEvents = false;
+          this.loadingEvents.set(false);
         }
       });
   }
 
   addEventToFeed(): void {
-    if (!this.feed?.id) return;
-
     const dialogRef = this.dialog.open(SearchModalComponent, {
       width: '600px',
       panelClass: 'search-modal-dialog',
@@ -202,53 +169,49 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
         type: 'events',
         icon: 'event',
         searchFunction: (searchTerm: string, page: number, pageSize: number): Observable<any> => {
-          return new Observable((observer) => {
-            const searchOptions: any = {
-              page,
-              page_size: pageSize
-            };
+          const searchOptions: any = {
+            page,
+            page_size: pageSize
+          };
 
-            if (searchTerm) {
-              searchOptions.term = searchTerm;
-            }
+          if (searchTerm) {
+            searchOptions.term = searchTerm;
+          }
 
-            this.eventsService.getEvents(searchOptions).subscribe({
-              next: (response) => {
-                let events = (response.items || []).filter(
-                  (event) => !this.eventHasFeed(event, this.feed.id)
-                );
+          return this.eventsService.getEvents(searchOptions).pipe(
+            map((response) => {
+              let events = (response.items || []).filter(
+                (event) => !this.eventHasFeed(event, this.feedId)
+              );
 
-                if (!this.hasUpdateEventPermission) {
-                  const myId = this.myself?.id;
-                  events = events.filter((event) => {
-                    const permissions = myId ? event.acl?.[myId]?.permissions || [] : [];
-                    return permissions.includes('update');
-                  });
-                }
-
-                observer.next({
-                  items: events,
-                  totalCount: response.totalCount || events.length,
-                  pageSize,
-                  pageIndex: page
+              if (!this.hasUpdateEventPermission) {
+                const myId = this.myself?.id;
+                events = events.filter((event) => {
+                  const permissions = myId ? event.acl?.[myId]?.permissions || [] : [];
+                  return permissions.includes('update');
                 });
-                observer.complete();
-              },
-              error: (error) => observer.error(error)
-            });
-          });
+              }
+
+              return {
+                items: events,
+                totalCount: response.totalCount || events.length,
+                pageSize,
+                pageIndex: page
+              };
+            })
+          );
         },
         columns: [
           {
             key: 'name',
             label: 'Event Name',
-            displayFunction: (event: Event) => event.name || 'Unnamed Event',
+            displayFunction: (event: MageEvent) => event.name || 'Unnamed Event',
             width: '50%'
           },
           {
             key: 'description',
             label: 'Description',
-            displayFunction: (event: Event) => event.description || '',
+            displayFunction: (event: MageEvent) => event.description || '',
             width: '50%'
           }
         ] as SearchModalColumn[]
@@ -259,7 +222,7 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
       if (result?.selectedItem) {
         const selectedEvent = result.selectedItem;
 
-        this.eventService.addFeed(String(selectedEvent.id), this.feed.id).subscribe({
+        this.eventService.addFeed(String(selectedEvent.id), this.feedId).subscribe({
           next: (event: any) => {
             this.loadAllEvents();
             this.snackBar.open(
@@ -282,7 +245,7 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
     $event.stopPropagation();
 
     this.eventService
-      .removeFeed(String(event.id), String(this.feed.id))
+      .removeFeed(String(event.id), this.feedId)
       .subscribe({
         next: () => {
           this.loadAllEvents();
@@ -304,22 +267,24 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   }
 
   onEventsPageChange(event: any): void {
-    this.eventsPage = event.pageIndex;
+    this.eventsPage.set(event.pageIndex);
     this.eventsPerPage = event.pageSize;
     this.applyEventsPage();
   }
 
   deleteFeed(): void {
+    const feed = this.feed();
+    if (!feed) return;
+
     this.dialog
       .open(AdminFeedDeleteComponent, {
-        data: this.feed,
-        autoFocus: false,
+        data: feed,
         disableClose: true
       })
       .afterClosed()
       .subscribe((result) => {
         if (result === true) {
-          this.feedService.deleteFeed(this.feed).subscribe(() => {
+          this.feedService.deleteFeed(feed).subscribe(() => {
             this.router.navigate(['../../feeds'], { relativeTo: this.route });
           });
         }
@@ -327,24 +292,24 @@ export class AdminFeedComponent implements OnInit, OnDestroy {
   }
 
   private applyEventsPage(): void {
-    const start = this.eventsPage * this.eventsPerPage;
+    const start = this.eventsPage() * this.eventsPerPage;
     const end = start + this.eventsPerPage;
 
-    this.feedEvents = this.allFeedEvents.slice(start, end);
+    this.feedEvents.set(this.allFeedEvents.slice(start, end));
   }
 
   private clampEventsPage(): void {
     const maxPageIndex = this.maxEventsPageIndex();
 
-    if (this.eventsPage > maxPageIndex) {
-      this.eventsPage = maxPageIndex;
+    if (this.eventsPage() > maxPageIndex) {
+      this.eventsPage.set(maxPageIndex);
     }
   }
 
   private maxEventsPageIndex(): number {
-    if (!this.totalFeedEvents) return 0;
+    if (!this.totalFeedEvents()) return 0;
 
-    return Math.ceil(this.totalFeedEvents / this.eventsPerPage) - 1;
+    return Math.ceil(this.totalFeedEvents() / this.eventsPerPage) - 1;
   }
 
   private eventHasFeed(event: any, feedId: string): boolean {

@@ -3,7 +3,6 @@ module.exports = function(app, security) {
   const api = require('../api');
   const Event = require('../models/event');
   const Team = require('../models/team');
-  const Role = require('../models/role');
   const Device = require('../models/device');
   const Icon = require('../models/icon');
   const { modulesPathsInDir } = require('../utilities/loader');
@@ -45,13 +44,8 @@ module.exports = function(app, security) {
 
   // Grab the team for any endpoint that uses teamId
   app.param('teamId', function(req, res, next, teamId) {
-    const options = {};
-    if (req.query) {
-      for (let [key, value] of Object.entries(req.query)) {
-        options[key] = value;
-      }
-    }
-    Team.getTeamById(teamId, options, function(err, team) {
+    const populate = req.query.populate == null || req.query.populate === 'true';
+    Team.getTeamById(teamId, { populate }, function(err, team) {
       if (!team) return res.status(404).send('Team not found');
       req.team = team;
       next();
@@ -72,15 +66,6 @@ module.exports = function(app, security) {
     Device.getDeviceById(deviceId, function(err, device) {
       if (!device) return res.status(404).send('Device not found');
       req.device = device;
-      next();
-    });
-  });
-
-  // Grab the role for any endpoint that uses roleId
-  app.param('roleId', function(req, res, next, roleId) {
-    Role.getRoleById(roleId, function(err, role) {
-      if (!role) return res.status(404).send('Role ' + roleId + ' not found');
-      req.role = role;
       next();
     });
   });
@@ -111,9 +96,7 @@ module.exports = function(app, security) {
         return next(err);
       }
       if (!observation) {
-        return res
-          .status(404)
-          .send(`Observation ID ${observationId} not found`);
+        return res.status(404).send('Observation not found');
       }
       req.observation = observation;
       next();

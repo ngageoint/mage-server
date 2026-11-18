@@ -1,32 +1,55 @@
 <div class="popup">
-  <div class="popup__content">
-    <div class="item-overline">
-      <span>{{observation?.user?.displayName}}</span>
-      <span>·</span>
-      <span>{{observation?.properties?.timestamp | moment}}</span>
+  @if (failed()) {
+    <div class="popup__status popup__status--error">
+      <mat-icon>error_outline</mat-icon>
+      <span>Unable to load observation</span>
+    </div>
+  } @else if (!observation()) {
+    <div class="popup__status">
+      <mat-progress-spinner mode="indeterminate" diameter="32"></mat-progress-spinner>
+    </div>
+  } @else {
+    <div class="popup__content">
+      <div class="item-overline">
+        <span>{{observation()?.user?.displayName}}</span>
+        <span>·</span>
+        <span>{{observation()?.properties?.timestamp | moment}}</span>
+      </div>
+
+      @if (primaryField()?.value) {
+        <div class="item-header-text">
+          @switch (primaryField()?.field?.type) {
+            @case ('geometry') {
+              {{primaryField()?.value | geometry:5}}
+            }
+            @default {
+              {{primaryField()?.value}}
+            }
+          }
+        </div>
+      }
+
+      @if (secondaryField()?.value) {
+        <div class="item-subhead">
+          @switch (secondaryField()?.field?.type) {
+            @case ('geometry') {
+              {{secondaryField()?.value | geometry:5}}
+            }
+            @default {
+              {{secondaryField()?.value}}
+            }
+          }
+        </div>
+      }
     </div>
 
-    <div *ngIf="primaryField?.value" class="item-header-text">
-      <span [ngSwitch]="primaryField?.field?.type">
-        <span *ngSwitchCase="'geometry'">{{primaryField?.value | geometry:5}}</span>
-        <span *ngSwitchDefault>{{primaryField?.value}}</span>
-      </span>
+    <div class="popup__actions">
+      <button matIconButton (click)="onZoom()">
+        <mat-icon>my_location</mat-icon>
+      </button>
+      <button matIconButton (click)="onInfo()">
+        <mat-icon>info_outline</mat-icon>
+      </button>
     </div>
-
-    <div *ngIf="secondaryField?.value" class="item-subhead">
-      <span [ngSwitch]="secondaryField?.field?.type">
-        <span *ngSwitchCase="'geometry'">{{secondaryField?.value | geometry:5}}</span>
-        <span *ngSwitchDefault>{{secondaryField?.value}}</span>
-      </span>
-    </div>
-  </div>
-
-  <div class="popup__actions">
-    <button matIconButton (click)="onZoom()">
-      <mat-icon>my_location</mat-icon>
-    </button>
-    <button matIconButton (click)="onInfo()">
-      <mat-icon>info_outline</mat-icon>
-    </button>
-  </div>
+  }
 </div>

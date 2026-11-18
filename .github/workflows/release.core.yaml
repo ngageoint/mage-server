@@ -46,22 +46,33 @@ jobs:
         with:
           package_path: ./package.json
       - name: install json util
-        run: npm i -g json
+        run: npm i -g --ignore-scripts json@11.0.0
       - name: check project
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./package.json) = "${VERSION}" ]] || exit 1
       - name: check service
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./service/package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./service/package.json) = "${VERSION}" ]] || exit 1
       - name: check web-app
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./web-app/package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./web-app/package.json) = "${VERSION}" ]] || exit 1
       - name: check web-core-lib
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
-          [[ $(json version < ./web-app/projects/core-lib/package.json) = ${{ inputs.version }} ]] || exit 1
+          [[ $(json version < ./web-app/projects/core-lib/package.json) = "${VERSION}" ]] || exit 1
       - name: check prerelease
+        env:
+          IS_PRERELEASE: ${{ inputs.is_prerelease }}
+          PRERELEASE_TAG: ${{ steps.package_info.outputs.version-prerelease_tag }}
         run: |
-          if ( [ "${{ inputs.is_prerelease }}" != "false" ] &&  [ -z "${{ steps.package_info.outputs.version-prerelease_tag }}" ] )
+          if ( [ "${IS_PRERELEASE}" != "false" ] &&  [ -z "${PRERELEASE_TAG}" ] )
           then
             echo "ERROR: Prereleases must publish a package version with a prerelease component."
             exit 1
@@ -75,17 +86,26 @@ jobs:
     needs: [check_release_version]
     uses: ./.github/workflows/build_test.web-app.yaml
 
+  sonarqube_report:
+    needs: [check_release_version]
+    uses: ./.github/workflows/sonarqube.yaml
+    with:
+      version: ${{ inputs.version }}
+    secrets: inherit
+
   create_release:
     name: create release
-    needs: [config, build_and_test-service, build_and_test-web-app]
+    needs: [config, build_and_test-service, build_and_test-web-app, sonarqube_report]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: setup node
         uses: actions/setup-node@v7
         with:
           node-version: ${{ needs.config.outputs.node_versions-lts }}
       - name: install json util
-        run: npm i -g json
+        run: npm i -g --ignore-scripts json@11.0.0
       - name: download service artifacts
         uses: actions/download-artifact@v8
         with:
@@ -94,10 +114,16 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: mage.web-app-artifacts
+      - name: download sonarqube report
+        uses: actions/download-artifact@v8
+        with:
+          name: sonarqube-report
       - name: generate instance package.json
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           (
-          printf '{ "name": "mage.instance", "version": "%s" }\n' ${{ inputs.version }} &&
+          printf '{ "name": "mage.instance", "version": "%s" }\n' "${VERSION}" &&
           printf '{ "scripts": { "start": "mage.service" }}\n' &&
           printf '{ "dependencies": { "@ngageoint/mage.service": "./%s" }}\n' $(ls -1 *mage.service*.tgz) &&
           printf '{ "dependencies": { "@ngageoint/mage.web-app": "./%s" }}\n' $(ls -1 *mage.web-app*.tgz)
@@ -105,16 +131,22 @@ jobs:
           echo "instance package.json"
           cat package.json
       - name: create release
-        uses: softprops/action-gh-release@v3
-        with:
-          name: ${{ inputs.version }}
-          prerelease: ${{ inputs.is_prerelease }}
-          draft: ${{ inputs.is_draft }}
-          tag_name: ${{ inputs.version }}
-          target_commitish: ${{ github.sha }}
-          files: |
-            package.json
-            ngageoint-mage.*.tgz
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          IS_PRERELEASE: ${{ inputs.is_prerelease }}
+          IS_DRAFT: ${{ inputs.is_draft }}
+        run: |
+          flags=()
+          [[ "${IS_PRERELEASE}" == "true" ]] && flags+=(--prerelease)
+          [[ "${IS_DRAFT}" == "true" ]] && flags+=(--draft)
+          gh release create "${VERSION}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --title "${VERSION}" \
+            --target "${GITHUB_SHA}" \
+            --notes "" \
+            "${flags[@]}" \
+            package.json ngageoint-mage.*.tgz mage-*-sonarqube.json
 
   publish_packages:
     name: publish packages
@@ -138,10 +170,18 @@ jobs:
           package_path: ./package.json
       - name: determine dist tag
         id: dist-tag
+        env:
+          DIST_TAG: ${{ inputs.dist_tag }}
+          PRERELEASE_TAG: ${{ steps.package_info.outputs.version-prerelease_tag }}
         run: |
           dist_tag_switch=""
-          dist_tag="${{ inputs.dist_tag }}"
-          [ -z "${dist_tag}" ] && dist_tag="${{ steps.package_info.outputs.version-prerelease_tag }}"
+          dist_tag="${DIST_TAG}"
+          [ -z "${dist_tag}" ] && dist_tag="${PRERELEASE_TAG}"
+          if [[ ! "${dist_tag}" =~ ^[A-Za-z0-9._-]*$ ]]
+          then
+            echo "ERROR: dist tag may only contain letters, numbers, '.', '-', and '_'."
+            exit 1
+          fi
           [ -n "${dist_tag}" ] && dist_tag_switch="--tag ${dist_tag}"
           echo "dist_tag_switch=${dist_tag_switch:-""}" >> $GITHUB_ENV
       - name: download service packages

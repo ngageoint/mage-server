@@ -1,82 +1,51 @@
 <div class="map-layers">
-  <h4 class="header">Mage</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'feature', mageLayers)" >
-    <ng-container *ngFor="let layer of mageLayers">
-      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle class="drag-handle" (click)="preventHeaderToggle($event, expansionPanel)">
-          <layer-header [layer]="layer" multi="true" (onToggle)="expansionPanel.toggle()"></layer-header>
-        </mat-expansion-panel-header>
-      
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  <h3 class="header">Mage</h3>
+  <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'mage', mageLayers())">
+    @for (layer of mageLayers(); track layer) {
+      <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+    }
+  </div>
 
-  <div class="header">Base Layers</div>
-  <mat-accordion class="layer-list" displayMode="flat" multi="true">
-    <ng-container *ngFor="let layer of baseLayers">
-        <mat-expansion-panel hideToggle #expansionPanel>
-          <mat-expansion-panel-header class="">
-            <layer-header [layer]="layer"></layer-header>
-          </mat-expansion-panel-header>
-        
-          <layer-content [layer]="layer"></layer-content>
-        </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  <h3 class="header">Base Layers</h3>
+  <div class="layer-list" role="list">
+    @for (layer of baseLayers(); track layer) {
+      <layer-item [layer]="layer"></layer-item>
+    }
+  </div>
 
-  <h4 class="header" *ngIf="gridOverlays.length">Grid Overlays</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true">
-    <ng-container *ngFor="let layer of gridOverlays">
-      <mat-expansion-panel hideToggle #expansionPanel>
-        <mat-expansion-panel-header class="">
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-      
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  @if (gridOverlays().length) {
+    <h3 class="header">Grid Overlays</h3>
+    <div class="layer-list" role="list">
+      @for (layer of gridOverlays(); track layer) {
+        <layer-item [layer]="layer" multi="true"></layer-item>
+      }
+    </div>
+  }
 
-  <h4 class="header">Feeds</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true"
-    (cdkDropListDropped)="reorderLayers($event, 'feature', feedLayers)">
-    <ng-container *ngFor="let layer of feedLayers">
-      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle class="drag-handle"
-          (click)="preventHeaderToggle($event, expansionPanel)">
-          <layer-header [layer]="layer" multi="true" (onToggle)="expansionPanel.toggle()"></layer-header>
-        </mat-expansion-panel-header>
-  
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  @if (feedLayers().length) {
+    <h3 class="header">Feeds</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feed', feedLayers())">
+      @for (layer of feedLayers(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
+  }
 
-  <h4 class="header" *ngIf="featureOverlays.length">Feature Overlays</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', featureOverlays)">
-    <ng-container *ngFor="let layer of featureOverlays">
-      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true">
-          </layer-header>
-        </mat-expansion-panel-header>
-  
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  @if (featureOverlays().length) {
+    <h3 class="header">Feature Overlays</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'feature', featureOverlays())">
+      @for (layer of featureOverlays(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
+  }
 
-  <h4 class="header" *ngIf="tileOverlays.length">Tile Overlays</h4>
-  <mat-accordion class="layer-list" cdkDropList cdkDropListLockAxis="y" displayMode="flat" multi="true" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays)">
-    <ng-container *ngFor="let layer of tileOverlays">
-      <mat-expansion-panel hideToggle #expansionPanel cdkDrag>
-        <mat-expansion-panel-header cdkDragHandle>
-          <layer-header [layer]="layer" multi="true"></layer-header>
-        </mat-expansion-panel-header>
-      
-        <layer-content [layer]="layer"></layer-content>
-      </mat-expansion-panel>
-    </ng-container>
-  </mat-accordion>
+  @if (tileOverlays().length) {
+    <h3 class="header">Tile Overlays</h3>
+    <div class="layer-list" role="list" cdkDropList cdkDropListLockAxis="y" (cdkDropListDropped)="reorderLayers($event, 'tile', tileOverlays())">
+      @for (layer of tileOverlays(); track layer) {
+        <layer-item cdkDrag [layer]="layer" multi="true" reorderable="true"></layer-item>
+      }
+    </div>
+  }
 </div>

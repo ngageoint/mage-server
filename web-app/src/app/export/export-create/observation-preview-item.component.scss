@@ -1,0 +1,41 @@
+.preview-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 10px 16px;
+}
+
+.preview-item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.preview-item-overline {
+  display: flex;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.preview-item-primary {
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--mat-sys-on-surface);
+}
+
+.preview-item-secondary {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+img {
+  flex: 0 0 auto;
+  align-self: center;
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}

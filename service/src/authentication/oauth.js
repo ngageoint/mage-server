@@ -104,7 +104,7 @@ function configure(strategy) {
                   displayName: profile[strategy.settings.profile.displayName] || profileId,
                   email: email,
                   active: false,
-                  roleId: role._id,
+                  roleId: role.id,
                   authentication: {
                      type: strategy.type,
                      id: profileId,

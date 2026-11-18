@@ -84,7 +84,7 @@ export class MongooseRecentUserLocationsRepository implements RecentUserLocation
     }
 
     if (spec.populate) {
-      query.populate({ path: 'userId', select: 'displayName icon' })
+      query.populate({ path: 'userId', select: 'displayName email phones icon avatar' })
     }
 
     const docs = await query.exec()
@@ -102,7 +102,14 @@ function entityForDocument(doc: RecentUserLocationsModelInstance): RecentUserLoc
   const userId: string = (populatedUserId ?? rawUserId)?.toHexString() ?? ''
   const populatedUserDoc = populatedUserId && !(doc.userId instanceof mongoose.Types.ObjectId) ? doc.userId as any : null
   const user: LocationUserExpanded | undefined = populatedUserDoc
-    ? { id: userId, displayName: populatedUserDoc.displayName, icon: populatedUserDoc.icon?.toObject() }
+    ? {
+      id: userId,
+      displayName: populatedUserDoc.displayName,
+      email: populatedUserDoc.email,
+      phones: (populatedUserDoc.phones ?? []).map((phone: any) => ({ type: phone.type, number: phone.number })),
+      icon: populatedUserDoc.icon?.toObject(),
+      avatar: populatedUserDoc.avatar?.toObject()
+    }
     : undefined
   return {
     userId,

@@ -29,6 +29,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
+import { RouterLink } from '@angular/router';
 import { UserService } from '../../../user/user.service';
 import { SessionService } from 'mage-web-app/http/session.service';
 import { AdminToastService } from '../../services/admin-toast.service';
@@ -37,7 +39,7 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 @Component({
     selector: 'user-avatar',
     template: '',
-    standalone: false
+    standalone: true
 })
 class MockUserAvatarComponent {
   @Input() user: any;
@@ -163,9 +165,9 @@ describe('UserDashboardComponent', () => {
         MatChipsModule,
         MatFormFieldModule,
         MatInputModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        UserDashboardComponent
       ],
-      declarations: [UserDashboardComponent, MockUserAvatarComponent],
       providers: [
         { provide: MatDialog, useValue: dialogSpy },
         { provide: UserService, useValue: userServiceSpy },
@@ -175,7 +177,25 @@ describe('UserDashboardComponent', () => {
         { provide: AdminToastService, useValue: toastSpy }
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA]
-    }).compileComponents();
+    })
+      .overrideComponent(UserDashboardComponent, {
+        set: {
+          imports: [
+            MatCardModule,
+            MatChipsModule,
+            MatFormFieldModule,
+            MatIconModule,
+            MatInputModule,
+            MatButtonModule,
+            MatListModule,
+            MatPaginatorModule,
+            FormsModule,
+            RouterLink,
+            MockUserAvatarComponent
+          ]
+        }
+      })
+      .compileComponents();
 
     fixture = TestBed.createComponent(UserDashboardComponent);
     component = fixture.componentInstance;
@@ -211,18 +231,18 @@ describe('UserDashboardComponent', () => {
     tick();
 
     expect(pagingServiceSpy.refresh).toHaveBeenCalled();
-    expect(component.dataSource.length).toBe(3);
-    expect(component.totalUsers).toBe(2);
+    expect(component.dataSource().length).toBe(3);
+    expect(component.totalUsers()).toBe(2);
   }));
 
   it('should search and update user list', fakeAsync(() => {
     component.onSearchTermChanged('user');
-    tick();
+    tick(300);
 
     expect(component.userSearch).toBe('user');
     expect(component.pageIndex).toBe(0);
     expect(pagingServiceSpy.search).toHaveBeenCalled();
-    expect(component.dataSource.length).toBe(3);
+    expect(component.dataSource().length).toBe(3);
   }));
 
   it('should log error when search fails', fakeAsync(() => {
@@ -233,9 +253,35 @@ describe('UserDashboardComponent', () => {
     );
 
     component.onSearchTermChanged('x');
-    tick();
+    tick(300);
 
     expect(consoleSpy).toHaveBeenCalled();
+  }));
+
+  it('should debounce search input into a single request', fakeAsync(() => {
+    pagingServiceSpy.search.calls.reset();
+
+    component.onSearchTermChanged('u');
+    tick(100);
+    component.onSearchTermChanged('us');
+    tick(100);
+    component.onSearchTermChanged('user');
+    tick(300);
+
+    expect(pagingServiceSpy.search).toHaveBeenCalledTimes(1);
+    expect(pagingServiceSpy.search).toHaveBeenCalledWith(jasmine.anything(), 'user');
+  }));
+
+  it('should clear search through the paging search so the term is reset', fakeAsync(() => {
+    pagingServiceSpy.search.calls.reset();
+
+    component.onSearchTermChanged('user');
+    tick(300);
+    component.onSearchCleared();
+    tick(300);
+
+    expect(component.userSearch).toBe('');
+    expect(pagingServiceSpy.search).toHaveBeenCalledWith(jasmine.anything(), '');
   }));
 
   it('should handle pagination event and refresh users', fakeAsync(() => {
@@ -368,6 +414,11 @@ describe('UserDashboardComponent', () => {
   }));
 
   it('should complete destroy$ on destroy', () => {
+    let completed = false;
+    (component as any).destroy$.subscribe({ complete: () => (completed = true) });
+
     component.ngOnDestroy();
+
+    expect(completed).toBeTrue();
   });
 });

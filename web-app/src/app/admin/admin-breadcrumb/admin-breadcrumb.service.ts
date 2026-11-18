@@ -1,20 +1,19 @@
-import { Injectable, TemplateRef } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { AdminBreadcrumb } from './admin-breadcrumb.model';
+import { Injectable, TemplateRef, signal } from '@angular/core'
+import { AdminBreadcrumb } from './admin-breadcrumb.model'
 
 @Injectable({ providedIn: 'root' })
 export class AdminBreadcrumbService {
-  private breadcrumbsSubject = new BehaviorSubject<AdminBreadcrumb[]>([]);
-  private actionsSubject = new BehaviorSubject<TemplateRef<unknown> | null>(null);
+  private readonly breadcrumbsSignal = signal<AdminBreadcrumb[]>([])
+  private readonly actionsSignal = signal<TemplateRef<unknown> | null>(null)
 
-  breadcrumbs$ = this.breadcrumbsSubject.asObservable();
-  actions$ = this.actionsSubject.asObservable();
+  readonly breadcrumbs = this.breadcrumbsSignal.asReadonly()
+  readonly actions = this.actionsSignal.asReadonly()
 
   setBreadcrumbs(breadcrumbs: AdminBreadcrumb[]): void {
-    this.breadcrumbsSubject.next(breadcrumbs);
+    this.breadcrumbsSignal.set(breadcrumbs)
   }
 
   setActions(template: TemplateRef<unknown> | null): void {
-    this.actionsSubject.next(template);
+    this.actionsSignal.set(template)
   }
 }

@@ -1,41 +1,35 @@
 import { AddFeedToEvent, AddFeedToEventRequest, ListEventFeeds, ListEventFeedsRequest, UserFeed, RemoveFeedFromEvent, RemoveFeedFromEventRequest } from '../../app.api/events/app.api.events'
-import { MageEventRepository, MageEventAttrs } from '../../entities/events/entities.events'
+import { EventAccessType, MageEventRepository, MageEventAttrs } from '../../entities/events/entities.events'
+import { MageEventPermission } from '../../entities/authorization/entities.permissions'
 import { entityNotFound } from '../../app.api/app.api.errors'
 import { AppResponse } from '../../app.api/app.api.global'
 import { FeedRepository, localizedFeed } from '../../entities/feeds/entities.feeds'
 import { EventPermissionServiceImpl } from '../../permissions/permissions.events'
+import { UserWithRole } from '../../permissions/permissions.role-based.base'
 import { ContentLanguageKey, LanguageTag } from '../../entities/entities.i18n'
-
-/*
-TODO:
-create an event request context to avoid redundant fetching of events
-between permission checks and proceeding application logic
-*/
 
 export function AddFeedToEvent(permissionService: EventPermissionServiceImpl, eventRepo: MageEventRepository): AddFeedToEvent {
   return async function(req: AddFeedToEventRequest): ReturnType<AddFeedToEvent> {
-    let event: MageEventAttrs | null = await eventRepo.findById(req.event)
-    if (!event) {
-      return AppResponse.error(entityNotFound(req.event, 'MageEvent'))
-    }
+    const event = req.context.mageEvent
     // TODO: also check for permission to read the feed?
-    const denied = await permissionService.ensureEventUpdatePermission(req.context)
+    const principal = req.context.requestingPrincipal() as UserWithRole
+    const denied = await permissionService.authorizeEventAccess(event, principal, MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     if (denied) {
       return AppResponse.error(denied)
     }
-    // TODO: maybe should check event is not null ¯\_(ツ)_/¯
-    event = await eventRepo.addFeedsToEvent(req.event, req.feed)
-    return AppResponse.success<MageEventAttrs, unknown>(event!)
+    const updated = await eventRepo.addFeedsToEvent(event.id, req.feed)
+    if (updated) {
+      return AppResponse.success<MageEventAttrs, unknown>(updated)
+    }
+    return AppResponse.error(entityNotFound(event.id, 'MageEvent', 'event removed before update'))
   }
 }
 
-export function ListEventFeeds(permissionService: EventPermissionServiceImpl, eventRepo: MageEventRepository, feedRepo: FeedRepository): ListEventFeeds {
+export function ListEventFeeds(permissionService: EventPermissionServiceImpl, feedRepo: FeedRepository): ListEventFeeds {
   return async function(req: ListEventFeedsRequest): ReturnType<ListEventFeeds> {
-    const event = await eventRepo.findById(req.event)
-    if (!event) {
-      return AppResponse.error(entityNotFound(req.event, 'MageEvent'))
-    }
-    const denied = await permissionService.ensureEventReadPermission(req.context)
+    const event = req.context.mageEvent
+    const principal = req.context.requestingPrincipal() as UserWithRole
+    const denied = await permissionService.authorizeEventAccess(event, principal, MageEventPermission.READ_EVENT_USER, EventAccessType.Read)
     if (denied) {
       return AppResponse.error(denied)
     }
@@ -60,11 +54,9 @@ export function ListEventFeeds(permissionService: EventPermissionServiceImpl, ev
 
 export function RemoveFeedFromEvent(permissionService: EventPermissionServiceImpl, eventRepo: MageEventRepository):  RemoveFeedFromEvent {
   return async function(req: RemoveFeedFromEventRequest): ReturnType<RemoveFeedFromEvent> {
-    const event = await eventRepo.findById(req.event)
-    if (!event) {
-      return AppResponse.error(entityNotFound(req.event, 'MageEvent'))
-    }
-    const denied = await permissionService.ensureEventUpdatePermission(req.context)
+    const event = req.context.mageEvent
+    const principal = req.context.requestingPrincipal() as UserWithRole
+    const denied = await permissionService.authorizeEventAccess(event, principal, MageEventPermission.UPDATE_EVENT, EventAccessType.Update)
     if (denied) {
       return AppResponse.error(denied)
     }

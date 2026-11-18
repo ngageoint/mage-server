@@ -73,6 +73,12 @@ module.exports = function(app, security) {
       Team.createTeam(req.teamParam, req.user, function(err, team) {
         if (err) return next(err);
 
+        log.info('team created', {
+          team: team.name,
+          createdBy: req.user.username,
+          createdTime: new Date().toISOString()
+        });
+
         res.json(team);
       });
     }
@@ -173,6 +179,12 @@ module.exports = function(app, security) {
     function(req, res, next) {
       Team.deleteTeam(req.team, function(err, team) {
         if (err) return next(err);
+
+        log.info('team deleted', {
+          team: team.name,
+          deletedBy: req.user.username,
+          deletedTime: new Date().toISOString()
+        });
 
         res.json(team);
       });

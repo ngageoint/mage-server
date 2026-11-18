@@ -340,6 +340,13 @@ DeviceResource.prototype.deleteDevice = function(req, res, next) {
     .then(device => {
       if (!device) return res.sendStatus(404);
 
+      log.info('device deleted', {
+        device: device.uid,
+        name: device.name,
+        deletedBy: req.user.username,
+        deletedTime: new Date().toISOString()
+      });
+
       res.json(device);
     })
     .catch(err => next(err));

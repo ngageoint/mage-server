@@ -45,9 +45,10 @@ describe('ChooseServiceTopicComponent', () => {
         NoopAnimationsModule,
         MatExpansionModule,
         MatSelectModule,
-        NgxMatSelectSearchModule
+        NgxMatSelectSearchModule,
+        AdminFeedEditTopicComponent
       ],
-      declarations: [AdminFeedEditTopicComponent, TestHostComponent]
+      declarations: [TestHostComponent]
     }).compileComponents();
   }));
 

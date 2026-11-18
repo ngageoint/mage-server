@@ -5,6 +5,7 @@ const IconModel = require('../models/icon')
   , fs = require('fs-extra')
   , os = require('os')
   , archiver = require('archiver')
+  , { pipeline } = require('node:stream')
   , environment = require('../environment/env');
 
 const appRoot = path.resolve(__dirname, '..');
@@ -50,12 +51,9 @@ Icon.prototype.getBasePath = function () {
 Icon.prototype.writeZip = function (zipPath, callback) {
   var output = fs.createWriteStream(zipPath);
   var archive = archiver('zip');
-  output.on('close', callback);
-  archive.on('warning', callback);
-  archive.on('error', callback);
-  archive.pipe(output);
+  pipeline(archive, output, callback);
   archive.directory(path.join(this.getBasePath()), 'icons');
-  archive.finalize();
+  archive.finalize().catch(function () {});
 };
 
 Icon.prototype.getZipPath = function (callback) {

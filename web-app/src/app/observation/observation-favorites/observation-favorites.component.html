@@ -1,15 +1,19 @@
-<div mat-dialog-title>Favorited {{users?.length}} {{users?.length > 1 ? 'times' : 'time'}}</div>
+<div mat-dialog-title>Favorited {{users().length}} {{users().length > 1 ? 'times' : 'time'}}</div>
 
 <div mat-dialog-content>
   <mat-list>
-    <mat-list-item *ngFor="let user of users">
-      <div matListItemAvatar>
-        <user-avatar [user]="user"></user-avatar>
-      </div>
-      <span matListItemTitle>{{user.displayName}}</span>
-      <span matListItemLine>{{user.email}}</span>
-      <span matListItemLine *ngIf="user.phones?.length">{{user.phones[0].number}}</span>
-    </mat-list-item>
+    @for (user of users(); track user.id) {
+      <mat-list-item>
+        <div matListItemAvatar>
+          <user-avatar [user]="user"></user-avatar>
+        </div>
+        <span matListItemTitle>{{user.displayName}}</span>
+        <span matListItemLine>{{user.email}}</span>
+        @if (user.phones?.length) {
+          <span matListItemLine>{{user.phones[0].number}}</span>
+        }
+      </mat-list-item>
+    }
   </mat-list>
 </div>
 

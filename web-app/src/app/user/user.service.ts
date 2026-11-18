@@ -1,9 +1,10 @@
 import { HttpClient, HttpContext, HttpEvent, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, tap } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 import { BYPASS_TOKEN, SUPPRESS_AUTH_DIALOG } from '../http/token.interceptor';
 import { EventPreference, User } from 'core-lib-src/user';
 import { SessionService } from 'mage-web-app/http/session.service';
+import { IdpSigninResult } from '../entities/authentication/authentication';
 
 @Injectable({
   providedIn: 'root'
@@ -47,26 +48,40 @@ export class UserService {
     });
   }
 
-  idpSignin(strategy: string): Observable<any> {
-    const subject = new Subject<any>();
+  idpSignin(strategy: string): Observable<IdpSigninResult> {
+    return new Observable<IdpSigninResult>(subscriber => {
+      const url = '/auth/' + strategy + '/signin';
+      const width = 480;
+      const height = 680;
+      const left = Math.round(window.screenX + (window.outerWidth - width) / 2);
+      const top = Math.round(window.screenY + (window.outerHeight - height) / 2);
+      const popup = window.open(url, 'mage-idp-signin', `popup,width=${width},height=${height},left=${left},top=${top}`);
 
-    const url = '/auth/' + strategy + '/signin';
-    window.open(url, '_blank');
-
-    function onMessage(event: any) {
-      window.removeEventListener('message', onMessage, false);
-
-      if (event.origin !== window.location.origin) {
+      if (!popup) {
+        subscriber.next({ status: 'popupBlocked' });
+        subscriber.complete();
         return;
       }
 
-      subject.next(event.data);
-      subject.complete();
-    }
+      const onMessage = (event: MessageEvent<{ user?: User; token?: string }>) => {
+        if (event.origin !== window.location.origin) {
+          return;
+        }
 
-    window.addEventListener('message', onMessage, false);
+        const { user, token } = event.data ?? {};
+        if (user && token) {
+          subscriber.next({ status: 'authenticated', user, token });
+        } else if (user) {
+          subscriber.next({ status: 'unauthorized', user });
+        } else {
+          subscriber.next({ status: 'failed' });
+        }
+        subscriber.complete();
+      };
 
-    return subject.asObservable();
+      window.addEventListener('message', onMessage);
+      return () => window.removeEventListener('message', onMessage);
+    });
   }
 
   ldapSignin(username: string, password: string): Observable<any> {

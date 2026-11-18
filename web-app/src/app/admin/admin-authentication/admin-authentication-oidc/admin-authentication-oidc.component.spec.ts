@@ -9,8 +9,7 @@ describe('AdminAuthenticationOidcComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ AdminAuthenticationOidcComponent ],
-      imports: [],
+      imports: [ AdminAuthenticationOidcComponent ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
     })
     .compileComponents();
@@ -19,7 +18,7 @@ describe('AdminAuthenticationOidcComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(AdminAuthenticationOidcComponent);
     component = fixture.componentInstance;
-    component.strategy = {
+    fixture.componentRef.setInput('strategy', {
       enabled: true,
       name: '',
       type: '',
@@ -37,7 +36,7 @@ describe('AdminAuthenticationOidcComponent', () => {
         headers: {},
         profile: {}
       }
-    }
+    });
     fixture.detectChanges();
   });
 

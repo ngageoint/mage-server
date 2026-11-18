@@ -12,7 +12,7 @@ import { AnyPermission, MageEventPermission } from '../entities/authorization/en
 import { JsonObject } from '../entities/entities.json_types'
 import authentication from '../authentication'
 import fs from 'fs-extra'
-import { EventAccessType, MageEvent } from '../entities/events/entities.events'
+import { EventAccessType } from '../entities/events/entities.events'
 import { userRoleHasPermission } from '../permissions/permissions.role-based.base'
 import { defaultHandler as upload } from '../upload'
 import { defaultEventPermissionsService } from '../permissions/permissions.events'
@@ -24,7 +24,6 @@ const log = logger.child({ component: 'events' })
 declare module 'express-serve-static-core' {
   export interface Request {
     event?: EventModel.MageEventModelInstance
-    eventEntity?: MageEvent
     access?: { user: express.Request['user'], permission: EventAccessType }
     parameters?: EventQueryParams
     form?: FormJson
@@ -435,9 +434,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/form/icons.zip',
     security.authentication.bearerAuthentication,
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function (req, res) {
+    function (req, res, next) {
       new api.Icon(req.event!._id).getZipPath(function (err: any, zipPath: string) {
-        res.on('finish', function () {
+        if (err) {
+          fs.remove(zipPath, function () {});
+          return next(err);
+        }
+        res.on('close', function () {
           fs.remove(zipPath, function () {
             console.log('Deleted the temp icon zip %s', zipPath);
           });
@@ -575,6 +578,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer added to event', {
+          event: req.event!.name,
+          layerId: req.body.id,
+          addedBy: req.user!.username,
+          addedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }
@@ -589,6 +600,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer removed from event', {
+          event: req.event!.name,
+          layerId: req.params.id,
+          removedBy: req.user!.username,
+          removedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }
@@ -647,34 +666,6 @@ function EventRoutes(app: express.Application, security: { authentication: authe
           removedBy: requester.username,
           removedTime: new Date().toISOString()
         });
-        res.json(event);
-      });
-    }
-  );
-
-  app.put(
-    '/api/events/:eventId/acl/:targetUserId',
-    security.authentication.bearerAuthentication,
-    middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function (req, res, next) {
-      EventModel.updateUserInAcl(req.event!._id, req.params.targetUserId, req.body.role, function (err, event) {
-        if (err) {
-          return next(err);
-        }
-        res.json(event);
-      });
-    }
-  );
-
-  app.delete(
-    '/api/events/:eventId/acl/:targetUserId',
-    security.authentication.bearerAuthentication,
-    middlewareAuthorizeAccess(MageEventPermission.UPDATE_EVENT, EventAccessType.Update),
-    function (req, res, next) {
-      EventModel.removeUserFromAcl(req.event!._id, req.params.targetUserId, function (err, event) {
-        if (err) {
-          return next(err);
-        }
         res.json(event);
       });
     }

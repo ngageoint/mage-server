@@ -2,15 +2,19 @@
   <h2 mat-dialog-title>{{ isEditMode ? 'Edit Team' : 'Create New Team' }}</h2>
 
   <mat-dialog-content>
-    <div *ngIf="serverError()" class="server-error">
-      <mat-icon>error_outline</mat-icon>
-      {{ serverError() }}
-    </div>
+    @if (serverError()) {
+      <div class="server-error">
+        <mat-icon>error_outline</mat-icon>
+        {{ serverError() }}
+      </div>
+    }
 
     <mat-form-field appearance="fill">
       <mat-label>Team Name</mat-label>
       <input matInput formControlName="name" />
-      <mat-error *ngIf="form.controls.name.hasError('required')">Team name is required</mat-error>
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Team name is required</mat-error>
+      }
     </mat-form-field>
 
     <mat-form-field appearance="fill">

@@ -39,18 +39,66 @@ mat-toolbar {
   padding-bottom: 54px;
 }
 
-.edit-content--scroll-lock {
-  overflow-y: hidden;
-}
-
 .edit-banner {
   background: var(--mat-sys-surface-container-low);
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+
+.edit-banner__body {
+  display: flex;
+  flex-direction: column;
   max-height: 240px;
+  min-height: 0;
+}
+
+.edit-banner--enter {
+  animation: edit-banner-expand 250ms ease-out;
+}
+
+.edit-banner--leave {
+  animation: edit-banner-expand 250ms ease-in reverse;
+}
+
+.edit-banner--enter .edit-banner__body,
+.edit-banner--leave .edit-banner__body {
+  overflow: hidden;
+}
+
+@keyframes edit-banner-expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
+}
+
+.edit-banner__inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.edit-banner--enter .edit-banner__inner,
+.edit-banner--leave .edit-banner__inner {
+  overflow: hidden;
+}
+
+.edit-banner--enter {
+  animation: edit-banner-expand 250ms ease-out;
+}
+
+.edit-banner--leave {
+  animation: edit-banner-expand 250ms ease-in reverse;
+}
+
+@keyframes edit-banner-expand {
+  from {
+    grid-template-rows: 0fr;
+    opacity: 0;
+  }
 }
 
 .edit-banner-container {
@@ -98,14 +146,27 @@ mat-toolbar {
   margin-bottom: 16px;
 }
 
-.form-mask {
-  background: black;
+.geometry-editor-overlay {
   position: absolute;
   top: 0;
   bottom: 0;
-  right: 0;
   left: 0;
-  opacity: .2;
+  right: 0;
+  z-index: 2;
+}
+
+.geometry-editor-overlay--enter {
+  animation: geometry-editor-slide 250ms ease-out;
+}
+
+.geometry-editor-overlay--leave {
+  animation: geometry-editor-slide 250ms ease-in reverse;
+}
+
+@keyframes geometry-editor-slide {
+  from {
+    transform: translateX(100%);
+  }
 }
 
 .add-form {

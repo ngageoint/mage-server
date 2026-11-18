@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>User Location Filter</h2>
+
+<div mat-dialog-content>
+  <div class="dialog-content">
+    <div>
+      <div class="mat-body-2">Time Range</div>
+      <mat-form-field class="time-field" appearance="fill">
+        <mat-select [(value)]="intervalChoice" [compareWith]="compareIntervalChoices">
+          @for (choice of intervalChoices; track choice.filter) {
+            <mat-option [value]="choice">{{choice.label}}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (intervalChoice().filter === 'custom') {
+      <div class="datetime">
+        <div class="datetime__pickers">
+          <datetime-picker title="Start" [datetime]="defaultStartDate" [timezone]="timeZone()" (dateTimeChange)="onStartDate($event)"></datetime-picker>
+          <datetime-picker title="End" [datetime]="defaultEndDate" [timezone]="timeZone()" (dateTimeChange)="onEndDate($event)"></datetime-picker>
+        </div>
+        <button matButton="outlined" class="timezone__button" (click)="onTimezone()">
+          @if (timeZone() === 'local') {
+            <span>Local ({{localOffset}})</span>
+          } @else {
+            <span>GMT (+00:00)</span>
+          }
+        </button>
+      </div>
+    }
+
+    <event-member-filter [eventId]="mageEvent?.id" [teams]="teams" [initialFilter]="initialMemberFilter" (memberFilterChanged)="onMemberFilterChanged($event)"></event-member-filter>
+  </div>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button matButton (click)="onCancel()">Cancel</button>
+  <button matButton="filled" cdkFocusInitial (click)="onFilter()">Filter</button>
+</div>

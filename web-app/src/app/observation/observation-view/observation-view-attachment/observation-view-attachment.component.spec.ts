@@ -20,7 +20,8 @@ describe('ObservationViewAttachmentComponent', () => {
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      declarations: [ObservationViewAttachmentComponent, TestHostComponent]
+      declarations: [TestHostComponent],
+      imports: [ObservationViewAttachmentComponent]
     })
       .compileComponents()
   }))

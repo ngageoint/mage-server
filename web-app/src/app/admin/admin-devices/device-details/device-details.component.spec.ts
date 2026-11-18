@@ -63,7 +63,7 @@ describe('DeviceDetailsComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      declarations: [DeviceDetailsComponent],
+      imports: [DeviceDetailsComponent],
       providers: [
         { provide: ActivatedRoute, useValue: route },
         { provide: Router, useValue: router },
@@ -83,16 +83,6 @@ describe('DeviceDetailsComponent', () => {
   });
 
   describe('ngOnInit', () => {
-    it('sets error and returns if deviceId is missing', () => {
-      route.snapshot.paramMap.get.and.returnValue(null);
-
-      component.ngOnInit();
-
-      expect(component.error).toBe('Missing deviceId route param');
-      expect(deviceService.getDeviceById).not.toHaveBeenCalled();
-      expect(component.device).toBeNull();
-    });
-
     it('sets permissions from adminUserService', fakeAsync(() => {
       sessionService.hasPermission.and.callFake((perm: string) => perm === 'UPDATE_DEVICE');
 
@@ -119,8 +109,8 @@ describe('DeviceDetailsComponent', () => {
       component.ngOnInit();
       tick();
 
-      expect(component.device).toEqual(d);
-      expect(component.currentUserDisplayName).toBe('Kikunojo');
+      expect(component.device()).toEqual(d);
+      expect(component.currentUserDisplayName()).toBe('Kikunojo');
 
       expect(component.breadcrumbs.length).toBe(2);
       expect(component.breadcrumbs[0].title).toBe('Devices');
@@ -133,21 +123,21 @@ describe('DeviceDetailsComponent', () => {
       component.ngOnInit();
       tick();
 
-      expect(component.error).toBe('Failed to load device');
-      expect(component.device).toBeNull();
+      expect(component.error()).toBe('Failed to load device');
+      expect(component.device()).toBeNull();
     }));
   });
 
   describe('editDeviceDetails', () => {
     it('does nothing without device', () => {
-      component.device = null;
+      component.device.set(null);
       component.editDeviceDetails();
       expect(dialog.open).not.toHaveBeenCalled();
     });
 
     it('opens the create/edit device dialog with the current device', () => {
       const d = makeDevice({ id: 'dev-1' });
-      component.device = d;
+      component.device.set(d);
 
       dialog.open.and.returnValue({
         afterClosed: () => of(undefined)
@@ -169,7 +159,7 @@ describe('DeviceDetailsComponent', () => {
         user: { id: 'u2', displayName: 'Kikunojo' } as any
       });
 
-      component.device = d;
+      component.device.set(d);
 
       dialog.open.and.returnValue({
         afterClosed: () => of(updated)
@@ -177,13 +167,13 @@ describe('DeviceDetailsComponent', () => {
 
       component.editDeviceDetails();
 
-      expect(component.device).toEqual(updated);
-      expect(component.currentUserDisplayName).toBe('Kikunojo');
+      expect(component.device()).toEqual(updated);
+      expect(component.currentUserDisplayName()).toBe('Kikunojo');
     });
 
     it('leaves the device unchanged when the dialog closes without a result', () => {
       const d = makeDevice({ id: 'dev-1' });
-      component.device = d;
+      component.device.set(d);
 
       dialog.open.and.returnValue({
         afterClosed: () => of(undefined)
@@ -191,7 +181,7 @@ describe('DeviceDetailsComponent', () => {
 
       component.editDeviceDetails();
 
-      expect(component.device).toBe(d);
+      expect(component.device()).toBe(d);
     });
   });
 
@@ -229,14 +219,14 @@ describe('DeviceDetailsComponent', () => {
 
   describe('delete flow', () => {
     it('does nothing without device', () => {
-      component.device = null;
+      component.device.set(null);
       component.confirmDeleteDevice();
       expect(dialog.open).not.toHaveBeenCalled();
     });
 
     it('deletes on confirm', fakeAsync(() => {
       const d = makeDevice({ id: 'dev-1' });
-      component.device = d;
+      component.device.set(d);
 
       dialog.open.and.returnValue({
         afterClosed: () => of({ confirmed: true })
@@ -252,7 +242,7 @@ describe('DeviceDetailsComponent', () => {
     }));
 
     it('does not delete when not confirmed', fakeAsync(() => {
-      component.device = makeDevice({ id: 'dev-1' });
+      component.device.set(makeDevice({ id: 'dev-1' }));
 
       dialog.open.and.returnValue({
         afterClosed: () => of({ confirmed: false })
@@ -266,7 +256,7 @@ describe('DeviceDetailsComponent', () => {
     }));
 
     it('sets error when delete fails', fakeAsync(() => {
-      component.device = makeDevice({ id: 'dev-1' });
+      component.device.set(makeDevice({ id: 'dev-1' }));
 
       dialog.open.and.returnValue({
         afterClosed: () => of({ confirmed: true })
@@ -277,7 +267,7 @@ describe('DeviceDetailsComponent', () => {
       component.confirmDeleteDevice();
       tick();
 
-      expect(component.error).toBe('Failed to delete device');
+      expect(component.error()).toBe('Failed to delete device');
       expect(router.navigate).not.toHaveBeenCalled();
     }));
   });

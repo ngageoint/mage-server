@@ -1,7 +1,7 @@
 import { Feature, Point } from 'geojson'
 import { MageEventId } from '../events/entities.events'
 import { PageOf, PagingParameters } from '../entities.global'
-import { UserIcon, UserId } from '../users/entities.users'
+import { Avatar, Phone, UserIcon, UserId } from '../users/entities.users'
 
 export type UserLocationId = string
 
@@ -61,7 +61,10 @@ export interface UserLocationRepository {
 export type LocationUserExpanded = {
   id: UserId
   displayName: string
+  email?: string
+  phones: Phone[]
   icon?: UserIcon
+  avatar?: Avatar
 }
 
 export interface RecentUserLocations {

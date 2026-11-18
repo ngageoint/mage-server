@@ -28,11 +28,17 @@ import * as feedsApi from './app.api/feeds/app.api.feeds';
 import * as feedsImpl from './app.impl/feeds/app.impl.feeds';
 import * as eventsApi from './app.api/events/app.api.events';
 import * as eventsImpl from './app.impl/events/app.impl.events';
+import * as eventAclApi from './app.api/events/app.api.events.acl';
+import * as eventAclImpl from './app.impl/events/app.impl.events.acl';
 import * as observationsApi from './app.api/observations/app.api.observations';
 import * as observationsImpl from './app.impl/observations/app.impl.observations';
+import * as observationsSearchImpl from './app.impl/observations/app.impl.observations.search';
+import { SearchIndexAppLayer, SearchIndexRoutes } from './adapters/observations/adapters.observations.search.controllers.web';
+import { SearchIndexPermissionsServiceImpl } from './permissions/permissions.observations.search';
+import { MongooseObservationSearchRepository, ObservationSearchModel } from './adapters/observations/adapters.observations.search.db.mongoose';
 import { PreFetchedUserRoleFeedsPermissionService } from './permissions/permissions.feeds';
 import { FeedsRoutes } from './adapters/feeds/adapters.feeds.controllers.web';
-import { WebAppRequestFactory } from './adapters/adapters.controllers.web';
+import { ensureEventScope, eventScopeKey, WebAppRequestFactory } from './adapters/adapters.controllers.web';
 import { AppRequest, AppRequestContext, logPermissionDenials } from './app.api/app.api.global';
 import SimpleIdFactory from './adapters/adapters.simple_id_factory';
 import {
@@ -44,12 +50,11 @@ import {
   MageEventModel,
   MongooseMageEventRepository
 } from './adapters/events/adapters.events.db.mongoose';
-import {
-  MageEvent,
-  MageEventId,
-  MageEventRepository
-} from './entities/events/entities.events';
+import { MageEventRepository } from './entities/events/entities.events';
 import { EventFeedsRoutes } from './adapters/events/adapters.events.controllers.web';
+import { EventAclRoutes } from './adapters/events/adapters.events.acl.controllers.web';
+import { MongooseEventAclRepository } from './adapters/events/adapters.events.acl.db.mongoose';
+import { EventAclRepository } from './entities/events/entities.events.acl';
 import {
   MongooseStaticIconRepository,
   StaticIconModel
@@ -105,22 +110,18 @@ import { UserPreferenceRepository } from './entities/users/entities.users';
 import { MongoosePreferenceRepository, UserPreferenceModel } from './adapters/preferences/adapters.preferences.db.mongoose';
 import { MongoosePluginStateRepository } from './adapters/plugins/adapters.plugins.db.mongoose';
 import path from 'path';
-import { MageEventDocument } from './models/event';
-import { parseAcceptLanguageHeader } from './entities/entities.i18n';
-import {
-  ObservationRoutes,
-  ObservationWebAppRequestFactory
-} from './adapters/observations/adapters.observations.controllers.web';
+import { Locale, parseAcceptLanguageHeader } from './entities/entities.i18n'
+import { ObservationRoutes } from './adapters/observations/adapters.observations.controllers.web';
 import { AnonymousUser, UserWithRole } from './permissions/permissions.role-based.base';
 import {
   AttachmentStore,
-  EventScopedObservationRepository,
-  ObservationRepositoryForEvent
+  ObservationRepositoryForEvent,
+  ObservationSearchRepository
 } from './entities/observations/entities.observations';
 import { createObservationRepositoryFactory } from './adapters/observations/adapters.observations.db.mongoose';
 import {
   FileSystemAttachmentStoreInitError,
-  intializeAttachmentStore
+  initializeAttachmentStore
 } from './adapters/observations/adapters.observations.attachment_store.file_system';
 import {
   AttachmentStoreToken,
@@ -158,19 +159,24 @@ import { TeamsAppLayer, TeamsRoutes } from './adapters/teams/adapters.teams.cont
 import { TeamRepository } from './entities/teams/entities.teams'
 import { RoleBasedTeamsPermissionService } from './permissions/permissions.teams'
 import { SearchTeams } from './app.impl/teams/app.impl.teams'
-import * as exportsApi from './app.api/exports/app.api.exports';
 import * as exportsImpl from './app.impl/exports/app.impl.exports';
 import { ExportModel, MongooseExportsRepository } from './adapters/exports/adapters.exports.db.mongoose';
 import { ExportFormat, ExportsRepository, ExportStore } from './entities/exports/entities.exports';
 import { RoleBasedExportsPermissionService } from './permissions/permissions.exports';
-import { ExportAppLayer, ExportRoutes, ExportWebAppRequestFactory, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
+import { ExportAppLayer, ExportRoutes, MyExportRoutes } from './adapters/exports/adapters.exports.controllers.web';
 import { MongooseUserLocationRepository, UserLocationModel } from './adapters/locations/adapters.locations.db.mongoose';
 import { MongooseRecentUserLocationsRepository, RecentUserLocationModel, RecentUserLocationsModel } from './adapters/locations/adapters.locations.recent.db.mongoose';
 import { RecentUserLocationsRepository, UserLocationRepository } from './entities/locations/entities.locations';
 import * as locationsApi from './app.api/locations/app.api.locations';
 import * as locationsImpl from './app.impl/locations/app.impl.locations';
 import { UserLocationPermissionServiceImpl } from './permissions/permissions.locations';
-import { UserLocationRoutes, UserLocationWebAppRequestFactory } from './adapters/locations/adapters.locations.controllers.web';
+import { UserLocationRoutes } from './adapters/locations/adapters.locations.controllers.web';
+import { MongooseRoleRepository, RoleModel } from './adapters/roles/adapters.roles.db.mongoose';
+import { RoleRepository } from './entities/authorization/entities.authorization';
+import * as rolesApi from './app.api/roles/app.api.roles';
+import * as rolesImpl from './app.impl/roles/app.impl.roles';
+import { RolePermissionServiceImpl } from './permissions/permissions.roles';
+import { RoleRoutes } from './adapters/roles/adapters.roles.controllers.web';
 import { FileSystemExportContentStore } from './adapters/exports/adapters.export_store.file_system';
 import { ExportArchiveTask } from './adapters/exports/adapters.export_archive.task';
 import { CsvExportTransform } from './app.impl/exports/app.impl.exports.csv';
@@ -186,7 +192,7 @@ import { GeoJsonExportTransform } from './app.impl/exports/app.impl.exports.geoj
 import { GeoPackageExportTransform } from './app.impl/exports/app.impl.exports.geopackage';
 
 // Attachment imports
-import { AttachmentHook } from './plugins.api/plugins.api.attachments';
+import { AttachmentHook, setAttachmentHooks } from './plugins.api/plugins.api.attachments';
 import { startAttachmentProcessing } from './main.impl/main.impl.attachment_processing';
 
 export interface MageService {
@@ -197,30 +203,37 @@ export interface MageService {
 
 export interface Task {
   run(): Promise<void>;
+  /**
+   * If true, the task runs without the boot sequence waiting for it to
+   * complete.  Use this for tasks that could take a long time, such as a
+   * catch-up job over all existing data, so server startup is not blocked.
+   */
+  background?: boolean;
 }
 
 /**
- * The Express Application will emit this event when
+ * The Express Application will emit this event when the app is ready
+ * to receive requests.
  */
-export const MageReadyEvent = 'comingOfMage';
+export const MageReadyEvent = 'comingOfMage'
 export type BootConfig = {
   plugins: {
     /**
      * An array of service plugin package names
      */
-    servicePlugins?: string[];
+    servicePlugins?: string[]
     /**
      * An array of web app plugin package names
      */
-    webUIPlugins?: string[];
-  };
-};
+    webUIPlugins?: string[]
+  }
+}
 
-let service: MageService | null = null;
+let service: MageService | null = null
 
 export const boot = async function(config: BootConfig): Promise<MageService> {
   if (service) {
-    return service as MageService;
+    return service as MageService
   }
 
   const mongooseLogger = log.mongooseLogger;
@@ -355,6 +368,7 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   // reassignment) so the reference already passed into storeAttachmentContent
   // reflects these contents once real requests start coming in.
   attachmentHooks.push(...Object.values(attachmentHooksByPluginId).flat())
+  setAttachmentHooks(attachmentHooks)
 
   // Start the background job that finds attachments staged by
   // storeAttachmentContent and runs them through the now-final attachmentHooks
@@ -371,7 +385,11 @@ export const boot = async function(config: BootConfig): Promise<MageService> {
   }
 
   for (const task of tasks) {
-    await task.run();
+    if (task.background) {
+      task.run();
+    } else {
+      await task.run();
+    }
   }
 
   const server = httpLib.createServer(webController);
@@ -421,10 +439,14 @@ type DatabaseLayer = {
   }
   observations: {
     icons: ObservationIconModel
+    search: ObservationSearchModel
   }
   locations: {
     location: UserLocationModel
     recentLocation: RecentUserLocationsModel
+  }
+  roles: {
+    role: RoleModel
   }
   settings: {
     setting: SettingsModel
@@ -438,8 +460,13 @@ type AppLayer = {
     listEventFeeds: eventsApi.ListEventFeeds
     removeFeedFromEvent: eventsApi.RemoveFeedFromEvent
     fetchFeedContent: feedsApi.FetchFeedContent
+    listEventAcl: eventAclApi.ListEventAcl
+    setEventAclRole: eventAclApi.SetEventAclRole
+    removeEventAclUser: eventAclApi.RemoveEventAclUser
   }
   observations: {
+    readObservation: observationsApi.ReadObservation
+    readObservations: observationsApi.ReadObservations
     allocateObservationId: observationsApi.AllocateObservationId
     saveObservation: observationsApi.SaveObservation
     storeAttachmentContent: observationsApi.StoreAttachmentContent
@@ -469,11 +496,19 @@ type AppLayer = {
     readLocationsGroupedByUser: locationsApi.ReadLocationsGroupedByUser
     saveUserLocations: locationsApi.SaveUserLocations
   }
+  roles: {
+    readRoles: rolesApi.ReadRoles
+    readRole: rolesApi.ReadRole
+    createRole: rolesApi.CreateRole
+    updateRole: rolesApi.UpdateRole
+    deleteRole: rolesApi.DeleteRole
+  }
   icons: StaticIconsAppLayer
   users: UsersAppLayer
   userPreferences: UserPreferencesAppLayer
   systemInfo: SystemInfoAppLayer
   settings: SettingsAppLayer
+  searchIndex: SearchIndexAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -520,17 +555,17 @@ async function initDatabase(): Promise<DatabaseLayer> {
   // TODO: explore performing migrations without mongoose models because current models may not be compatible with past migrations
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  require('./models').initializeModels();
+  require('./models').initializeModels()
 
-  const migrate = await import('./migrate');
-  await migrate.runDatabaseMigrations(uri, options);
+  const migrate = await import('./migrate.js')
+  await migrate.runDatabaseMigrations(uri, options)
 
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const eventModel = require('./models/event').Model;
+  const eventModel = require('./models/event').Model
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const userModel = require('./models/user').Model;
+  const userModel = require('./models/user').Model
   // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const settingModel = require('./models/setting').Model;
+  const settingModel = require('./models/setting').Model
   const TeamDBModule = await import('./models/team.js')
 
   return {
@@ -558,11 +593,15 @@ async function initDatabase(): Promise<DatabaseLayer> {
       preference: UserPreferenceModel(conn)
     },
     observations: {
-      icons: ObservationIconModel(conn)
+      icons: ObservationIconModel(conn),
+      search: ObservationSearchModel(conn)
     },
     locations: {
       location: UserLocationModel(conn),
       recentLocation: RecentUserLocationModel(conn)
+    },
+    roles: {
+      role: RoleModel(conn)
     },
     settings: {
       setting: settingModel
@@ -579,6 +618,7 @@ type Repositories = {
   }
   events: {
     eventRepo: MageEventRepository
+    eventAclRepo: EventAclRepository
   }
   exports: {
     exportRepo: ExportsRepository
@@ -589,6 +629,7 @@ type Repositories = {
     attachmentStore: AttachmentStore
     iconRepo: ObservationIconRepository
     iconStore: ObservationIconContentStore
+    searchRepo: ObservationSearchRepository
   };
   feeds: {
     serviceTypeRepo: FeedServiceTypeRepository
@@ -606,6 +647,9 @@ type Repositories = {
   locations: {
     locationRepo: UserLocationRepository
     recentLocationRepo: RecentUserLocationsRepository
+  };
+  roles: {
+    roleRepo: RoleRepository
   };
   enviromentInfo: EnvironmentService;
   settings: {
@@ -648,6 +692,7 @@ async function initRepositories(
     new SimpleIdFactory()
   );
   const eventRepo = new MongooseMageEventRepository(models.events.event);
+  const eventAclRepo = new MongooseEventAclRepository(models.events.event);
   const deviceRepo = new MongooseDeviceRepository(models.devices.device);
   const exportRepo = new MongooseExportsRepository(
     models.exports.export,
@@ -680,11 +725,14 @@ async function initRepositories(
     userLocationRepo: locationRepo,
     recentUserLocationRepo: recentLocationRepo
   });
+  const roleRepo = new MongooseRoleRepository(models.roles.role);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('./models/role').initialize({ roleRepo });
   const userPreferenceRepo = new MongoosePreferenceRepository(
     models.users.preference
   );
   const settingRepo = new MongooseSettingsRepository(models.settings.setting);
-  const attachmentStore = await intializeAttachmentStore(
+  const attachmentStore = await initializeAttachmentStore(
     environment.attachmentBaseDirectory
   );
   const systemInfoService = new EnvironmentServiceImpl(models.conn);
@@ -703,7 +751,8 @@ async function initRepositories(
       feedRepo
     },
     events: {
-      eventRepo
+      eventRepo,
+      eventAclRepo
     },
     exports: {
       exportRepo,
@@ -716,7 +765,8 @@ async function initRepositories(
       ),
       iconRepo: observationIconRepo,
       iconStore: observationIconStore,
-      attachmentStore
+      attachmentStore,
+      searchRepo: new MongooseObservationSearchRepository(models.observations.search)
     },
     icons: {
       staticIconRepo
@@ -729,6 +779,9 @@ async function initRepositories(
     locations: {
       locationRepo,
       recentLocationRepo
+    },
+    roles: {
+      roleRepo
     },
     teams: {
       teamRepo
@@ -744,6 +797,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const events = await initEventsAppLayer(repos)
   const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }))
   const locations = await initLocationsAppLayer(repos)
+  const roles = await initRolesAppLayer(repos)
   const observations = await initObservationsAppLayer(repos, attachmentHooks)
   const icons = await initIconsAppLayer(repos)
   const feeds = await initFeedsAppLayer(repos)
@@ -752,11 +806,13 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const teams = await initTeamsAppLayer(repos)
   const systemInfo = initSystemInfoAppLayer(repos)
   const settings = await initSettingsAppLayer(repos, log.child({ component: 'settings' }))
+  const searchIndex = await initSearchIndexAppLayer(repos)
 
   return {
     events,
     exports,
     locations,
+    roles,
     observations,
     feeds,
     icons,
@@ -765,11 +821,38 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
     systemInfo,
     settings,
     teams,
+    searchIndex,
+  }
+}
+
+async function initSearchIndexAppLayer(repos: Repositories): Promise<AppLayer['searchIndex']> {
+  const eventPermissions = await import('./permissions/permissions.events');
+  const permissionService = new SearchIndexPermissionsServiceImpl(
+    eventPermissions.defaultEventPermissionsService
+  );
+  const indexEvent = observationsSearchImpl.IndexEventObservations(
+    repos.events.eventRepo,
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo,
+    log.child({ component: 'search-index' })
+  );
+
+  return {
+    searchIndexAll: observationsSearchImpl.SearchIndexAllEvents(
+      permissionService,
+      repos.events.eventRepo,
+      indexEvent
+    ),
+    searchIndexEvent: observationsSearchImpl.SearchIndexEvent(
+      permissionService,
+      repos.events.eventRepo,
+      indexEvent
+    )
   }
 }
 
 async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['locations']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const locationPermissionsService = new UserLocationPermissionServiceImpl(
     eventPermissions.defaultEventPermissionsService
   );
@@ -794,21 +877,44 @@ async function initLocationsAppLayer(repos: Repositories): Promise<AppLayer['loc
   };
 }
 
+async function initRolesAppLayer(repos: Repositories): Promise<AppLayer['roles']> {
+  const rolePermissionService = new RolePermissionServiceImpl();
+  // TODO: replace with a UserRepository write method once User is migrated
+  // to this architecture. for now this delegates to the legacy models/user.js #removeRoleFromUsers.
+  const removeRoleFromUsers: rolesImpl.RemoveRoleFromUsers = (roleId) => new Promise((resolve, reject) => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    require('./models/user').removeRoleFromUsers({ id: roleId }, (err: any) => err ? reject(err) : resolve());
+  });
+
+  return {
+    readRoles: rolesImpl.ReadRoles(rolePermissionService, repos.roles.roleRepo),
+    readRole: rolesImpl.ReadRole(rolePermissionService, repos.roles.roleRepo),
+    createRole: rolesImpl.CreateRole(rolePermissionService, repos.roles.roleRepo),
+    updateRole: rolesImpl.UpdateRole(rolePermissionService, repos.roles.roleRepo),
+    deleteRole: rolesImpl.DeleteRole(rolePermissionService, repos.roles.roleRepo, removeRoleFromUsers)
+  };
+}
+
 async function initExportsAppLayer(
   repos: Repositories,
   logger: Logger
 ): Promise<AppLayer['exports']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const exportPermissions = new RoleBasedExportsPermissionService(
     eventPermissions.defaultEventPermissionsService
   );
 
-  const exportFactory = (format: ExportFormat): exportsApi.ExportTransform => {
+  const streamObservations = exportsImpl.IterateObservations(
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo
+  );
+
+  const exportFactory = (format: ExportFormat): exportsImpl.ExportTransform => {
     switch (format) {
       case 'csv': {
         return new CsvExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.attachmentStore,
           repos.devices.deviceRepo,
           repos.users.userRepo
@@ -817,7 +923,7 @@ async function initExportsAppLayer(
       case 'kml': {
         return new KmlExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.iconRepo,
           repos.observations.iconStore,
           repos.observations.attachmentStore,
@@ -828,7 +934,7 @@ async function initExportsAppLayer(
       case 'geojson': {
         return new GeoJsonExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.attachmentStore,
           repos.devices.deviceRepo,
           repos.users.userRepo
@@ -837,7 +943,7 @@ async function initExportsAppLayer(
       case 'geopackage': {
         return new GeoPackageExportTransform(
           repos.locations.locationRepo,
-          repos.observations.obsRepoFactory,
+          streamObservations,
           repos.observations.iconStore,
           repos.observations.attachmentStore,
           repos.observations.iconRepo,
@@ -855,6 +961,7 @@ async function initExportsAppLayer(
       repos.exports.exportRepo,
       repos.exports.exportStore,
       exportPermissions,
+      repos.teams.teamRepo,
       logger
     ),
     getExports: exportsImpl.FetchExports(
@@ -905,7 +1012,7 @@ async function initTeamsAppLayer(repos: Repositories): Promise<AppLayer['teams']
 async function initEventsAppLayer(
   repos: Repositories
 ): Promise<AppLayer['events']> {
-  const eventPermissions = await import('./permissions/permissions.events');
+  const eventPermissions = await import('./permissions/permissions.events.js')
   const eventFeedsPermissions = new eventPermissions.EventFeedsPermissionService(
     repos.events.eventRepo,
     eventPermissions.defaultEventPermissionsService
@@ -918,7 +1025,6 @@ async function initEventsAppLayer(
     ),
     listEventFeeds: eventsImpl.ListEventFeeds(
       eventPermissions.defaultEventPermissionsService,
-      repos.events.eventRepo,
       repos.feeds.feedRepo
     ),
     removeFeedFromEvent: eventsImpl.RemoveFeedFromEvent(
@@ -931,6 +1037,20 @@ async function initEventsAppLayer(
       repos.feeds.serviceRepo,
       repos.feeds.feedRepo,
       jsonSchemaService
+    ),
+    listEventAcl: eventAclImpl.ListEventAcl(
+      eventPermissions.defaultEventPermissionsService,
+      repos.users.userRepo
+    ),
+    setEventAclRole: eventAclImpl.SetEventAclRole(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventAclRepo,
+      repos.users.userRepo
+    ),
+    removeEventAclUser: eventAclImpl.RemoveEventAclUser(
+      eventPermissions.defaultEventPermissionsService,
+      repos.events.eventAclRepo,
+      repos.users.userRepo
     )
   };
 }
@@ -939,8 +1059,8 @@ async function initObservationsAppLayer(
   repos: Repositories,
   attachmentHooks: AttachmentHook[]
 ): Promise<AppLayer['observations']> {
-  const eventPermissions = await import('./permissions/permissions.events');
-  const obsPermissions = await import('./permissions/permissions.observations');
+  const eventPermissions = await import('./permissions/permissions.events')
+  const obsPermissions = await import('./permissions/permissions.observations')
   const obsPermissionsService =
     new obsPermissions.ObservationPermissionsServiceImpl(
       eventPermissions.defaultEventPermissionsService
@@ -958,22 +1078,42 @@ async function initObservationsAppLayer(
     log.child({ component: 'observations' })
   );
 
+  observationsSearchImpl.registerObservationSavedHandler(
+    DomainEvents,
+    repos.observations.searchRepo
+  );
+
   return {
+    readObservation: observationsImpl.ReadObservation(
+      obsPermissionsService,
+      repos.observations.obsRepoFactory,
+      repos.users.userRepo
+    ),
+    readObservations: observationsImpl.ReadObservations(
+      obsPermissionsService,
+      repos.observations.obsRepoFactory,
+      repos.teams.teamRepo,
+      repos.observations.searchRepo
+    ),
     allocateObservationId: observationsImpl.AllocateObservationId(
-      obsPermissionsService
+      obsPermissionsService,
+      repos.observations.obsRepoFactory
     ),
     saveObservation: observationsImpl.SaveObservation(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.users.userRepo,
       log.child({ component: 'observations' })
     ),
     storeAttachmentContent: observationsImpl.StoreAttachmentContent(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.observations.attachmentStore,
       attachmentHooks
     ),
     readAttachmentContent: observationsImpl.ReadAttachmentContent(
       obsPermissionsService,
+      repos.observations.obsRepoFactory,
       repos.observations.attachmentStore
     )
   };
@@ -984,7 +1124,7 @@ function initIconsAppLayer(repos: Repositories): StaticIconsAppLayer {
   return {
     getIcon: GetStaticIcon(permissions, repos.icons.staticIconRepo),
     getIconContent: GetStaticIconContent(permissions, repos.icons.staticIconRepo),
-    listIcons: ListStaticIcons(permissions),
+    listIcons: ListStaticIcons(permissions, repos.icons.staticIconRepo),
     createIcon: CreateStaticIcon(permissions, repos.icons.staticIconRepo)
   };
 }
@@ -1120,14 +1260,6 @@ async function initSettingsAppLayer(
   };
 }
 
-interface MageEventRequestContext extends AppRequestContext<UserWithRole> {
-  event: MageEventDocument | MageEvent | undefined;
-}
-
-const exportEventScopeKey = 'exportEventScope' as const;
-const observationEventScopeKey = 'observationEventScope' as const;
-const locationEventScopeKey = 'locationEventScope' as const;
-
 async function initWebLayer(
   repos: Repositories,
   app: AppLayer,
@@ -1137,19 +1269,29 @@ async function initWebLayer(
   addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks) => void;
 }> {
   // load routes the old way
-  const webLayer = await import('./express');
+  const webLayer = await import('./express.js')
   const webController = webLayer.app;
   const webAuth = webLayer.auth;
 
-  const appRequestFactory: WebAppRequestFactory = <Params>(
+  const appRequestFactory: WebAppRequestFactory<AppRequest<UserWithRole>> = <Params>(
     req: express.Request,
     params: Params
-  ): AppRequest<UserWithRole, MageEventRequestContext> & Params => {
+  ): AppRequest<UserWithRole> & Params => {
+    return {
+      ...params,
+      context: baseAppRequestContext(req)
+    };
+  };
+
+  const eventScopedRequestFactory: WebAppRequestFactory<eventsApi.EventRequest<UserWithRole>> = <Params>(
+    req: express.Request,
+    params: Params
+  ): eventsApi.EventRequest<UserWithRole> & Params => {
     return {
       ...params,
       context: {
         ...baseAppRequestContext(req),
-        event: (req as any).event || (req as any).eventEntity
+        mageEvent: req[eventScopeKey]!.mageEvent
       }
     };
   };
@@ -1202,20 +1344,22 @@ async function initWebLayer(
   const systemInfoRoutes = SystemInfoRoutes(app.systemInfo, appRequestFactory);
   webController.use('/api', [optionalBearerAuthentication, systemInfoRoutes]);
 
-  const observationRequestFactory: ObservationWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
+  const searchIndexRoutes = SearchIndexRoutes(app.searchIndex, appRequestFactory);
+  webController.use('/api/search-index', [bearerAuthentication, searchIndexRoutes]);
+
+  const observationRequestFactory: WebAppRequestFactory<observationsApi.ObservationRequest> = <Params extends object = {}>(
     req: express.Request,
-    params: Params
+    params?: Params
   ) => {
-    const context: observationsApi.ObservationRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[observationEventScopeKey]!.mageEvent,
-      userId: (req.user as any).id,
-      deviceId: (req as any).provisionedDeviceId,
-      observationRepository: req[observationEventScopeKey]!.observationRepository
-    };
-    return { ...params, context };
+    const { context } = eventScopedRequestFactory(req);
+    return {
+      ...params,
+      context: {
+        ...context,
+        userId: (req.user as any).id,
+        deviceId: (req as any).provisionedDeviceId
+      }
+    } as observationsApi.ObservationRequest & Params;
   };
 
   const observationsRoutes = ObservationRoutes(
@@ -1224,63 +1368,48 @@ async function initWebLayer(
     observationRequestFactory
   );
 
-  webController.use(`/api/events/:${observationEventScopeKey}/observations`, [
+  webController.use(`/api/events/:${eventScopeKey}/observations`, [
     bearerAuthentication,
-    ensureObservationEventScope(repos.events.eventRepo, repos.observations.obsRepoFactory),
+    ensureEventScope(repos.events.eventRepo),
     observationsRoutes
   ]);
 
-  const eventFeedsRoutes = EventFeedsRoutes(
-    { ...app.events, eventRepo: repos.events.eventRepo },
-    appRequestFactory
-  );
-  webController.use('/api/events', [bearerAuthentication, eventFeedsRoutes]);
-
-  const exportRequestFactory: ExportWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
-    req: express.Request,
-    params: Params
-  ) => {
-    const context: exportsApi.CreateExportRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[exportEventScopeKey]!.mageEvent
-    };
-
-    return { ...params, context };
-  };
-  const exportRoutes = ExportRoutes(app.exports, exportRequestFactory);
-  webController.use(`/api/events/:${exportEventScopeKey}/exports`, [
+  const eventFeedsRoutes = EventFeedsRoutes(app.events, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/feeds`, [
     bearerAuthentication,
-    ensureExportEventScope(repos.events.eventRepo),
+    ensureEventScope(repos.events.eventRepo),
+    eventFeedsRoutes
+  ]);
+
+  const eventAclRoutes = EventAclRoutes(app.events, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/acl`, [
+    bearerAuthentication,
+    ensureEventScope(repos.events.eventRepo),
+    eventAclRoutes
+  ]);
+
+  const exportRoutes = ExportRoutes(app.exports, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/exports`, [
+    bearerAuthentication,
+    ensureEventScope(repos.events.eventRepo),
     exportRoutes
   ]);
 
   const myExportRoutes = MyExportRoutes(app.exports, appRequestFactory);
   webController.use(`/api/exports/mine`, [bearerAuthentication, myExportRoutes]);
 
-  const locationRequestFactory: UserLocationWebAppRequestFactory = <
-    Params extends object | undefined
-  >(
-    req: express.Request,
-    params: Params
-  ) => {
-    const context: locationsApi.UserLocationRequestContext = {
-      ...baseAppRequestContext(req),
-      mageEvent: req[locationEventScopeKey]!.mageEvent
-    };
-
-    return { ...params, context };
-  };
-  const userLocationRoutes = UserLocationRoutes(app.locations, locationRequestFactory);
-  webController.use(`/api/events/:${locationEventScopeKey}/locations`, [
+  const userLocationRoutes = UserLocationRoutes(app.locations, eventScopedRequestFactory);
+  webController.use(`/api/events/:${eventScopeKey}/locations`, [
     bearerAuthentication,
-    ensureLocationEventScope(repos.events.eventRepo),
+    ensureEventScope(repos.events.eventRepo),
     userLocationRoutes
   ]);
 
   const preferencesRoutes = UserPreferencesRoutes(app.userPreferences, appRequestFactory);
   webController.use(`/api/my/preferences`, [bearerAuthentication, preferencesRoutes]);
+
+  const roleRoutes = RoleRoutes(app.roles, appRequestFactory);
+  webController.use('/api/roles', [bearerAuthentication, roleRoutes]);
 
   const webUiPluginRoutes = WebUIPluginRoutes(webUIPlugins);
 
@@ -1296,22 +1425,17 @@ async function initWebLayer(
       requestToken: Symbol(),
       requestingPrincipal(): UserExpanded {
         return {
-          ...(req.user as any).toJSON(),
-          id: (req.user as any)._id.toHexString()
-        } as UserExpanded;
+          ...req.user.toJSON(),
+          id: req.user._id.toHexString()
+        } as UserExpanded
       },
-      locale(): Readonly<{
-        languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
-      }> {
+      locale(): Locale | null {
         return Object.freeze({
-          languagePreferences: parseAcceptLanguageHeader(
-            req.headers['accept-language']
-          )
-        });
+          languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+        })
       }
-    };
-  };
-
+    }
+  }
   try {
     const webAppPackagePath = require.resolve('@ngageoint/mage.web-app/package.json');
     const webAppPath = path.dirname(webAppPackagePath);
@@ -1322,21 +1446,17 @@ async function initWebLayer(
 
   return {
     webController,
-    addPluginRoutes: (
-      pluginId: string,
-      initPluginRoutes: WebRoutesHooks
-    ): void => {
+    addPluginRoutes: (pluginId: string, initPluginRoutes: WebRoutesHooks): void => {
       if (initPluginRoutes.webRoutes.public) {
-        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext);
-        webController.use(`/plugins/${pluginId}`, [routes]);
+        const routes = initPluginRoutes.webRoutes.public(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [routes])
       }
-
       if (initPluginRoutes.webRoutes.protected) {
-        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext);
-        webController.use(`/plugins/${pluginId}`, [bearerAuthentication, routes]);
+        const routes = initPluginRoutes.webRoutes.protected(pluginAppRequestContext)
+        webController.use(`/plugins/${pluginId}`, [bearerAuthentication, routes])
       }
     }
-  };
+  }
 }
 
 async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
@@ -1348,110 +1468,32 @@ async function initTasks(repos: Repositories, logger: Logger): Promise<Task[]> {
     logger
   );
 
-  return [exportTask];
+  const indexEventObservations = observationsSearchImpl.IndexEventObservations(
+    repos.events.eventRepo,
+    repos.observations.obsRepoFactory,
+    repos.observations.searchRepo,
+    log.child({ component: 'search-index' })
+  );
+  const searchIndexTask: Task = {
+    background: true,
+    run(): Promise<void> {
+      return observationsSearchImpl.indexAllEvents(repos.events.eventRepo, indexEventObservations);
+    }
+  };
+
+  return [exportTask, searchIndexTask];
 }
 
-function baseAppRequestContext(
-  req: express.Request
-): AppRequestContext<UserWithRole> {
+function baseAppRequestContext(req: express.Request): AppRequestContext<UserWithRole> {
   return {
     requestToken: Symbol(),
     requestingPrincipal(): UserWithRole {
       return req.user as UserWithRole || {} as AnonymousUser
     },
-    locale(): Readonly<{
-      languagePreferences: ReturnType<typeof parseAcceptLanguageHeader>;
-    }> {
+    locale(): Locale | null {
       return Object.freeze({
-        languagePreferences: parseAcceptLanguageHeader(
-          req.headers['accept-language']
-        )
-      });
+        languagePreferences: parseAcceptLanguageHeader(req.headers['accept-language'])
+      })
     }
-  };
-}
-
-function ensureExportEventScope(
-  eventRepo: MageEventRepository
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[exportEventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-    if (mageEvent) {
-      req[exportEventScopeKey] = { mageEvent };
-      next();
-      return;
-    }
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-function ensureObservationEventScope(
-  eventRepo: MageEventRepository,
-  createObsRepo: ObservationRepositoryForEvent
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[observationEventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-
-    if (mageEvent) {
-      const observationRepository = await createObsRepo(mageEvent.id);
-      req[observationEventScopeKey] = { mageEvent, observationRepository };
-      next();
-      return;
-    }
-
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-function ensureLocationEventScope(
-  eventRepo: MageEventRepository
-): express.RequestHandler {
-  return async (
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ): Promise<void> => {
-    const eventIdFromPath = req.params[locationEventScopeKey];
-    const eventId: MageEventId = parseInt(eventIdFromPath);
-    const mageEvent = Number.isInteger(eventId)
-      ? await eventRepo.findById(eventId)
-      : null;
-    if (mageEvent) {
-      req[locationEventScopeKey] = { mageEvent };
-      next();
-      return;
-    }
-    res.status(404).json(`event not found: ${eventIdFromPath}`);
-  };
-}
-
-declare module 'express' {
-  interface Request {
-    [exportEventScopeKey]?: {
-      mageEvent: MageEvent;
-    };
-    [observationEventScopeKey]?: {
-      mageEvent: MageEvent;
-      observationRepository: EventScopedObservationRepository;
-    };
-    [locationEventScopeKey]?: {
-      mageEvent: MageEvent;
-    };
   }
 }

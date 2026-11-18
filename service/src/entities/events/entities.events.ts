@@ -5,6 +5,8 @@ import { copyLineStyleAttrs, LineStyle } from '../entities.global'
 
 export type MageEventId = number
 
+export type ObservationSearchStatus = 'pending' | 'running' | 'indexed'
+
 export interface MageEventAttrs {
   id: MageEventId
   name: string
@@ -19,6 +21,7 @@ export interface MageEventAttrs {
   maxObservationForms?: number
   style: LineStyle
   acl: Acl
+  observationSearchStatus?: ObservationSearchStatus
 }
 
 /**
@@ -48,6 +51,7 @@ export function copyMageEventAttrs(x: MageEventAttrs): MageEventAttrs {
     teams: x.teams, // TODO: this might go away
     acl: copyAclAttrs(x.acl),
     style: copyLineStyleAttrs(x.style),
+    observationSearchStatus: x.observationSearchStatus,
   }
 }
 
@@ -102,6 +106,7 @@ export class MageEvent implements Readonly<MageEventAttrs> {
   get maxObservationForms(): number | undefined { return this.#attrs.maxObservationForms }
   get style(): LineStyle { return this.#attrs.style }
   get acl(): Acl { return this.#attrs.acl }
+  get observationSearchStatus(): ObservationSearchStatus | undefined { return this.#attrs.observationSearchStatus }
 
   formFor(id: FormId): Form | null {
     return this.#formIndex.get(id) || null
@@ -196,4 +201,12 @@ export interface MageEventRepository {
    * @param feed the ID of the feed to remove from events
    */
   removeFeedsFromEvents(...feed: FeedId[]): Promise<number>
+  update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEventAttrs | null>
+  updateSearchStatusForEvents(status: ObservationSearchStatus): Promise<void>
+  /**
+   * Atomically set the search status to 'running' only if it is not already
+   * 'running'.  Returns true if the claim succeeded (this caller owns the
+   * indexing operation), false if another operation is already running.
+   */
+  claimIndexing(id: MageEventId): Promise<boolean>
 }

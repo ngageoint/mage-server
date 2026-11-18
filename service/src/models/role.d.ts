@@ -1,22 +1,11 @@
-
-import mongoose from 'mongoose'
-import { AnyPermission } from '../entities/authorization/entities.permissions'
+import { Role, RoleRepository } from '../entities/authorization/entities.authorization'
 
 type Callback<R> = (err: any, result?: R) => any
 
-export declare interface RoleDocument {
-  _id: mongoose.Types.ObjectId
-  name: string
-  description?: string
-  permissions: AnyPermission[]
-}
-export type RoleModelInstance = mongoose.HydratedDocument<RoleDocument>
-
-export declare type RoleJson = Omit<RoleDocument, '_id'> & { id: string }
-
-export declare function getRoleById(id: string, callback: Callback<RoleModelInstance | null>): void
-export declare function getRole(name: string, callback: Callback<RoleModelInstance | null>): void
-export declare function getRoles(callback: Callback<RoleModelInstance[]>): void
-export declare function createRole(role: RoleModelInstance, callback: Callback<RoleModelInstance>): void
-export declare function updateRole(id: string, update: Partial<RoleModelInstance>, callback: Callback<RoleModelInstance>): void
-export declare function deleteRole(role: RoleModelInstance, callback: Callback<RoleModelInstance>): void
+export declare function initialize(repos: { roleRepo: RoleRepository }): void
+export declare function getRoleById(id: string, callback: Callback<Role | null>): void
+export declare function getRole(name: string, callback: Callback<Role | null>): void
+export declare function getRoles(callback: Callback<Role[]>): void
+export declare function createRole(role: Partial<Role>, callback: Callback<Role>): void
+export declare function updateRole(id: string, update: Partial<Role>, callback: Callback<Role>): void
+export declare function deleteRole(role: Role | { id: string }, callback: Callback<Role>): void

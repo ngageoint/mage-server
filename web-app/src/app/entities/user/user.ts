@@ -9,11 +9,6 @@ export function userIconUrl(user: User | null | undefined, token: string | null 
   return authenticatedUserUrl(user.iconUrl, token, user.lastUpdated);
 }
 
-export function userAvatarUrl(user: User | null | undefined, token: string | null | undefined): string | null {
-  if (!user?.avatarUrl) return null;
-  return authenticatedUserUrl(user.avatarUrl, token, user.lastUpdated);
-}
-
 function authenticatedUserUrl(
   url: string | null | undefined,
   token: string | null | undefined,

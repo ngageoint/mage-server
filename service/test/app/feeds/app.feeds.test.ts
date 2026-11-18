@@ -524,9 +524,7 @@ describe('feeds use case interactions', function () {
 
       describe('updating a service', function () {
 
-        it('Not Implemented', async function () {
-
-        })
+        it('Not Implemented')
       })
 
       describe('deleting a service', function () {

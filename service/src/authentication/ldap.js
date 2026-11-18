@@ -159,7 +159,7 @@ function initialize(strategy) {
         displayName: singleValue(profile[strategy.settings.profile.displayName]),
         email: singleValue(profile[strategy.settings.profile.email]),
         active: false,
-        roleId: role._id,
+        roleId: role.id,
         authentication: {
           type: strategy.name,
           id: username,

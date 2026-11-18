@@ -8,10 +8,12 @@ import _ from 'lodash'
 import { AppResponse } from '../../../lib/app.api/app.api.global'
 import { MageEvent } from '../../../lib/entities/events/entities.events'
 import { permissionDenied, entityNotFound, invalidInput } from '../../../lib/app.api/app.api.errors'
-import { jsonForAttachment, jsonForObservation, ObservationAppLayer, ObservationRoutes, ObservationWebAppRequestFactory } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
-import { AttachmentStore, EventScopedObservationRepository, FormEntry, Observation, ObservationAttrs, ObservationFeatureProperties, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
-import { ExoAttachmentContent, ExoObservation, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
+import { jsonForAttachment, jsonForObservation, jsonForObservationMapView, ObservationAppLayer, ObservationRoutes } from '../../../lib/adapters/observations/adapters.observations.controllers.web'
+import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
+import { AttachmentStore, FormEntry, Observation, ObservationAttrs, validationResultMessage } from '../../../lib/entities/observations/entities.observations'
+import { ExoAttachmentContent, ExoObservation, ExoObservationMapView, ExoObservationMod, ObservationRequest, ObservationRequestContext, SaveObservationRequest } from '../../../lib/app.api/observations/app.api.observations'
 import { Geometry, Point } from 'geojson'
+import { ObservationStateName } from '../../../lib/entities/observations/entities.observations.types'
 import { BufferWriteable } from '../../utils'
 import { Readable } from 'stream'
 
@@ -23,26 +25,24 @@ const testUser = 'lummytin'
 
 describe('observations web controller', function () {
 
-  let createAppRequest: ObservationWebAppRequestFactory
+  let createAppRequest: WebAppRequestFactory<ObservationRequest>
   let app: SubstituteOf<ObservationAppLayer>
   let webApp: express.Application
   let client: supertest.SuperTest<supertest.Test>
   let mageEvent: MageEvent
-  let obsRepo: SubstituteOf<EventScopedObservationRepository>
   let attachmentStore: SubstituteOf<AttachmentStore>
   let context: ObservationRequestContext
 
   beforeEach(function () {
     mageEvent = new MageEvent({
       id: Date.now(),
-      name: 'Test Obsevation Web Layer',
+      name: 'Test Observation Web Layer',
       forms: [],
       feedIds: [],
       layerIds: [],
       acl: {},
       style: {}
     })
-    obsRepo = Sub.for<EventScopedObservationRepository>()
     context = {
       requestToken: Symbol(),
       requestingPrincipal(): typeof testUser {
@@ -51,8 +51,7 @@ describe('observations web controller', function () {
       locale() { return null },
       mageEvent,
       userId: uniqid(),
-      deviceId: uniqid(),
-      observationRepository: obsRepo
+      deviceId: uniqid()
     }
     createAppRequest = <P extends { context?: never } = {}>(webReq: express.Request, params?: P): ObservationRequest & P => {
       return { context, ...(params || {} as P) }
@@ -134,6 +133,453 @@ describe('observations web controller', function () {
     })
   })
 
+  describe('GET / and POST /search', function () {
+
+    it('returns the array of observations for an unpaged search, mapped through the request mapping function', async function () {
+
+      const observations: ExoObservation[] = [
+        {
+          id: uniqid(),
+          eventId: mageEvent.id,
+          createdAt: new Date(),
+          lastModified: new Date(),
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+          properties: { timestamp: new Date(), forms: [] },
+          favoriteUserIds: [],
+          attachments: []
+        }
+      ]
+      app.readObservations(Arg.any()).mimicks(async req => {
+        return AppResponse.success(observations.map(req.mapping!))
+      })
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .set('accept', 'application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(
+        observations.map(o => jsonForObservation(o, `${baseUrl}/events/${mageEvent.id}/observations`))
+      )))
+    })
+
+    it('returns a page object when page_size is given', async function () {
+
+      const page = { totalCount: 1, pageSize: 10, pageIndex: 0, items: [] as ExoObservation[] }
+      app.readObservations(Arg.any()).resolves(AppResponse.success(page))
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations?page_size=10`)
+        .set('accept', 'application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.body).to.deep.equal(page)
+    })
+
+    it('supports POST /search with the same body-based parameters', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      const res = await client.post(`${basePath}/events/${mageEvent.id}/observations/search`)
+        .set('accept', 'application/json')
+        .send({ startDate: '2020-01-01T00:00:00Z' })
+
+      expect(res.status).to.equal(200)
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.lastModifiedAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('reads the view from the query and the filter from the body for POST /search', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      const res = await client.post(`${basePath}/events/${mageEvent.id}/observations/search`)
+        .query({ view: 'map' })
+        .set('accept', 'application/json')
+        .send({ keyword: 'lighthouse' })
+
+      expect(res.status).to.equal(200)
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.view).to.equal('map')
+        expect(req.search.filter).to.deep.equal({ keyword: 'lighthouse' })
+        return true
+      }))
+    })
+
+    it('parses startDate and endDate to lastModifiedAfter/Before', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ startDate: '2020-01-01T00:00:00Z', endDate: '2020-02-01T00:00:00Z' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.lastModifiedAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        expect(req.search.lastModifiedBefore).to.deep.equal(new Date('2020-02-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid startDate', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ startDate: 'not a date' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses observationStartDate and observationEndDate to timestampAfter/Before', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ observationStartDate: '2020-01-01T00:00:00Z', observationEndDate: '2020-02-01T00:00:00Z' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.timestampAfter).to.deep.equal(new Date('2020-01-01T00:00:00Z'))
+        expect(req.search.timestampBefore).to.deep.equal(new Date('2020-02-01T00:00:00Z'))
+        return true
+      }))
+    })
+
+    it('parses a comma-separated bbox into geometryIntersects', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ bbox: '1,2,3,4' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.geometryIntersects).to.deep.equal([ 1, 2, 3, 4 ])
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid bbox', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ bbox: '1,2,3' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses states into stateIsAnyOf', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ states: 'active,archive' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.stateIsAnyOf).to.deep.equal([ ObservationStateName.Active, ObservationStateName.Archived ])
+        return true
+      }))
+    })
+
+    it('returns 400 for states with no valid values', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ states: 'bogus' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses favoritedBy into isFavoriteOfUser', async function () {
+
+      const userId = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ favoritedBy: userId })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.isFavoriteOfUser).to.equal(userId)
+        return true
+      }))
+    })
+
+    it('parses important=true and important=false', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ important: 'true' })
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ important: 'false' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.isFlaggedImportant === true))
+      app.received(1).readObservations(Arg.is(req => req.search.isFlaggedImportant === undefined))
+    })
+
+    it('returns 400 for an invalid important value', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ important: 'maybe' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses hasAttachments=true', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`).query({ hasAttachments: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.hasAttachments === true))
+    })
+
+    it('parses a CSV users param into userIsAnyOf', async function () {
+
+      const userA = uniqid()
+      const userB = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ users: `${userA},${userB}` })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.userIsAnyOf).to.deep.equal([ userA, userB ])
+        return true
+      }))
+    })
+
+    it('parses a CSV teams param into teamIsAnyOf', async function () {
+
+      const teamA = uniqid()
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ teams: teamA })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.teamIsAnyOf).to.deep.equal([ teamA ])
+        return true
+      }))
+    })
+
+    it('parses a keyword param into a field filter', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ keyword: 'lighthouse' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.filter).to.deep.equal({ keyword: 'lighthouse' })
+        return true
+      }))
+    })
+
+    it('parses a condition filter from the request body', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.post(`${basePath}/events/${mageEvent.id}/observations/search`)
+        .send({ condition: { formId: 1, field: 'field1', operator: '=', value: 'x' } })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.filter).to.deep.equal({
+          condition: { formId: 1, field: 'field1', operator: '=', value: 'x' }
+        })
+        return true
+      }))
+    })
+
+    it('parses sort into orderBy', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ sort: 'lastModified+desc' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.orderBy).to.deep.equal({ field: 'lastModified', order: -1 })
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid sort field', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ sort: 'bogus' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses paging parameters when page_size is given', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success({ totalCount: 0, pageSize: 5, pageIndex: 1, items: [] }))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ page_size: '5', page: '1', include_total_count: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => {
+        expect(req.search.paging).to.deep.equal({ pageIndex: 1, pageSize: 5, includeTotalCount: true })
+        return true
+      }))
+    })
+
+    it('returns 400 for an invalid page_size', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ page_size: '0' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('parses populate=true into populateUserNames', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ populate: 'true' })
+
+      app.received(1).readObservations(Arg.is(req => req.search.populateUserNames === true))
+    })
+
+    it('defaults populateUserNames to false', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+
+      app.received(1).readObservations(Arg.is(req => req.search.populateUserNames === false))
+    })
+
+    it('parses view=map into the search view', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ view: 'map' })
+
+      expect(res.status).to.equal(200)
+      app.received(1).readObservations(Arg.is(req => req.search.view === 'map'))
+    })
+
+    it('leaves the search view undefined when no view is given', async function () {
+
+      app.readObservations(Arg.any()).resolves(AppResponse.success([]))
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+
+      expect(res.status).to.equal(200)
+      app.received(1).readObservations(Arg.is(req => req.search.view === undefined))
+    })
+
+    it('rejects an invalid view', async function () {
+
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ view: 'everything' })
+
+      expect(res.status).to.equal(400)
+      app.didNotReceive().readObservations(Arg.any())
+    })
+
+    it('returns map view observations with an icon url in place of the icon reference', async function () {
+
+      const mapView: ExoObservationMapView = {
+        id: uniqid(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+        properties: {
+          eventId: mageEvent.id,
+          lastModified: new Date(),
+          state: ObservationStateName.Active,
+          accuracy: 5,
+          style: { stroke: '#ff0000', icon: { formId: 1, primary: 'Vehicle' } }
+        }
+      }
+      app.readObservations(Arg.any()).mimicks(async req => {
+        return AppResponse.success([ mapView ].map(req.mapping!))
+      })
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations`)
+        .query({ view: 'map' })
+
+      expect(res.status).to.equal(200)
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify([
+        {
+          ...mapView,
+          properties: {
+            ...mapView.properties,
+            style: { stroke: '#ff0000', iconUrl: `${hostUrl}/api/events/${mageEvent.id}/icons/1/Vehicle` }
+          }
+        }
+      ])))
+      expect(res.body[0]).not.to.have.property('url')
+    })
+  })
+
+  describe('map view json', function () {
+
+    function mapViewWithIcon(icon: ExoObservationMapView['properties']['style']['icon']): ExoObservationMapView {
+      return {
+        id: uniqid(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+        properties: { eventId: 7, lastModified: new Date(), style: { icon } }
+      }
+    }
+
+    it('uses the event icon without a form', function () {
+
+      const json = jsonForObservationMapView(mapViewWithIcon({}), hostUrl)
+
+      expect(json.properties.style).to.deep.equal({ iconUrl: `${hostUrl}/api/events/7/icons` })
+    })
+
+    it('adds the form, primary, and variant path segments', function () {
+
+      expect(jsonForObservationMapView(mapViewWithIcon({ formId: 3 }), hostUrl).properties.style.iconUrl)
+        .to.equal(`${hostUrl}/api/events/7/icons/3`)
+      expect(jsonForObservationMapView(mapViewWithIcon({ formId: 3, primary: 'Vehicle', variant: 'Red' }), hostUrl).properties.style.iconUrl)
+        .to.equal(`${hostUrl}/api/events/7/icons/3/Vehicle/Red`)
+    })
+
+    it('encodes the primary and variant values', function () {
+
+      const json = jsonForObservationMapView(mapViewWithIcon({ formId: 3, primary: 'Fire Truck', variant: 'Red/Blue' }), hostUrl)
+
+      expect(json.properties.style.iconUrl).to.equal(`${hostUrl}/api/events/7/icons/3/Fire%20Truck/Red%2FBlue`)
+    })
+
+    it('keeps the line style and does not include the icon reference', function () {
+
+      const mapView = mapViewWithIcon({ formId: 3 })
+      mapView.properties.style.stroke = '#ff0000'
+      mapView.properties.style.strokeWidth = 2
+
+      const json = jsonForObservationMapView(mapView, hostUrl)
+
+      expect(json.properties.style).to.deep.equal({ stroke: '#ff0000', strokeWidth: 2, iconUrl: `${hostUrl}/api/events/7/icons/3` })
+    })
+  })
+
+  describe('GET /observations/{observationId}', function () {
+
+    it('returns the observation json', async function () {
+
+      const observation: ExoObservation = {
+        id: uniqid(),
+        eventId: mageEvent.id,
+        createdAt: new Date(),
+        lastModified: new Date(),
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [ 1, 2 ] },
+        properties: { timestamp: new Date(), forms: [] },
+        favoriteUserIds: [],
+        attachments: [],
+        user: { id: uniqid(), displayName: 'User One' }
+      }
+      app.readObservation(Arg.any()).mimicks(async req => {
+        return AppResponse.success(req.mapping!(observation))
+      })
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations/${observation.id}`)
+        .set('accept', 'application/json')
+
+      expect(res.status).to.equal(200)
+      expect(res.type).to.match(jsonMediaType)
+      expect(res.body).to.deep.equal(JSON.parse(JSON.stringify(
+        jsonForObservation(observation, `${baseUrl}/events/${mageEvent.id}/observations`)
+      )))
+      app.received(1).readObservation(Arg.is(req => req.observationId === observation.id))
+    })
+
+    it('returns 404 when the observation does not exist', async function () {
+
+      const observationId = uniqid()
+      app.readObservation(Arg.any()).resolves(AppResponse.error(entityNotFound(observationId, 'Observation')))
+      const res = await client.get(`${basePath}/events/${mageEvent.id}/observations/${observationId}`)
+
+      expect(res.status).to.equal(404)
+    })
+  })
+
   describe('POST /id', function () {
 
     it('allocates an observation id', async function () {
@@ -185,7 +631,6 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
-        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -246,7 +691,6 @@ describe('observations web controller', function () {
         id: obsId,
         type: 'Feature',
         geometry: reqBody.geometry as Geometry,
-        noGeometry: false,
         properties: {
           timestamp: new Date(reqBody.properties.timestamp),
           forms: reqBody.properties.forms
@@ -283,24 +727,7 @@ describe('observations web controller', function () {
       app.received(1).saveObservation(Arg.is(saveObservationRequestWithObservation(mod)))
     })
 
-    it('retains only valid properties', async function () {
-
-      const validProperties: Required<ObservationFeatureProperties> = {
-        timestamp: new Date(Date.now() - 500),
-        provider: 'gps',
-        accuracy: 350,
-        delta: 7654,
-        forms: [
-          { id: 'entry1', formId: 1, field1: 123, field2: 'rocks' }
-        ]
-      }
-      const augmentedValidProperties = {
-        ...validProperties,
-        wutIsThis: 'why is it here?',
-        unacceptable: { why: 'trash' },
-        tryAgain: new Date()
-      }
-    })
+    it('retains only valid properties')
 
     it('uses event id only from the path', async function () {
 
@@ -460,7 +887,6 @@ describe('observations web controller', function () {
         favoriteUserIds: [],
         type: 'Feature',
         geometry: { type: 'Point', coordinates: [65, 56] },
-        noGeometry: false,
         properties: {
           timestamp: new Date(),
           forms: []

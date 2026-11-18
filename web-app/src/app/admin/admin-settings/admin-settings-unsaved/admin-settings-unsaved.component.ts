@@ -1,11 +1,18 @@
 import { Component, NgZone } from '@angular/core'
-import { MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MatDialogModule} from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { A11yModule } from '@angular/cdk/a11y'
 
 @Component({
     selector: 'admin-settings-unsaved',
     templateUrl: './admin-settings-unsaved.component.html',
     styleUrls: ['./admin-settings-unsaved.component.scss'],
-    standalone: false
+    standalone: true,
+    imports: [
+        MatDialogModule,
+        MatButtonModule,
+        A11yModule
+    ]
 })
 export class AdminSettingsUnsavedComponent {
     constructor(

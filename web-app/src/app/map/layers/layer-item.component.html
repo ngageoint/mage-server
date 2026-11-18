@@ -1,0 +1,22 @@
+<div class="row">
+  <layer-header [layer]="layer()" [multi]="multi()"></layer-header>
+
+  @if (reorderable()) {
+    <mat-icon class="drag-handle" cdkDragHandle aria-hidden="true">drag_indicator</mat-icon>
+  }
+
+  <button
+    matIconButton
+    class="toggle"
+    [attr.aria-expanded]="expanded()"
+    [attr.aria-label]="layer().name + ' settings'"
+    (click)="toggle()">
+    <mat-icon class="toggle__icon" [class.toggle__icon--expanded]="expanded()">expand_more</mat-icon>
+  </button>
+</div>
+
+<div class="settings" [class.settings--expanded]="expanded()" [inert]="!expanded()">
+  <div class="settings__inner">
+    <layer-content class="settings__content" [layer]="layer()"></layer-content>
+  </div>
+</div>

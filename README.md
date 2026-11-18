@@ -74,6 +74,26 @@ requires Node > 18.x.  Developers should use the latest LTS, 20.x at the time of
 Before running a Mage server, you'll need to install and start [MongoDB](https://www.mongodb.com/try/download/community).
 At the time of this writing, Mage supports MongoDB version 6.x (6.0).
 
+#### MongoDB TLS and x.509 authentication
+
+MongoDB can encrypt connections with TLS and authenticate clients with x.509 certificates instead of a username and
+password.  To set up the MongoDB side, follow MongoDB's guides to [configure `mongod` for TLS](https://www.mongodb.com/docs/manual/tutorial/configure-ssl/)
+and [use x.509 to authenticate clients](https://www.mongodb.com/docs/manual/tutorial/configure-x509-client-authentication/).
+Generate your own certificates.  The same certificate authority must sign both the `mongod` certificate and the Mage
+server's client certificate, and the client certificate needs the `clientAuth` extended key usage.  See the
+[client certificate requirements](https://www.mongodb.com/docs/manual/core/security-x.509/) for the rest.
+
+To connect Mage to MongoDB over TLS without x.509 authentication, enable TLS in the connection string, e.g.,
+`MAGE_MONGO_URL=mongodb://db.example.com:27017/magedb?tls=true&tlsCAFile=/etc/mage/ca.pem`.  A `mongodb+srv://`
+connection string enables TLS by default.  If MongoDB requires a username and password, also set `MAGE_MONGO_USER` and
+`MAGE_MONGO_PASSWORD`.
+
+To authenticate with an x.509 certificate instead, set `MAGE_MONGO_SSL=true` and the paths to the PEM files in
+`MAGE_MONGO_X509_KEY_FILE`, `MAGE_MONGO_X509_CERT_FILE`, and `MAGE_MONGO_X509_CA_CERT_FILE`.  Mage then authenticates
+with `MONGODB-X509` against the `$external` database, so create a MongoDB user in `$external` named after the client
+certificate's subject.  If the key is encrypted, set `MAGE_MONGO_PASSWORD` to its passphrase.  See
+[`magerc.sh`](service/src/environment/magerc.sh) for all of the MongoDB settings.
+
 ### Install Mage server packages
 
 Starting with release [6.2.2](https://github.com/ngageoint/mage-server/releases/tag/6.2.2), the Mage server packages

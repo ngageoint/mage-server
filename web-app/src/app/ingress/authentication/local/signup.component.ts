@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -29,7 +29,7 @@ import { emailValidator } from 'mage-web-app/email/email';
     styleUrls: ['./signup.component.scss'],
     standalone: false
 })
-export class SignupComponent {
+export class SignupComponent implements OnInit, OnDestroy {
   @Output() complete = new EventEmitter<SignupEvent>();
 
   showPassword = false;

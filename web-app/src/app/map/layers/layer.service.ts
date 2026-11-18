@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
+import { RenderedMapLayer } from '../entities.map-layer';
 
 export interface SimpleStyle {
   stroke?: string;
@@ -8,22 +9,22 @@ export interface SimpleStyle {
 }
 
 export interface ToggleEvent {
-  layer: any;
-  value: number | boolean;
+  layer: RenderedMapLayer;
+  value: boolean;
 }
 
 export interface ZoomEvent {
-  layer: any;
+  layer: RenderedMapLayer;
 }
 
 export interface OpacityEvent {
-  layer: any;
+  layer: RenderedMapLayer;
   opacity: number;
 }
 
 export interface StyleEvent {
-  layer: any;
-  style: SimpleStyle;
+  layer: RenderedMapLayer;
+  style: SimpleStyle | null;
 }
 
 @Injectable({
@@ -40,27 +41,27 @@ export class MapLayerService {
   opacity$ = this.opacitySource.asObservable()
   style$ = this.styleSource.asObservable()
 
-  toggle(layer: any, value: boolean): void {
+  toggle(layer: RenderedMapLayer, value: boolean): void {
     this.toggleSource.next({
       layer: layer,
       value: value
     })
   }
 
-  zoom(layer: any): void {
+  zoom(layer: RenderedMapLayer): void {
     this.zoomSource.next({
       layer: layer
     })
   }
 
-  opacity(layer: any, opacity: number): void {
+  opacity(layer: RenderedMapLayer, opacity: number): void {
     this.opacitySource.next({
       layer: layer,
       opacity: opacity
     })
   }
 
-  style(layer: any, style: SimpleStyle): void {
+  style(layer: RenderedMapLayer, style: SimpleStyle | null): void {
     this.styleSource.next({
       layer: layer,
       style: style

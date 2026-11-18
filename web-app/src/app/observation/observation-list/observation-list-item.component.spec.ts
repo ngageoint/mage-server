@@ -1,17 +1,12 @@
 import { Component, ViewChild } from '@angular/core';
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { GeometryPipe } from 'src/app/geometry/geometry.pipe';
-import { MomentPipe } from 'src/app/moment/moment.pipe';
 
 import { ObservationListItemComponent } from './observation-list-item.component';
 import { MapService } from 'src/app/map/map.service';
 import { SessionService } from 'src/app/http/session.service';
 import { EventService } from 'src/app/event/event.service';
 import { LocalStorageService } from 'src/app/http/local-storage.service';
-import { MatIconModule } from '@angular/material/icon';
-import { MatCardModule as MatCardModule } from '@angular/material/card';
-import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBarModule as MatSnackBarModule } from '@angular/material/snack-bar';
 
 class MockMapService { }
@@ -112,16 +107,11 @@ describe('ObservationListItemComponent', () => {
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [
-        ObservationListItemComponent,
-        MomentPipe,
-        GeometryPipe,
         TestHostComponent
       ],
       imports: [
+        ObservationListItemComponent,
         NoopAnimationsModule,
-        MatIconModule,
-        MatCardModule,
-        MatRippleModule,
         MatSnackBarModule
       ],
       providers: [

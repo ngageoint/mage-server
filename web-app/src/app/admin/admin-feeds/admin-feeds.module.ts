@@ -27,16 +27,12 @@ import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { MomentModule } from '../../../app/moment/moment.module';
 import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.module';
 import { AdminFeedsComponent } from './admin-feeds.component';
-import { AdminFeedComponent } from './admin-feed/admin-feed.component';
-import { AdminFeedDeleteComponent } from './admin-feed/admin-feed-delete/admin-feed-delete.component';
 import { AdminFeedEditComponent } from './admin-feed/admin-feed-edit/admin-feed-edit.component';
 import { JsonSchemaWidgetAutocompleteComponent } from '../json-schema/json-schema-widget/json-schema-widget-autocomplete.component';
 import { AdminServiceEditComponent } from './admin-service/admin-service-edit/admin-service-edit.component';
 import { AdminFeedEditItemPropertiesComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-item-properties/admin-feed-edit-item-properties.component';
 import { AdminFeedEditTopicComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-topic/admin-feed-edit-topic.component';
 import { AdminFeedEditConfigurationComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-configuration.component';
-import { AdminServiceComponent } from './admin-service/admin-service.component';
-import { AdminServiceDeleteComponent } from './admin-service/admin-service-delete/admin-service-delete.component';
 import { AdminFeedEditTopicConfigurationComponent } from './admin-feed/admin-feed-edit/admin-feed-edit-topic/admin-feed-edit-topic-configuration.component';
 import { JsonSchemaModule } from '../json-schema/json-schema.module';
 import { FeedItemSummaryModule } from '../../feed/feed-item/feed-item-summary/feed-item-summary.module';
@@ -45,27 +41,20 @@ import { FeedIconModule } from '@ngageoint/mage.web-core-lib/feed/feed-icon';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
-  declarations: [
+  imports: [
     AdminFeedsComponent,
-    AdminFeedComponent,
-    AdminFeedDeleteComponent,
     AdminFeedEditComponent,
-    JsonSchemaWidgetAutocompleteComponent,
     AdminServiceEditComponent,
     AdminFeedEditItemPropertiesComponent,
     AdminFeedEditTopicComponent,
     AdminFeedEditConfigurationComponent,
     AdminFeedEditTopicConfigurationComponent,
-    AdminFeedEditTopicComponent,
-    AdminServiceComponent,
-    AdminServiceDeleteComponent
-  ],
-  imports: [
     FormsModule,
     ReactiveFormsModule,
     CommonModule,
     AdminBreadcrumbModule,
     MatAutocompleteModule,
+    JsonSchemaWidgetAutocompleteComponent,
     MatTabsModule,
     MatToolbarModule,
     MatIconModule,
@@ -78,7 +67,6 @@ import { RouterModule } from '@angular/router';
     MatRadioModule,
     MatCheckboxModule,
     MatInputModule,
-    MatAutocompleteModule,
     MatSelectModule,
     MatSliderModule,
     MatExpansionModule,
@@ -98,7 +86,6 @@ import { RouterModule } from '@angular/router';
   ],
   exports: [
     AdminFeedsComponent,
-    AdminFeedComponent,
     AdminFeedEditComponent,
     AdminServiceEditComponent
   ]

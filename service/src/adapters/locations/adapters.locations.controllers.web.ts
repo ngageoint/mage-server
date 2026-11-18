@@ -1,9 +1,9 @@
 import express from 'express'
 import moment from 'moment'
-import { compatibilityMageAppErrorHandler } from '../adapters.controllers.web'
-import { MageEvent, MageEventId } from '../../entities/events/entities.events'
-import { UserLocationRepository } from '../../entities/locations/entities.locations'
-import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, UserLocationRequest, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { compatibilityMageAppErrorHandler, WebAppRequestFactory } from '../adapters.controllers.web'
+import { parseISO8601 } from '../../utilities/dates'
+import { ExoLocationUserLite, ExoRecentUserLocations, ExoUserLocation, RecentUserLocationQueryParams, UserLocationQueryParams, ReadLocationsGroupedByUser, ReadUserLocations, SaveUserLocations, CommonUserLocationQueryParams } from '../../app.api/locations/app.api.locations'
+import { EventRequest } from '../../app.api/events/app.api.events'
 import { invalidInput, InvalidInputError, MageError } from '../../app.api/app.api.errors'
 import { UserWithRole } from '../../permissions/permissions.role-based.base'
 
@@ -13,15 +13,7 @@ export interface UserLocationAppLayer {
   saveUserLocations: SaveUserLocations
 }
 
-export interface UserLocationWebAppRequestFactory {
-  <Params extends object>(req: express.Request, params?: Params): Params & UserLocationRequest<UserWithRole>
-}
-
-export interface EnsureEventScope {
-  (eventId: MageEventId): Promise<null | { mageEvent: MageEvent, locationRepository: UserLocationRepository }>
-}
-
-export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: UserLocationWebAppRequestFactory): express.Router {
+export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>>): express.Router {
 
   const routes = express.Router().use(express.json())
 
@@ -68,8 +60,9 @@ export function UserLocationRoutes(app: UserLocationAppLayer, createAppRequest: 
   return routes.use(compatibilityMageAppErrorHandler)
 }
 
-export type WebLocationUserLite = Omit<ExoLocationUserLite, 'hasIcon'> & {
+export type WebLocationUserLite = Omit<ExoLocationUserLite, 'hasIcon' | 'hasAvatar'> & {
   iconUrl?: string
+  avatarUrl?: string
 }
 
 export type WebRecentUserLocations = Omit<ExoRecentUserLocations, 'user'> & {
@@ -80,10 +73,11 @@ function jsonForLocationUser(user: ExoLocationUserLite | undefined): WebLocation
   if (!user) {
     return undefined
   }
-  const { hasIcon, ...userJson } = user
+  const { hasIcon, hasAvatar, ...userJson } = user
   return {
     ...userJson,
-    iconUrl: hasIcon ? `/api/users/${user.id}/icon` : undefined
+    iconUrl: hasIcon ? `/api/users/${user.id}/icon` : undefined,
+    avatarUrl: hasAvatar ? `/api/users/${user.id}/avatar` : undefined
   }
 }
 
@@ -181,11 +175,4 @@ function parseLocationBody(req: express.Request): ExoUserLocation[] | InvalidInp
     location.properties.deviceId = req.provisionedDeviceId
   }
   return locations as ExoUserLocation[]
-}
-
-function parseISO8601(iso8601: string): Date | undefined {
-  const date = moment(iso8601, moment.ISO_8601, true)
-  if (typeof iso8601 === 'string' && date.isValid()) {
-    return date.toDate()
-  }
 }

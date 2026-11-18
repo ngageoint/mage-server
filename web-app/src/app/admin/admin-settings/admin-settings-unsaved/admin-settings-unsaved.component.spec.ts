@@ -16,9 +16,11 @@ describe('AdminSettingsUnsavedComponent', () => {
     >('MatDialogRef', ['close']);
 
     await TestBed.configureTestingModule({
-      declarations: [AdminSettingsUnsavedComponent],
       providers: [{ provide: MatDialogRef, useValue: dialogRef }],
-      schemas: [CUSTOM_ELEMENTS_SCHEMA]
+      schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [
+        AdminSettingsUnsavedComponent
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(AdminSettingsUnsavedComponent);

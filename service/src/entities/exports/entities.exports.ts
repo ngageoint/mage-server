@@ -1,5 +1,7 @@
 import { MageEventId } from "../events/entities.events"
 import { User, UserId } from '../users/entities.users'
+import { TeamId } from '../teams/entities.teams'
+import { ObservationFieldFilter } from '../observations/entities.observations'
 import { Stats } from "fs"
 
 export type ExportId = string
@@ -22,26 +24,46 @@ export type ExportItemSummary = {
 export interface ExportOptions {
   eventId: MageEventId
   filter?: ExportFilter
-  projection?: ExportProjection
 }
 
-export type ExportProjection  = ExportFormProjection[]
+/**
+ * Which forms and fields to include for observations in an export. An
+ * observation form not listed here is omitted entirely. When projection is
+ * undefined, every form and field on the observation is included.
+ */
+export type ExportProjection = ExportFormProjection[]
 
 export interface ExportFormProjection {
   formId: number,
-  fields: ExportFieldProjection[]
+  /** 
+   * Names (FormField.name) of the fields on this form to include; other fields are omitted.
+   */
+  fields: string[]
 }
 
-export type ExportFieldProjection = string
-
-export interface ExportFilter {
-  exportObservations?: boolean
-  exportLocations?: boolean
+export interface ExportObservationFilter {
   startDate?: Date
   endDate?: Date
   favorites?: false | { userId: string }
   important?: boolean
   includeAttachments?: boolean
+  userIsAnyOf?: UserId[]
+  teamIsAnyOf?: TeamId[]
+  hasAttachments?: boolean
+  fieldFilter?: ObservationFieldFilter
+  projection?: ExportProjection
+}
+
+export interface ExportLocationFilter {
+  startDate?: Date
+  endDate?: Date
+  userIsAnyOf?: UserId[]
+  teamIsAnyOf?: TeamId[]
+}
+
+export interface ExportFilter {
+  observations?: ExportObservationFilter
+  locations?: ExportLocationFilter
 }
 
 export type ExportError = {
@@ -91,10 +113,10 @@ export type ExportCreateAttrs = {
   userId: string,
   eventId: MageEventId,
   format: ExportFormat,
-  filter: Omit<ExportFilter, 'favorites'> & {
-    favorites?: boolean
+  filter: {
+    observations?: Omit<ExportObservationFilter, 'favorites'> & { favorites?: boolean }
+    locations?: ExportLocationFilter
   },
-  projection?: ExportProjection
   status?: ExportStatus,
   relativePath?: string,
   filename?: string

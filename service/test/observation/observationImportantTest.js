@@ -169,7 +169,7 @@ describe("observation important tests", function () {
       .send({
         description: 'Some important description'
       })
-      .expect(404)
+      .expect(404, 'Observation not found')
       .end(done);
   });
 
@@ -230,6 +230,9 @@ describe("observation important tests", function () {
       const observationMock = sinon.mock(ObservationModel)
       .expects('findByIdAndUpdate')
       .withArgs(observationId, sinon.match({ '$unset': { important: 1 } }), sinon.match.any)
+      .chain('populate')
+      .chain('populate')
+      .chain('exec')
       .resolves(mockObservation);
 
     request(app)

@@ -42,7 +42,6 @@ class AngularModule { }
   declarations: [
     AccountStatusComponent,
     AuthenticationComponent,
-    AuthenticationButtonComponent,
     AuthenticationDialogComponent,
     AuthorizationComponent,
     DisclaimerComponent,
@@ -54,7 +53,8 @@ class AngularModule { }
     SignupComponent
   ],
   imports: [
-    AngularModule
+    AngularModule,
+    AuthenticationButtonComponent
   ],
   exports: [
     IngressComponent

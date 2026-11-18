@@ -1,0 +1,48 @@
+mat-form-field {
+  width: 100%;
+}
+
+.dialog-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 8px;
+}
+
+.time-field {
+  width: 100%;
+  margin-bottom: -1.25em;
+}
+
+.datetime {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.datetime__pickers {
+  flex: 1 1 260px;
+  min-width: 260px;
+}
+
+.timezone__button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.filter-label {
+  margin-bottom: 4px;
+}
+
+.filter-toggles {
+  display: flex;
+  gap: 4px;
+}
+
+.filter-toggle--active {
+  background-color: var(--mat-sys-primary);
+  color: var(--mat-sys-on-primary);
+  border-radius: 50%;
+}

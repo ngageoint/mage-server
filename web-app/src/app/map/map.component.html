@@ -1,18 +1,17 @@
 <div class="map-controls-layers">
+  <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
   <map-control-layers (onLayerPanelToggle)="drawer.toggle()"></map-control-layers>
 </div>
 
 <mat-sidenav-container class="map-container" hasBackdrop="false">
   <mat-sidenav #drawer mode="over" position="end" autoFocus="false">
     <map-layers-panel 
-      [mageLayers]="groups['mage'].layers" 
-      [feedLayers]="groups['feed'].layers"
-      [baseLayers]="groups['base'].layers" 
-      [tileOverlays]="groups['tile'].layers" 
-      [featureOverlays]="groups['feature'].layers"
-      [gridOverlays]="groups['grid'].layers"
-      (onZoom)="zoom($event)"
-      (onOpacity)="opacityChanged($event)"
+      [mageLayers]="groups.mage"
+      [feedLayers]="groups.feed"
+      [baseLayers]="groups.base"
+      [tileOverlays]="groups.tile"
+      [featureOverlays]="groups.feature"
+      [gridOverlays]="groups.grid"
       (onReorder)="reorder($event)">
     </map-layers-panel>
   </mat-sidenav>
@@ -20,10 +19,6 @@
   <mat-sidenav-content>
     <div id="map" #map>
       <div class="map-controls-left" #mapControlsLeft>
-        <div class="map-controls-left__top">
-          <map-control-search (onSearch)="onSearch($event)" (onSearchClear)="onSearchClear()"></map-control-search>
-          <map-control-filter (click)="onFilter()"></map-control-filter>
-        </div>
         <map-control-add-observation (onAddObservation)="onAddObservation()"></map-control-add-observation>
       </div>
       <div class="map-controls-right" #mapControlsRight>

@@ -1,30 +1,83 @@
 <div class="user-feed">
-  <mat-toolbar class="user-feed-toolbar">
-    <span>People</span>
+  <mat-toolbar class="toolbar">
+    <div class="toolbar-text">
+      <div class="toolbar-text__title">
+        People
+        <mat-icon *ngIf="stale" class="stale-icon material-symbols-outlined" matTooltip="Results may be stale, last refresh failed">sync</mat-icon>
+      </div>
+      <div class="toolbar-text__subtitle">
+        <span *ngIf="userCount != null">{{userCount}} · </span>{{filterTimerange}}
+        <span *ngIf="activeFilterIcons.length" class="filter-icons">
+          <mat-icon *ngFor="let icon of activeFilterIcons" class="filter-icon">{{icon}}</mat-icon>
+        </span>
+      </div>
+    </div>
+    <button matIconButton class="toolbar-filter-button" (click)="openFilterDialog()">
+      <mat-icon [class.material-icons-outlined]="!filterCount" [matTooltip]="filterCount | i18nPlural: filterPluralMapping">filter_alt</mat-icon>
+    </button>
   </mat-toolbar>
 
-  <div class="feed-pages">
-    <mat-form-field class="feed-pages__select" appearance="outline">
-      <mat-label>User Page</mat-label>
-      <mat-select [(ngModel)]="currentUserPage">
-        <mat-option
-          *ngFor="let userPage of userPages; index as i; trackBy: trackByPageId"
-          [value]="i">
-          {{ userPage[0]?.location?.properties?.timestamp | moment : 'fromNow' }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
-  </div>
-
   <div class="page-container">
-    <ng-container
-      *ngFor="let userWithLocation of userPages[currentUserPage]; trackBy: trackByUserId">
-      <div class="feed-user">
-        <user-list-item
-          [userWithLocation]="userWithLocation"
-          followable="true"
-          [follow]="followUserId"></user-list-item>
+    <ng-container *ngIf="searchError; else content">
+      <div class="list__empty">
+        <span class="material-symbols-outlined icon">error_outline</span>
+        <div class="list__empty-headline">Unable to Load People</div>
+        <div class="list__empty-subheader">Something went wrong while searching. Please try again.</div>
+        <button matButton (click)="retryLocations()">Retry</button>
       </div>
     </ng-container>
+    <ng-template #content>
+      <ng-container *ngIf="loaded; else mask">
+        <ng-container *ngIf="userPages.length; else empty">
+          <ng-container *ngFor="let userWithLocation of userPages[currentUserPage]; trackBy: trackByUserId">
+            <div class="feed-user">
+              <user-list-item [userWithLocation]="userWithLocation"></user-list-item>
+            </div>
+          </ng-container>
+        </ng-container>
+      </ng-container>
+    </ng-template>
   </div>
+
+  <mat-paginator
+    [length]="totalUsers"
+    [pageSize]="usersPerPage"
+    [pageIndex]="currentUserPage"
+    [pageSizeOptions]="[25, 50, 100]"
+    (page)="onPageChange($event)"
+    aria-label="Select page">
+  </mat-paginator>
 </div>
+
+<ng-template #empty>
+  <div class="list__empty">
+    <span class="material-symbols-rounded icon icon--person">emoji_people</span>
+    <div class="list__empty-headline">No User Locations</div>
+    <div class="list__empty-subheader">Try adjusting your filters.</div>
+  </div>
+</ng-template>
+
+<ng-template #mask>
+  <div *ngFor="let i of [].constructor(20); trackBy: trackByPageId">
+    <mat-card class="feed-user loading">
+      <div class="item-header">
+        <div class="item-thumbnail loading-avatar"></div>
+        <div class="item-header-content">
+          <div class="item-title">Display Name</div>
+          <div class="item-subtitle">JUL 11 2012 10:00 AM</div>
+          <div class="item-subtitle">0.000000, 0.000000</div>
+        </div>
+      </div>
+      <mat-card-footer>
+        <div class="actions">
+          <button matButton disabled class="actions__follow-button">FOLLOW</button>
+          <div class="actions-icons">
+            <button matIconButton disabled>
+              <mat-icon>my_location</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-card-footer>
+    </mat-card>
+  </div>
+</ng-template>

@@ -3,16 +3,13 @@ import { MatDialogModule as MatDialogModule, MAT_DIALOG_DATA as MAT_DIALOG_DATA 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { AdminEventFormPreviewDialogComponent } from './admin-event-form-preview-dialog.component';
 
-import { AdminEventFormPreviewComponent } from '../admin-event-form-preview.component';
-
-describe('AdminEventFormPreviewComponent', () => {
+describe('AdminEventFormPreviewDialogComponent', () => {
   let component: AdminEventFormPreviewDialogComponent
   let fixture: ComponentFixture<AdminEventFormPreviewDialogComponent>
 
   beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
-      imports: [BrowserAnimationsModule, MatDialogModule],
-      declarations: [AdminEventFormPreviewComponent],
+      imports: [BrowserAnimationsModule, MatDialogModule, AdminEventFormPreviewDialogComponent],
       providers: [{
         provide: MAT_DIALOG_DATA,
         useValue: {

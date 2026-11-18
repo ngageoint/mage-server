@@ -11,11 +11,24 @@ describe('FieldsListComponent', () => {
     let fixture: ComponentFixture<FieldsListComponent>;
     let mockDialog: jasmine.SpyObj<MatDialog>;
 
+    // `fields` is a signal input, so the component no longer mutates it in
+    // place — it emits the next array via `fieldsChange` and relies on the
+    // parent to pass it back down. This mirrors that round-trip for tests.
+    function setFields(fields: Field[]): void {
+        fixture.componentRef.setInput('fields', fields);
+        fixture.detectChanges();
+    }
+
+    function latestEmittedFields(): Field[] {
+        const calls = (component.fieldsChange.emit as jasmine.Spy).calls;
+        return calls.mostRecent().args[0];
+    }
+
     beforeEach(waitForAsync(() => {
         mockDialog = jasmine.createSpyObj('MatDialog', ['open']);
 
         TestBed.configureTestingModule({
-            declarations: [FieldsListComponent],
+            imports: [FieldsListComponent],
             providers: [
                 { provide: MatDialog, useValue: mockDialog }
             ],
@@ -26,10 +39,11 @@ describe('FieldsListComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(FieldsListComponent);
         component = fixture.componentInstance;
-        component.fields = [];
-        component.fieldTypes = [];
-        component.attachmentAllowedTypes = [];
-        component.userFields = [];
+        setFields([]);
+        fixture.componentRef.setInput('fieldTypes', []);
+        fixture.componentRef.setInput('attachmentAllowedTypes', []);
+        fixture.componentRef.setInput('userFields', []);
+        spyOn(component.fieldsChange, 'emit').and.callThrough();
         fixture.detectChanges();
     });
 
@@ -45,8 +59,9 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields.length).toBe(1);
-            expect(component.fields[0].name).toBe('field0');
+            const fields = latestEmittedFields();
+            expect(fields.length).toBe(1);
+            expect(fields[0].name).toBe('field0');
         });
 
         it('should not use lowercase title as field name', () => {
@@ -56,9 +71,10 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields[0].name).not.toBe('my_custom_field');
-            expect(component.fields[0].name).not.toBe('my custom field');
-            expect(component.fields[0].name).toBe('field0');
+            const fields = latestEmittedFields();
+            expect(fields[0].name).not.toBe('my_custom_field');
+            expect(fields[0].name).not.toBe('my custom field');
+            expect(fields[0].name).toBe('field0');
         });
 
         it('should assign sequential field{id} names for multiple fields', () => {
@@ -72,12 +88,14 @@ describe('FieldsListComponent', () => {
                 const dialogRef = { afterClosed: () => of({ ...fieldData }) } as MatDialogRef<any>;
                 mockDialog.open.and.returnValue(dialogRef);
                 component.addField();
+                setFields(latestEmittedFields());
             });
 
-            expect(component.fields.length).toBe(3);
-            expect(component.fields[0].name).toBe('field0');
-            expect(component.fields[1].name).toBe('field1');
-            expect(component.fields[2].name).toBe('field2');
+            const result = latestEmittedFields();
+            expect(result.length).toBe(3);
+            expect(result[0].name).toBe('field0');
+            expect(result[1].name).toBe('field1');
+            expect(result[2].name).toBe('field2');
         });
 
         it('should assign unique names even when titles are identical', () => {
@@ -87,14 +105,16 @@ describe('FieldsListComponent', () => {
             let dialogRef = { afterClosed: () => of({ ...dialogResult1 }) } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(dialogRef);
             component.addField();
+            setFields(latestEmittedFields());
 
             dialogRef = { afterClosed: () => of({ ...dialogResult2 }) } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(dialogRef);
             component.addField();
 
-            expect(component.fields[0].name).toBe('field0');
-            expect(component.fields[1].name).toBe('field1');
-            expect(component.fields[0].name).not.toBe(component.fields[1].name);
+            const result = latestEmittedFields();
+            expect(result[0].name).toBe('field0');
+            expect(result[1].name).toBe('field1');
+            expect(result[0].name).not.toBe(result[1].name);
         });
 
         it('should match field{id} pattern for all added fields', () => {
@@ -106,9 +126,10 @@ describe('FieldsListComponent', () => {
                 } as MatDialogRef<any>;
                 mockDialog.open.and.returnValue(dialogRef);
                 component.addField();
+                setFields(latestEmittedFields());
             }
 
-            component.fields.forEach(field => {
+            latestEmittedFields().forEach(field => {
                 expect(field.name).toMatch(fieldPattern);
                 expect(field.name).toBe('field' + field.id);
             });
@@ -122,15 +143,15 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            const field = component.fields[0];
+            const field = latestEmittedFields()[0];
             expect(field.id).toBeDefined();
             expect(field.name).toBe('field' + field.id);
         });
 
         it('should use next available id when fields already exist', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'Existing', type: 'textfield', required: false }
-            ];
+            ]);
 
             const dialogRef = {
                 afterClosed: () => of({ title: 'New Field', type: 'textarea', required: false })
@@ -139,16 +160,17 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields.length).toBe(2);
-            expect(component.fields[1].id).toBe(1);
-            expect(component.fields[1].name).toBe('field1');
+            const result = latestEmittedFields();
+            expect(result.length).toBe(2);
+            expect(result[1].id).toBe(1);
+            expect(result[1].name).toBe('field1');
         });
 
         it('should handle gap in field ids', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 5, name: 'field5', title: 'Fifth', type: 'textfield', required: false }
-            ];
+            ]);
 
             const dialogRef = {
                 afterClosed: () => of({ title: 'New', type: 'textfield', required: false })
@@ -157,8 +179,9 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields[2].id).toBe(6);
-            expect(component.fields[2].name).toBe('field6');
+            const result = latestEmittedFields();
+            expect(result[2].id).toBe(6);
+            expect(result[2].name).toBe('field6');
         });
 
         it('should not add field when dialog is cancelled', () => {
@@ -167,12 +190,10 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields.length).toBe(0);
+            expect(component.fieldsChange.emit).not.toHaveBeenCalled();
         });
 
         it('should emit fieldsChange when field is added', () => {
-            spyOn(component.fieldsChange, 'emit');
-
             const dialogRef = {
                 afterClosed: () => of({ title: 'Test', type: 'textfield', required: false })
             } as MatDialogRef<any>;
@@ -180,13 +201,13 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fieldsChange.emit).toHaveBeenCalledWith(component.fields);
+            expect(component.fieldsChange.emit).toHaveBeenCalledWith(latestEmittedFields());
         });
     });
 
     describe('getNextFieldId', () => {
         it('should return 0 for empty fields', () => {
-            component.fields = [];
+            setFields([]);
 
             const dialogRef = {
                 afterClosed: () => of({ title: 'First', type: 'textfield', required: false })
@@ -195,30 +216,35 @@ describe('FieldsListComponent', () => {
 
             component.addField();
 
-            expect(component.fields[0].id).toBe(0);
-            expect(component.fields[0].name).toBe('field0');
+            const result = latestEmittedFields();
+            expect(result[0].id).toBe(0);
+            expect(result[0].name).toBe('field0');
         });
     });
 
     describe('removeField', () => {
         it('should remove field and emit change', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
-            ];
-            spyOn(component.fieldsChange, 'emit');
+            ]);
 
-            component.removeField(component.fields[0]);
+            component.removeField(component.fields()[0]);
 
-            expect(component.fields.length).toBe(1);
-            expect(component.fields[0].name).toBe('field1');
+            const result = latestEmittedFields();
+            expect(result.length).toBe(1);
+            expect(result[0].name).toBe('field1');
             expect(component.fieldsChange.emit).toHaveBeenCalled();
         });
     });
 
     describe('onDrop', () => {
+        // Drops, then passes any emitted fields back in as the parent would.
         function drop(previousIndex: number, currentIndex: number): void {
             component.onDrop({ previousIndex, currentIndex } as CdkDragDrop<Field[]>);
+            if ((component.fieldsChange.emit as jasmine.Spy).calls.any()) {
+                setFields(latestEmittedFields());
+            }
         }
 
         function activeNamesInIdOrder(): string[] {
@@ -226,36 +252,36 @@ describe('FieldsListComponent', () => {
         }
 
         it('should list active fields in id order regardless of array order', () => {
-            component.fields = [
+            setFields([
                 { id: 2, name: 'field2', title: 'Third', type: 'textfield', required: false },
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
-            ];
+            ]);
 
             expect(activeNamesInIdOrder()).toEqual(['field0', 'field1', 'field2']);
         });
 
         it('should reassign ids to match the new order', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false },
                 { id: 2, name: 'field2', title: 'Third', type: 'textfield', required: false }
-            ];
+            ]);
 
             drop(2, 0);
 
             expect(activeNamesInIdOrder()).toEqual(['field2', 'field0', 'field1']);
-            expect(component.fields.find(f => f.name === 'field2')?.id).toBe(0);
-            expect(component.fields.find(f => f.name === 'field0')?.id).toBe(1);
-            expect(component.fields.find(f => f.name === 'field1')?.id).toBe(2);
+            expect(component.fields().find(f => f.name === 'field2')?.id).toBe(0);
+            expect(component.fields().find(f => f.name === 'field0')?.id).toBe(1);
+            expect(component.fields().find(f => f.name === 'field1')?.id).toBe(2);
         });
 
         it('should reuse the existing set of ids when ids have gaps', () => {
-            component.fields = [
+            setFields([
                 { id: 1, name: 'field1', title: 'First', type: 'textfield', required: false },
                 { id: 4, name: 'field4', title: 'Second', type: 'textfield', required: false },
                 { id: 7, name: 'field7', title: 'Third', type: 'textfield', required: false }
-            ];
+            ]);
 
             drop(0, 2);
 
@@ -264,26 +290,26 @@ describe('FieldsListComponent', () => {
         });
 
         it('should not change archived field ids', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Archived', type: 'textfield', required: false, archived: true },
                 { id: 2, name: 'field2', title: 'Second', type: 'textfield', required: false }
-            ];
+            ]);
 
             drop(1, 0);
 
             expect(activeNamesInIdOrder()).toEqual(['field2', 'field0']);
             expect(component.getActiveFields().map(f => f.id)).toEqual([0, 2]);
-            const archived = component.fields.find(f => f.archived);
+            const archived = component.fields().find(f => f.archived);
             expect(archived?.name).toBe('field1');
             expect(archived?.id).toBe(1);
         });
 
         it('should not reuse an existing field name for a field added after reordering', () => {
-            component.fields = [
+            setFields([
                 { id: 1, name: 'field1', title: 'First', type: 'textfield', required: false },
                 { id: 2, name: 'field2', title: 'Second', type: 'textfield', required: false }
-            ];
+            ]);
 
             drop(1, 0);
 
@@ -293,21 +319,22 @@ describe('FieldsListComponent', () => {
             mockDialog.open.and.returnValue(dialogRef);
             component.addField();
 
-            const names = component.fields.map(f => f.name);
+            const result = latestEmittedFields();
+            const names = result.map(f => f.name);
             expect(new Set(names).size).toBe(names.length);
-            expect(component.fields[component.fields.length - 1].name).toBe('field3');
+            expect(result[result.length - 1].name).toBe('field3');
         });
 
         it('should emit the reordered fields', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
-            ];
-            spyOn(component.fieldsChange, 'emit');
+            ]);
 
             drop(0, 1);
 
-            expect(component.fieldsChange.emit).toHaveBeenCalledWith(component.fields);
+            expect(latestEmittedFields().map(f => f.name)).toEqual(['field1', 'field0']);
+            expect(latestEmittedFields().map(f => f.id)).toEqual([0, 1]);
         });
 
         it('should do nothing when dropped in place', () => {
@@ -315,31 +342,31 @@ describe('FieldsListComponent', () => {
                 { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
                 { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
             ];
-            component.fields = fields;
-            spyOn(component.fieldsChange, 'emit');
+            setFields(fields);
 
             drop(1, 1);
 
-            expect(component.fields).toBe(fields);
+            expect(component.fields()).toBe(fields);
             expect(component.fieldsChange.emit).not.toHaveBeenCalled();
         });
     });
 
     describe('editField', () => {
         it('should preserve field name and id when editing', () => {
-            component.fields = [
+            setFields([
                 { id: 0, name: 'field0', title: 'Original', type: 'textfield', required: false }
-            ];
+            ]);
 
             const editResult: Field = { title: 'Updated Title', type: 'textarea', required: true };
             const dialogRef = { afterClosed: () => of(editResult) } as MatDialogRef<any>;
             mockDialog.open.and.returnValue(dialogRef);
 
-            component.editField(component.fields[0]);
+            component.editField(component.fields()[0]);
 
-            expect(component.fields[0].id).toBe(0);
-            expect(component.fields[0].name).toBe('field0');
-            expect(component.fields[0].title).toBe('Updated Title');
+            const result = latestEmittedFields();
+            expect(result[0].id).toBe(0);
+            expect(result[0].name).toBe('field0');
+            expect(result[0].title).toBe('Updated Title');
         });
     });
 });

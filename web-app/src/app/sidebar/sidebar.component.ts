@@ -1,35 +1,27 @@
-import { animate, style, transition, trigger } from '@angular/animations';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatTabGroup as MatTabGroup } from '@angular/material/tabs';
+import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTabGroup } from '@angular/material/tabs';
+import { filter, pairwise } from 'rxjs/operators';
 import moment from 'moment';
-import { FeedAction, SidebarService } from './sidebar.service';
+import { FeedAction, FeedItemEvent, SidebarService } from './sidebar.service';
 import { FeedTab } from './sidebar-tab.component';
 import { MapService } from '../map/map.service';
-import { UserService } from '../user/user.service';
 import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
-import { FeedService } from '@ngageoint/mage.web-core-lib/feed';
-import { SessionService } from 'mage-web-app/http/session.service';
+import { Feed, FeedService } from '@ngageoint/mage.web-core-lib/feed';
+import { SessionService } from '../http/session.service';
 import { ExportService } from '../export/export.service';
 import { Export } from '../export/entities.export';
+import { Form } from '../entities/event/entities.event';
+import { FormProperties, Observation, ObservationDraft } from '../entities/observation/entities.observation';
+import { UserWithLocation } from '../entities/user/entities.user-location';
 
 @Component({
     selector: 'sidebar',
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
-    animations: [
-        trigger('slide', [
-            transition(':enter', [
-                style({ transform: 'translateX(100%)' }),
-                animate('150ms', style({ transform: 'translateX(0%)' })),
-            ]),
-            transition(':leave', [
-                animate('250ms', style({ transform: 'translateX(100%)' }))
-            ])
-        ])
-    ],
     standalone: false
 })
 export class SidebarComponent implements OnInit, OnChanges {
@@ -42,7 +34,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   @ViewChild('tabGroup') tabGroup: MatTabGroup
   @ViewChild('permissionDialog') permissionDialog: TemplateRef<any>
 
-  defaultTabs = [{
+  defaultTabs: FeedTab[] = [{
     id: 'observations',
     title: 'Observations',
     icon: { name: 'place' }
@@ -51,7 +43,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     title: 'People',
     icon: { name: 'people' }
   }]
-  tabs = this.defaultTabs.slice()
+  tabs: FeedTab[] = this.defaultTabs.slice()
 
   exportTab: FeedTab = {
     id: 'export',
@@ -67,13 +59,14 @@ export class SidebarComponent implements OnInit, OnChanges {
   editForm: any
   newObservation: any
 
-  firstObservationChange = true
-  observationBadge: number = null
+  observationBadge: number | null = null
 
-  viewObservation: any
-  editObservation: any
+  viewObservation: Observation | null = null
+  observationReselected = false
+  editObservation: ObservationDraft | null = null
 
-  viewUser: any
+  viewUser: UserWithLocation | null = null
+  userReselected = false
 
   viewExport: any
 
@@ -84,29 +77,51 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   constructor(
     public dialog: MatDialog,
-    private feedService: FeedService,
-    private sidebarService: SidebarService,
-    private mapService: MapService,
-    private sessionService: SessionService,
-    private filterService: FilterService,
-    private eventService: EventService,
-    private exportService: ExportService) { }
+    private readonly feedService: FeedService,
+    private readonly sidebarService: SidebarService,
+    private readonly mapService: MapService,
+    private readonly sessionService: SessionService,
+    private readonly filterService: FilterService,
+    private readonly eventService: EventService,
+    private readonly exportService: ExportService,
+    private readonly destroyRef: DestroyRef) { }
 
   ngOnInit(): void {
     this.currentTab = this.tabs[0]
 
-    this.exportService.exports$.subscribe({
+    this.exportService.exports$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
       next: (exports: Export[]) => {
         this.exportTab.count = exports.length
       }
     })
     this.exportService.fetchExports().subscribe()
 
-    this.eventService.addObservationsChangedListener(this)
-    this.feedService.feeds$.subscribe(feeds => this.onFeedsChanged(feeds));
-    this.sidebarService.item$.subscribe(event => this.onFeedItemEvent(event));
+    this.eventService.mapObservations$.pipe(
+      filter(obs => obs !== null),
+      pairwise(),
+      filter(([prev]) => prev.length > 0),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(([prev, curr]) => {
+      if (this.currentTab.id === 'observations') return
+      const prevIds = new Set(prev.map((o: any) => o.id))
+      const newCount = curr.filter((o: any) => !prevIds.has(o.id)).length
+      if (newCount > 0) this.observationBadge = (this.observationBadge ?? 0) + newCount
+    })
+    this.feedService.feeds$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(feeds => this.onFeedsChanged(feeds));
+    this.sidebarService.item$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(event => this.onFeedItemEvent(event));
 
-    this.sidebarService.viewUser$.subscribe(event => {
+    this.sidebarService.viewUser$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(event => {
+      if (this.viewUser?.user.id === event.user.user.id) {
+        this.userReselected = true
+      }
       this.viewUser = event.user
       this.newObservation = null
       this.editObservation = null
@@ -119,7 +134,12 @@ export class SidebarComponent implements OnInit, OnChanges {
       })
     })
 
-    this.sidebarService.viewObservation$.subscribe(event => {
+    this.sidebarService.viewObservation$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(event => {
+      if (this.viewObservation?.id === event.observation.id) {
+        this.observationReselected = true
+      }
       this.viewObservation = event.observation;
       this.newObservation = null
       this.editObservation = null
@@ -132,11 +152,13 @@ export class SidebarComponent implements OnInit, OnChanges {
       })
     })
 
-    this.sidebarService.editObservation$.subscribe(event => {
+    this.sidebarService.editObservation$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(event => {
       this.edit = true;
 
       const observation = event.observation;
-      const formMap = this.eventService.getForms(observation).reduce((map, form) => {
+      const formMap = this.eventService.getForms(observation).reduce<Record<number, Form>>((map, form) => {
         map[form.id] = form
         return map
       }, {})
@@ -156,7 +178,7 @@ export class SidebarComponent implements OnInit, OnChanges {
           value: moment(observation.properties.timestamp).toDate(),
           required: true
         },
-        forms: []
+        forms: [] as Form[]
       }
 
       observation.properties.forms.forEach(propertyForm => {
@@ -168,17 +190,15 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.editObservation = observation
     })
 
-    this.sidebarService.viewExport$.subscribe($event => {
+    this.sidebarService.viewExport$.pipe(
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe($event => {
       this.viewExport = $event.item
     })
   }
 
-  ngOnDestroy(): void {
-    this.eventService.removeObservationsChangedListener(this)
-  }
-
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.event && changes.event.currentValue) {
+    if (changes.event?.currentValue) {
       this.newObservation = null
       this.editObservation = null
       this.viewObservation = null
@@ -188,15 +208,15 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.observationBadge = null
     }
 
-    if (changes.observationLocation && changes.observationLocation.currentValue) {
+    if (changes.observationLocation?.currentValue) {
       // Don't allow new observation if observation create is in progress
-      if (this.newObservation) return
+      if (this.newObservation || this.editObservation) return
 
       this.createNewObservation(changes.observationLocation.currentValue)
     }
   }
 
-  onTabSwitched(tab): void {
+  onTabSwitched(tab: FeedTab): void {
     this.currentTab = tab;
 
     this.newObservation = null;
@@ -207,18 +227,10 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.viewExport = null;
   }
 
-  onObservationsChanged(changed): void {
-    if (!this.firstObservationChange && this.currentTab.id !== 'observations') {
-      if (changed.added && changed.added.length) this.observationBadge += changed.added.length
-      if (changed.updated && changed.updated.length) this.observationBadge += changed.updated.length
-    }
-
-    this.firstObservationChange = false
-  }
 
   createNewObservation(location: any): void {
     const event = this.filterService.getEvent()
-    if (!this.eventService.isUserInEvent(this.sessionService.user, event)) {
+    if (!event || !this.eventService.isUserInEvent(this.sessionService.user, event)) {
       this.dialog.open(ContactDialogComponent, {
         width: '500px',
         data: {
@@ -243,12 +255,12 @@ export class SidebarComponent implements OnInit, OnChanges {
       },
       properties: {
         timestamp: new Date(),
-        forms: []
+        forms: [] as Pick<FormProperties, 'formId'>[]
       }
     }
 
     this.eventService.getFormsForEvent(event, { archived: false }).forEach(form => {
-      for (let i = 0; i < form.min || 0; i++) {
+      for (let i = 0; i < (form.min ?? 0); i++) {
         observation.properties.forms.push({ formId: form.id })
       }
 
@@ -265,25 +277,29 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   onUserViewClose(): void {
-    this.mapService.deselectFeatureInLayer(this.viewUser, 'people');
+    if (this.viewUser) this.mapService.deselectFeatureInLayer(this.viewUser, 'people');
     this.viewUser = null;
   }
 
   onObservationViewClose(): void {
-    this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
+    if (this.viewObservation) this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
     this.viewObservation = null;
   }
 
   onObservationEditClose(observation?: any): void {
+    const savedClone = observation && this.editObservation?.id === 'new'
     this.newObservation = null;
     this.editObservation = null;
 
-    if (observation && this.viewObservation && this.viewObservation.id === observation.id) {
+    if (savedClone) {
+      if (this.viewObservation) this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
+      this.viewObservation = observation
+    } else if (observation && this.viewObservation?.id === observation.id) {
       this.viewObservation = observation
     }
   }
 
-  onObservationDelete(event): void {
+  onObservationDelete(event: { observation: Observation }): void {
     this.newObservation = null;
     this.editObservation = null;
     this.viewObservation = null;
@@ -304,7 +320,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     this.contactOpen = { opened: false };
   }
 
-  onFeedsChanged(feeds): void {
+  onFeedsChanged(feeds: Feed[]): void {
     this.tabs = this.defaultTabs.concat(feeds.map(feed => {
       return {
         id: `feed-${feed.id}`,
@@ -315,7 +331,7 @@ export class SidebarComponent implements OnInit, OnChanges {
     }))
   }
 
-  onFeedItemEvent(event): void {
+  onFeedItemEvent(event: FeedItemEvent): void {
     if (event.action == FeedAction.Select) {
       this.feedItem = {
         feed: event.feed,

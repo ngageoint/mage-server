@@ -1,13 +1,17 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core'
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core'
+import { FormsModule } from '@angular/forms'
+import { MatExpansionModule } from '@angular/material/expansion'
+import { MatFormFieldModule } from '@angular/material/form-field'
+import { MatSelectModule } from '@angular/material/select'
 import { FeedTopic, Service } from '@ngageoint/mage.web-core-lib/feed'
 
 @Component({
     selector: 'app-choose-service-topic',
     templateUrl: './admin-feed-edit-topic.component.html',
     styleUrls: ['./admin-feed-edit-topic.component.scss'],
-    standalone: false
+    imports: [FormsModule, MatExpansionModule, MatFormFieldModule, MatSelectModule]
 })
-export class AdminFeedEditTopicComponent implements OnInit, OnChanges {
+export class AdminFeedEditTopicComponent implements OnChanges {
 
   @Input() services?: Service[] | null
   @Input() topics?: FeedTopic[] | null
@@ -17,11 +21,6 @@ export class AdminFeedEditTopicComponent implements OnInit, OnChanges {
   @Output() serviceSelected = new EventEmitter<string>()
   @Output() topicSelected = new EventEmitter<string>()
   @Output() opened = new EventEmitter()
-
-  constructor() {}
-
-  ngOnInit(): void {
-  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.services) {

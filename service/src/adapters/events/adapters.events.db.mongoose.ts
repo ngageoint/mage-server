@@ -1,5 +1,5 @@
 import { BaseMongooseRepository } from '../base/adapters.base.db.mongoose'
-import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent } from '../../entities/events/entities.events'
+import { MageEventRepository, MageEventAttrs, MageEventId, MageEvent, ObservationSearchStatus } from '../../entities/events/entities.events'
 import mongoose from 'mongoose'
 import { FeedId } from '../../entities/feeds/entities.feeds'
 import * as legacy from '../../models/event'
@@ -21,7 +21,28 @@ export class MongooseMageEventRepository extends BaseMongooseRepository<MageEven
   }
 
   async update(attrs: Partial<MageEventAttrs> & { id: MageEventId }): Promise<MageEventAttrs | null> {
-    throw new Error('method not allowed')
+    const propertyWhitelist: (keyof MageEventAttrs)[] = [ 'name', 'description', 'minObservationForms', 'maxObservationForms', 'complete', 'forms', 'observationSearchStatus' ]
+    const update = Object.fromEntries(
+      propertyWhitelist.filter(key => key in attrs).map(key => [ key, attrs[key] ])
+    ) as Partial<MageEventAttrs>
+    if (update.forms) {
+      // preserve form ids
+      update.forms = update.forms.map(form => ({ ...form, _id: form.id } as any))
+    }
+    const updated = await this.model.findByIdAndUpdate(attrs.id, update, { new: true, runValidators: true })
+    return updated ? this.entityForDocument(updated) : null
+  }
+
+  async updateSearchStatusForEvents(status: ObservationSearchStatus): Promise<void> {
+    await this.model.updateMany({}, { $set: { observationSearchStatus: status } })
+  }
+
+  async claimIndexing(id: MageEventId): Promise<boolean> {
+    const result = await this.model.findOneAndUpdate(
+      { _id: id, observationSearchStatus: { $ne: 'running' } },
+      { $set: { observationSearchStatus: 'running' } }
+    )
+    return result !== null
   }
 
   async findById(id: MageEventId): Promise<MageEvent | null> {

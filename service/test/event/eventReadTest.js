@@ -21,6 +21,9 @@ const TeamModel = mongoose.model('Team');
 require('../../lib/models/event');
 const EventModel = mongoose.model('Event');
 
+require('../../lib/models/user');
+const UserModel = mongoose.model('User');
+
 describe("event read tests", function () {
 
   let app;
@@ -576,5 +579,119 @@ describe("event read tests", function () {
       .query({ populate: 'users' });
 
     expect(res.status).to.equal(200)
+  });
+
+  describe("get event members", function () {
+
+    function mockUnprivilegedToken() {
+      sinon.mock(TokenModel)
+        .expects('getToken')
+        .withArgs('12345')
+        .yields(null, createToken(userId, []));
+    }
+
+    it("returns members for a user who is only a member through the event's own team", function (done) {
+      mockUnprivilegedToken();
+
+      const eventId = 1;
+      const mockEvent = new EventModel({
+        _id: eventId,
+        name: 'Mock Event',
+        acl: {}
+      });
+      sinon.stub(EventModel, 'findOne').resolves(mockEvent);
+
+      const mockTeam = new TeamModel({
+        _id: 1,
+        name: 'Mock Team',
+        teamEventId: eventId,
+        userIds: [userId]
+      });
+      sinon.stub(TeamModel, 'findOne').resolves(mockTeam);
+
+      const mockMember = new UserModel({
+        _id: userId,
+        username: 'teammember',
+        displayName: 'Team Member',
+        active: true,
+        roleId: new mongoose.Types.ObjectId()
+      });
+      const findChain = {
+        sort: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        skip: sinon.stub().resolves([mockMember])
+      };
+      sinon.stub(UserModel, 'find').returns(findChain);
+      sinon.stub(UserModel, 'countDocuments').resolves(1);
+
+      request(app)
+        .get('/api/events/1/members')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .expect(200)
+        .end(done);
+    });
+
+    it("returns members for a user with an explicit acl role but no team membership", function (done) {
+      mockUnprivilegedToken();
+
+      const eventId = 1;
+      const mockEvent = new EventModel({
+        _id: eventId,
+        name: 'Mock Event',
+        acl: { [userId.toString()]: 'OWNER' }
+      });
+      sinon.stub(EventModel, 'findOne').resolves(mockEvent);
+
+      const mockTeam = new TeamModel({
+        _id: 1,
+        name: 'Mock Team',
+        teamEventId: eventId,
+        userIds: []
+      });
+      sinon.stub(TeamModel, 'findOne').resolves(mockTeam);
+
+      const findChain = {
+        sort: sinon.stub().returnsThis(),
+        limit: sinon.stub().returnsThis(),
+        skip: sinon.stub().resolves([])
+      };
+      sinon.stub(UserModel, 'find').returns(findChain);
+      sinon.stub(UserModel, 'countDocuments').resolves(0);
+
+      request(app)
+        .get('/api/events/1/members')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .expect(200)
+        .end(done);
+    });
+
+    it("returns 404 for a user who is neither a team member nor has an acl role on the event", function (done) {
+      mockUnprivilegedToken();
+
+      const eventId = 1;
+      const mockEvent = new EventModel({
+        _id: eventId,
+        name: 'Mock Event',
+        acl: {}
+      });
+      sinon.stub(EventModel, 'findOne').resolves(mockEvent);
+
+      const mockTeam = new TeamModel({
+        _id: 1,
+        name: 'Mock Team',
+        teamEventId: eventId,
+        userIds: [new mongoose.Types.ObjectId()]
+      });
+      sinon.stub(TeamModel, 'findOne').resolves(mockTeam);
+
+      request(app)
+        .get('/api/events/1/members')
+        .set('Accept', 'application/json')
+        .set('Authorization', 'Bearer 12345')
+        .expect(404)
+        .end(done);
+    });
   });
 });

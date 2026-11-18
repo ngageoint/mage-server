@@ -1,5 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { Component, OnInit, input } from '@angular/core';
+import { AsyncPipe } from '@angular/common';
+import { ReactiveFormsModule, UntypedFormControl, UntypedFormGroup } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { NgxMatSelectSearchModule } from 'ngx-mat-select-search';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { RecentChoice } from 'core-lib-src/user';
@@ -20,20 +24,14 @@ interface SelectField {
     selector: 'observation-edit-dropdown',
     templateUrl: './observation-edit-select.component.html',
     styleUrls: ['./observation-edit-select.component.scss'],
-    standalone: false
+    imports: [AsyncPipe, ReactiveFormsModule, MatFormFieldModule, MatSelectModule, NgxMatSelectSearchModule]
 })
 export class ObservationEditSelectComponent implements OnInit {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: SelectField
-
-  private _recentChoices: RecentChoice[] = []
-  @Input()
-  set recentChoices(value: RecentChoice[]) {
-    this._recentChoices = value ?? []
-  }
-  get recentChoices(): RecentChoice[] {
-    return this._recentChoices
-  }
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<SelectField>()
+  recentChoices = input<RecentChoice[], RecentChoice[] | null | undefined>([], {
+    transform: value => value ?? []
+  })
 
   recentChoicesFromDefinition: Choice[] = []
   searchControl: UntypedFormControl = new UntypedFormControl();
@@ -41,9 +39,11 @@ export class ObservationEditSelectComponent implements OnInit {
   recentChoices$: Observable<any[]>;
 
   ngOnInit(): void {
-    this.recentChoicesFromDefinition = this.definition.maxRecent
-      ? this.recentChoices
-        .map(recent => this.definition.choices.find(choice => choice.title === recent))
+    const definition = this.definition()
+
+    this.recentChoicesFromDefinition = definition.maxRecent
+      ? this.recentChoices()
+        .map(recent => definition.choices.find(choice => choice.title === recent))
         .filter((choice): choice is Choice => choice !== undefined)
       : []
 
@@ -53,7 +53,7 @@ export class ObservationEditSelectComponent implements OnInit {
         return !value || typeof value === 'string' ? value : value.title
       }),
       map(title => {
-        return title ? this.filter(title) : this.definition.choices.slice()
+        return title ? this.filter(title) : definition.choices.slice()
       })
     );
 
@@ -72,7 +72,7 @@ export class ObservationEditSelectComponent implements OnInit {
   private filter(title: string): Choice[] {
     const filterValue = title.toLowerCase();
 
-    return this.definition.choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
+    return this.definition().choices.filter(option => option.title.toLowerCase().indexOf(filterValue) === 0);
   }
 
 }

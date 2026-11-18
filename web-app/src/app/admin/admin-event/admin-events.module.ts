@@ -6,9 +6,7 @@ import { RouterModule } from '@angular/router';
 import { MatButtonModule as MatButtonModule } from '@angular/material/button';
 import { MatCardModule as MatCardModule } from '@angular/material/card';
 import { MatChipsModule as MatChipsModule } from '@angular/material/chips';
-import { MatTableModule as MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule as MatPaginatorModule } from '@angular/material/paginator';
-import { MatSortModule } from '@angular/material/sort';
 import { MatDialogModule as MatDialogModule } from '@angular/material/dialog';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSelectModule as MatSelectModule } from '@angular/material/select';
@@ -26,23 +24,15 @@ import { AdminBreadcrumbModule } from '../admin-breadcrumb/admin-breadcrumb.modu
 import { AdminEventFormModule } from './admin-event-form/admin-event-form.module';
 
 import { EventDetailsComponent } from './event-details/event-details.component';
-import { DeleteEventComponent } from './delete-event/delete-event.component';
-import { UploadFormDialogComponent } from './upload-form/upload-form.component';
 import { EventDashboardComponent } from './dashboard/event-dashboard.component';
 import { MatOptionModule as MatOptionModule } from '@angular/material/core';
 import { EventService } from '../../event/event.service';
-import { CreateEventDialogComponent } from './create-event/create-event.component';
 
 @NgModule({
-    declarations: [
-        EventDashboardComponent,
-        CreateEventDialogComponent,
-        EventDetailsComponent,
-        DeleteEventComponent,
-        UploadFormDialogComponent
-    ],
     imports: [
         CommonModule,
+        EventDashboardComponent,
+        EventDetailsComponent,
         FormsModule,
         ReactiveFormsModule,
         RouterModule,
@@ -51,9 +41,7 @@ import { CreateEventDialogComponent } from './create-event/create-event.componen
         MatButtonModule,
         MatCardModule,
         MatChipsModule,
-        MatTableModule,
         MatPaginatorModule,
-        MatSortModule,
         MatDialogModule,
         MatFormFieldModule,
         MatDividerModule,

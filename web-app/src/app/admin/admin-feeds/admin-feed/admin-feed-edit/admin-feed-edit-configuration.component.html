@@ -77,7 +77,9 @@
       <mage-static-icon-form-field formControlName="icon" [accessToken]="accessToken"></mage-static-icon-form-field>
     </div>
     <mat-autocomplete #itemPropertyAutoComplete="matAutocomplete">
-      <mat-option *ngFor="let itemProperty of itemSchemaPropertyTitles" [value]="itemProperty.key">{{itemProperty.title}}</mat-option>
+      @for (itemProperty of itemSchemaPropertyTitles; track itemProperty.key) {
+        <mat-option [value]="itemProperty.key">{{itemProperty.title}}</mat-option>
+      }
     </mat-autocomplete>
   </form>
   <mat-action-row>

@@ -8,13 +8,13 @@ import { permissionDenied, infrastructureError } from '../../../lib/app.api/app.
 import {
   UserLocationAppLayer,
   UserLocationRoutes,
-  UserLocationWebAppRequestFactory,
 } from '../../../lib/adapters/locations/adapters.locations.controllers.web'
+import { WebAppRequestFactory } from '../../../lib/adapters/adapters.controllers.web'
 import {
-  UserLocationRequest,
   ExoUserLocation,
   ExoRecentUserLocations,
 } from '../../../lib/app.api/locations/app.api.locations'
+import { EventRequest } from '../../../lib/app.api/events/app.api.events'
 import { pageOf } from '../../../lib/entities/entities.global'
 import { UserWithRole } from '../../../lib/permissions/permissions.role-based.base'
 
@@ -23,9 +23,9 @@ const jsonMimeType = /^application\/json/
 
 const principal = { id: 'user1', username: 'testuser' } as unknown as UserWithRole
 
-type AppRequestFactoryHandle = { createAppRequest: UserLocationWebAppRequestFactory }
+type AppRequestFactoryHandle = { createAppRequest: WebAppRequestFactory<EventRequest<UserWithRole>> }
 
-const stubAppRequestFactory: UserLocationWebAppRequestFactory = <P extends object>(_req: express.Request, params?: P): P & UserLocationRequest => {
+const stubAppRequestFactory: WebAppRequestFactory<EventRequest<UserWithRole>> =<P extends object>(_req: express.Request, params?: P): P & EventRequest<UserWithRole> => {
   return {
     context: {
       requestToken: Symbol(),
@@ -232,7 +232,7 @@ describe('locations web controller', function() {
         id: 'user1',
         userId: 'user1',
         locations: [],
-        user: { id: 'user1', displayName: 'Test User', hasIcon: true },
+        user: { id: 'user1', displayName: 'Test User', phones: [], hasIcon: true, hasAvatar: false },
       }
       appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
 
@@ -241,6 +241,7 @@ describe('locations web controller', function() {
       expect(res.body[0].user).to.deep.equal({
         id: 'user1',
         displayName: 'Test User',
+        phones: [],
         iconUrl: '/api/users/user1/icon',
       })
     })
@@ -250,7 +251,7 @@ describe('locations web controller', function() {
         id: 'user1',
         userId: 'user1',
         locations: [],
-        user: { id: 'user1', displayName: 'Test User', hasIcon: false },
+        user: { id: 'user1', displayName: 'Test User', phones: [], hasIcon: false, hasAvatar: false },
       }
       appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
 
@@ -259,6 +260,52 @@ describe('locations web controller', function() {
       expect(res.body[0].user).to.deep.equal({
         id: 'user1',
         displayName: 'Test User',
+        phones: [],
+      })
+    })
+
+    it('builds an avatarUrl when the user has an avatar', async function() {
+      const group: ExoRecentUserLocations = {
+        id: 'user1',
+        userId: 'user1',
+        locations: [],
+        user: { id: 'user1', displayName: 'Test User', phones: [], hasIcon: false, hasAvatar: true },
+      }
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
+
+      const res = await client.get(`${root}/users`)
+
+      expect(res.body[0].user).to.deep.equal({
+        id: 'user1',
+        displayName: 'Test User',
+        phones: [],
+        avatarUrl: '/api/users/user1/avatar',
+      })
+    })
+
+    it('includes the user email and phones', async function() {
+      const group: ExoRecentUserLocations = {
+        id: 'user1',
+        userId: 'user1',
+        locations: [],
+        user: {
+          id: 'user1',
+          displayName: 'Test User',
+          email: 'user1@example.com',
+          phones: [{ type: 'Main', number: '555-0100' }],
+          hasIcon: false,
+          hasAvatar: false
+        },
+      }
+      appLayer.readLocationsGroupedByUser(Arg.all()).resolves(AppResponse.success([group]))
+
+      const res = await client.get(`${root}/users`)
+
+      expect(res.body[0].user).to.deep.equal({
+        id: 'user1',
+        displayName: 'Test User',
+        email: 'user1@example.com',
+        phones: [{ type: 'Main', number: '555-0100' }],
       })
     })
   })
