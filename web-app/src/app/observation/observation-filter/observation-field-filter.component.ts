@@ -1,4 +1,4 @@
-import { Component, ElementRef, computed, effect, input, output, viewChild } from '@angular/core'
+import { Component, ElementRef, computed, effect, input, output, untracked, viewChild } from '@angular/core'
 import { AsyncPipe } from '@angular/common'
 import { FormControl, ReactiveFormsModule } from '@angular/forms'
 import { ErrorStateMatcher } from '@angular/material/core'
@@ -77,6 +77,8 @@ export class ObservationFieldFilterComponent {
   pendingValue: any = null
   pendingValueDisplay: string | null = null
 
+  private lastEmittedCondition: Condition | undefined = undefined
+
   private readonly allFieldGroups = computed(() => buildFieldGroups(this.forms()))
 
   get hasConditions(): boolean {
@@ -125,8 +127,14 @@ export class ObservationFieldFilterComponent {
   constructor() {
     effect(() => {
       this.forms()
-      this.conditionGroups = []
-      this.resetState()
+      // resetState()/clearInput() read viewChild signals (filterInput, chipGridCondition)
+      // transitively - without untracked(), those become dependencies of THIS effect too, so
+      // destroying #filterInput (whenever a checkbox/choice/date/null-operator value hides the
+      // text input) would re-trigger this forms-only reset and wipe every committed condition.
+      untracked(() => {
+        this.conditionGroups = []
+        this.resetState()
+      })
     })
 
     effect(() => {
@@ -135,7 +143,9 @@ export class ObservationFieldFilterComponent {
 
     effect(() => {
       this.showIncompleteError()
-      this.updateChipGridErrorState()
+      // Same reasoning as above: updateChipGridErrorState() reads the chipGridCondition viewChild
+      // signal - keep this effect's only real dependency as showIncompleteError().
+      untracked(() => this.updateChipGridErrorState())
     })
   }
 
@@ -437,7 +447,13 @@ export class ObservationFieldFilterComponent {
   }
 
   private populateCondition(condition: Condition | null | undefined): void {
-    if (!condition) return
+    // The parent round-trips whatever this component just emitted straight back down as this
+    // same `condition` input (onConditionChanged stores the exact reference, unmodified) - skip
+    // rebuilding conditionGroups from that self-echo, or interacting with the builder mid-edit
+    // races against this effect and silently drops committed conditions. Only a condition this
+    // component never emitted itself (the initial seed from a previously-saved filter) should
+    // trigger a real repopulate.
+    if (!condition || condition === this.lastEmittedCondition) return
     this.conditionGroups = this.conditionGroupsFromFilter(condition)
   }
 
@@ -502,6 +518,7 @@ export class ObservationFieldFilterComponent {
       condition = { and: groups }
     }
 
+    this.lastEmittedCondition = condition
     this.conditionChanged.emit(condition)
   }
 }
