@@ -1511,6 +1511,22 @@ describe('observation entities', function () {
           expect(evaluated.formEntries[0][field.name]).to.equal('fsh-234')
         })
 
+        it('passes pattern constraint case-insensitively', function () {
+          field.pattern = { spec: '[a-z]{3}-\\d{3}' }
+          const mageEvent = new MageEvent(mageEventAttrs)
+          const observationAttrs = makeObservationAttrs(mageEvent.id)
+          const formEntry: FormEntry = {
+            id: uniqid(),
+            formId: form.id,
+            [field.name]: 'FSH-234'
+          }
+          observationAttrs.properties.forms = [formEntry]
+          const evaluated = Observation.evaluate(observationAttrs, mageEvent)
+
+          expect(evaluated.validation.hasErrors).to.be.false
+          expect(evaluated.formEntries[0][field.name]).to.equal('FSH-234')
+        })
+
         it('passes pattern constraint when optional and absent', function () {
           field.pattern = { spec: '\\w{3}-\\d{3}' }
           field.required = false
