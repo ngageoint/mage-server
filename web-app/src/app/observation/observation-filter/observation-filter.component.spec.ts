@@ -52,7 +52,7 @@ describe('ObservationFilterDialogComponent', () => {
     it('defaults to no filters and the default interval choice when nothing is saved', () => {
       fixture.detectChanges();
       expect(component.initialMemberFilter).toBeNull();
-      expect(component.memberFilter).toBeNull();
+      expect((component as any).memberFilter).toBeNull();
       expect(component.hasAttachments()).toBe(false);
       expect(component.isFlaggedImportant()).toBe(false);
       expect(component.isUserFavorite()).toBe(false);
@@ -79,7 +79,7 @@ describe('ObservationFilterDialogComponent', () => {
       fixture.detectChanges();
 
       expect(component.initialMemberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
-      expect(component.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect((component as any).memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
       expect(component.hasAttachments()).toBeTrue();
       expect(component.isFlaggedImportant()).toBeTrue();
       expect(component.isUserFavorite()).toBeTrue();
@@ -96,12 +96,12 @@ describe('ObservationFilterDialogComponent', () => {
 
     it('sets the member filter when a team or user is selected', () => {
       component.onMemberFilterChanged({ teamIds: ['t1'], userIds: [] });
-      expect(component.memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
+      expect((component as any).memberFilter).toEqual({ teamIds: ['t1'], userIds: [] });
     });
 
     it('clears the member filter when the selection is empty', () => {
       component.onMemberFilterChanged({ teamIds: [], userIds: [] });
-      expect(component.memberFilter).toBeNull();
+      expect((component as any).memberFilter).toBeNull();
     });
   });
 
@@ -146,7 +146,7 @@ describe('ObservationFilterDialogComponent', () => {
     beforeEach(() => fixture.detectChanges());
 
     it('blocks saving and shows an error when the condition builder has a pending, uncommitted condition', () => {
-      spyOn(component, 'fieldFilter').and.returnValue({ hasIncompleteCondition: true } as any);
+      spyOn(component as any, 'fieldFilter').and.returnValue({ hasIncompleteCondition: true } as any);
 
       component.onFilter();
 
@@ -157,7 +157,7 @@ describe('ObservationFilterDialogComponent', () => {
 
     it('saves the filter state and closes the dialog', () => {
       const condition: BinaryCondition = { formId: 1, field: 'status', operator: '=', value: 'open' };
-      component.memberFilter = { teamIds: ['t1'], userIds: [] };
+      (component as any).memberFilter = { teamIds: ['t1'], userIds: [] };
       component.hasAttachments.set(true);
       component.isFlaggedImportant.set(true);
       component.isUserFavorite.set(true);
