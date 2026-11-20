@@ -28,7 +28,6 @@
   },
   "private": false,
   "dependencies": {
-    "lodash-es": "~4.17.21",
     "@ngageoint/vendor-ajsf-core": "~0.8.0",
     "tslib": "^2.0.0"
   },

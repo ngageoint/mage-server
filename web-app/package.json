@@ -95,7 +95,7 @@
     "papaparse": "5.5.3",
     "rxjs": "7.8.2",
     "semver": "7.6.2",
-    "swagger-ui": "3.52.4",
+    "swagger-ui": "5.35.1",
     "systemjs": "6.10.0",
     "tslib": "2.9.1",
     "underscore": "1.13.8",
