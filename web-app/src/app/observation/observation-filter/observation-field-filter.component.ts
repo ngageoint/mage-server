@@ -77,8 +77,6 @@ export class ObservationFieldFilterComponent {
   pendingValue: any = null
   pendingValueDisplay: string | null = null
 
-  private lastEmittedCondition: Condition | undefined = undefined
-
   private readonly allFieldGroups = computed(() => buildFieldGroups(this.forms()))
 
   get hasConditions(): boolean {
@@ -447,13 +445,7 @@ export class ObservationFieldFilterComponent {
   }
 
   private populateCondition(condition: Condition | null | undefined): void {
-    // The parent round-trips whatever this component just emitted straight back down as this
-    // same `condition` input (onConditionChanged stores the exact reference, unmodified) - skip
-    // rebuilding conditionGroups from that self-echo, or interacting with the builder mid-edit
-    // races against this effect and silently drops committed conditions. Only a condition this
-    // component never emitted itself (the initial seed from a previously-saved filter) should
-    // trigger a real repopulate.
-    if (!condition || condition === this.lastEmittedCondition) return
+    if (!condition) return
     this.conditionGroups = this.conditionGroupsFromFilter(condition)
   }
 
@@ -518,7 +510,6 @@ export class ObservationFieldFilterComponent {
       condition = { and: groups }
     }
 
-    this.lastEmittedCondition = condition
     this.conditionChanged.emit(condition)
   }
 }
