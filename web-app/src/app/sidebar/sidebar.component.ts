@@ -1,8 +1,7 @@
-import { animate, style, transition, trigger } from '@angular/animations';
 import { Component, DestroyRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, TemplateRef, ViewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatDialog as MatDialog } from '@angular/material/dialog';
-import { MatTabGroup as MatTabGroup } from '@angular/material/tabs';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTabGroup } from '@angular/material/tabs';
 import { filter, pairwise } from 'rxjs/operators';
 import moment from 'moment';
 import { FeedAction, FeedItemEvent, SidebarService } from './sidebar.service';
@@ -12,28 +11,17 @@ import { FilterService } from '../filter/filter.service';
 import { EventService } from '../event/event.service';
 import { ContactDialogComponent } from '../contact/contact-dialog.component';
 import { Feed, FeedService } from '@ngageoint/mage.web-core-lib/feed';
-import { SessionService } from 'mage-web-app/http/session.service';
+import { SessionService } from '../http/session.service';
 import { ExportService } from '../export/export.service';
 import { Export } from '../export/entities.export';
 import { Form } from '../entities/event/entities.event';
-import { FormProperties, Observation } from '../entities/observation/entities.observation';
+import { FormProperties, Observation, ObservationDraft } from '../entities/observation/entities.observation';
 import { UserWithLocation } from '../entities/user/entities.user-location';
 
 @Component({
     selector: 'sidebar',
     templateUrl: './sidebar.component.html',
     styleUrls: ['./sidebar.component.scss'],
-    animations: [
-        trigger('slide', [
-            transition(':enter', [
-                style({ transform: 'translateX(100%)' }),
-                animate('150ms', style({ transform: 'translateX(0%)' })),
-            ]),
-            transition(':leave', [
-                animate('250ms', style({ transform: 'translateX(100%)' }))
-            ])
-        ])
-    ],
     standalone: false
 })
 export class SidebarComponent implements OnInit, OnChanges {
@@ -75,7 +63,7 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   viewObservation: Observation | null = null
   observationReselected = false
-  editObservation: Observation | null = null
+  editObservation: ObservationDraft | null = null
 
   viewUser: UserWithLocation | null = null
   userReselected = false
@@ -89,14 +77,14 @@ export class SidebarComponent implements OnInit, OnChanges {
 
   constructor(
     public dialog: MatDialog,
-    private feedService: FeedService,
-    private sidebarService: SidebarService,
-    private mapService: MapService,
-    private sessionService: SessionService,
-    private filterService: FilterService,
-    private eventService: EventService,
-    private exportService: ExportService,
-    private destroyRef: DestroyRef) { }
+    private readonly feedService: FeedService,
+    private readonly sidebarService: SidebarService,
+    private readonly mapService: MapService,
+    private readonly sessionService: SessionService,
+    private readonly filterService: FilterService,
+    private readonly eventService: EventService,
+    private readonly exportService: ExportService,
+    private readonly destroyRef: DestroyRef) { }
 
   ngOnInit(): void {
     this.currentTab = this.tabs[0]
@@ -210,7 +198,7 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.event && changes.event.currentValue) {
+    if (changes.event?.currentValue) {
       this.newObservation = null
       this.editObservation = null
       this.viewObservation = null
@@ -220,9 +208,9 @@ export class SidebarComponent implements OnInit, OnChanges {
       this.observationBadge = null
     }
 
-    if (changes.observationLocation && changes.observationLocation.currentValue) {
+    if (changes.observationLocation?.currentValue) {
       // Don't allow new observation if observation create is in progress
-      if (this.newObservation) return
+      if (this.newObservation || this.editObservation) return
 
       this.createNewObservation(changes.observationLocation.currentValue)
     }
@@ -299,10 +287,14 @@ export class SidebarComponent implements OnInit, OnChanges {
   }
 
   onObservationEditClose(observation?: any): void {
+    const savedClone = observation && this.editObservation?.id === 'new'
     this.newObservation = null;
     this.editObservation = null;
 
-    if (observation && this.viewObservation && this.viewObservation.id === observation.id) {
+    if (savedClone) {
+      if (this.viewObservation) this.mapService.deselectFeatureInLayer(this.viewObservation, 'observations');
+      this.viewObservation = observation
+    } else if (observation && this.viewObservation?.id === observation.id) {
       this.viewObservation = observation
     }
   }

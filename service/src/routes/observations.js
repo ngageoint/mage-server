@@ -167,6 +167,7 @@ module.exports = function (app, security) {
         formMap[form.id] = form;
       });
 
+      res.attachment(req.observation._id + ".zip");
       const archive = archiver("zip");
       archive.pipe(res);
 

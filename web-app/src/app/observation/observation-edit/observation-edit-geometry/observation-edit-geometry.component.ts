@@ -1,98 +1,98 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core'
+import { TemplatePortal } from '@angular/cdk/portal'
+import { Component, effect, inject, input, output, signal, TemplateRef, viewChild, ViewContainerRef } from '@angular/core'
 import { UntypedFormGroup } from '@angular/forms'
+import { MatButtonModule } from '@angular/material/button'
 import { Feature, Geometry } from 'geojson'
 import { LocalStorageService } from '../../../http/local-storage.service'
+import { ObservationEditGeometryMapComponent } from './observation-edit-geometry-map.component'
+import { ObservationEditGeometryFormComponent } from './observation-edit-geometry-form.component'
+import { GeometryModule } from 'mage-web-app/geometry/geometry.module'
+
+export type GeometryEditEvent =
+  | { action: 'edit', portal: TemplatePortal<any> }
+  | { action: 'none' }
 
 @Component({
     selector: 'observation-edit-geometry',
     templateUrl: './observation-edit-geometry.component.html',
     styleUrls: ['./observation-edit-geometry.component.scss'],
-    standalone: false
+   imports: [
+      MatButtonModule,
+      ObservationEditGeometryMapComponent,
+      ObservationEditGeometryFormComponent,
+      GeometryModule
+   ]
 })
-export class ObservationEditGeometryComponent implements OnChanges {
-  @Input() formGroup: UntypedFormGroup
-  @Input() definition: any
+export class ObservationEditGeometryComponent {
+  private readonly localStorageService: LocalStorageService = inject(LocalStorageService)
+  private readonly viewContainerRef = inject(ViewContainerRef)
 
-  @Input() featureId: string
-  @Input() featureStyle: any
+  formGroup = input.required<UntypedFormGroup>()
+  definition = input.required<any>()
 
-  @Output() onFeatureEdit = new EventEmitter<any>()
+  featureId = input.required<string>()
+  featureStyle = input<any>()
 
-  @ViewChild('geometry', { static: true }) geometryElement: ElementRef
+  featureEdit = output<GeometryEditEvent>()
 
-  edit = false
-  mapFeature: any
-  editFeature: any
+  editorTemplate = viewChild.required<TemplateRef<any>>('editor')
 
-  constructor(
-    private localStorageService: LocalStorageService
-  ) {}
+  mapFeature = signal<any>(null)
+  editFeature = signal<any>(null)
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.formGroup && changes.formGroup.currentValue) {
-      this.mapFeature = {
-        id: this.featureId,
+  constructor() {
+    effect(() => {
+      const formGroup = this.formGroup()
+      const definition = this.definition()
+      const featureStyle = this.featureStyle()
+      this.mapFeature.set({
+        id: this.featureId(),
         type: 'Feature',
-        geometry: changes.formGroup.currentValue.get(this.definition.name).value
-      }
-    }
-
-    if (changes.featureStyle && changes.featureStyle.currentValue) {
-      this.mapFeature = {
-        id: this.featureId,
-        type: 'Feature',
-        geometry: this.formGroup.get(this.definition.name).value,
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
-    }
+        geometry: formGroup.get(definition.name).value,
+        style: featureStyle ? JSON.parse(JSON.stringify(featureStyle)) : null
+      })
+    })
   }
 
   startGeometryEdit(): void {
-    this.edit = true;
-
-    const value = this.formGroup.get(this.definition.name).value
+    const value = this.formGroup().get(this.definition().name).value
     if (value) {
-      this.editFeature = {
-        id: this.featureId,
+      this.editFeature.set({
+        id: this.featureId(),
         type: 'Feature',
         geometry: value,
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
+        style: this.featureStyle() ? JSON.parse(JSON.stringify(this.featureStyle())) : null
+      })
     } else {
       const mapPosition = this.localStorageService.getMapPosition();
-      this.editFeature = {
+      this.editFeature.set({
         type: 'Feature',
         geometry: {
           type: 'Point',
           coordinates: [mapPosition.center.lng, mapPosition.center.lat]
         },
-        style: this.featureStyle ? JSON.parse(JSON.stringify(this.featureStyle)) : null
-      }
+        style: this.featureStyle() ? JSON.parse(JSON.stringify(this.featureStyle())) : null
+      })
     }
 
-    this.onFeatureEdit.emit({
+    this.featureEdit.emit({
       action: 'edit',
-      source: this.geometryElement
+      portal: new TemplatePortal(this.editorTemplate(), this.viewContainerRef)
     })
   }
 
   saveGeometryEdit(event: any): void {
-    this.edit = false
-    this.mapFeature = event.feature
+    this.mapFeature.set(event.feature)
 
-    // TODO normalize geometry
-    this.formGroup.get(this.definition.name).setValue(this.normalizeGeometry(event.feature))
+    this.formGroup().get(this.definition().name).setValue(this.normalizeGeometry(event.feature))
 
-    this.onFeatureEdit.emit({
-      action: 'none',
-      source: this.geometryElement
+    this.featureEdit.emit({
+      action: 'none'
     })
   }
 
   cancelGeometryEdit(): void {
-    this.edit = false;
-
-    this.onFeatureEdit.emit({
+    this.featureEdit.emit({
       action: 'none'
     })
   }
@@ -107,17 +107,14 @@ export class ObservationEditGeometryComponent implements OnChanges {
         else if (geometry.coordinates[0] > 180) geometry.coordinates[0] = geometry.coordinates[0] - 360
         break;
       case 'LineString':
-        for (let i = 0; i < geometry.coordinates.length; i++) {
-          const coord = geometry.coordinates[i];
-          while (coord[0] < -180) coord[0] = coord[0] + 360
-          while (coord[0] > 180) coord[0] = coord[0] - 360
+        for (const coordinate of geometry.coordinates) {
+          while (coordinate[0] < -180) coordinate[0] = coordinate[0] + 360
+          while (coordinate[0] > 180) coordinate[0] = coordinate[0] - 360
         }
         break;
       case 'Polygon':
-        for (let p = 0; p < geometry.coordinates.length; p++) {
-          const poly = geometry.coordinates[p];
-          for (let i = 0; i < poly.length; i++) {
-            const coord = poly[i];
+        for (const poly of geometry.coordinates) {
+          for (const coord of poly) {
             while (coord[0] < -180) coord[0] = coord[0] + 360
             while (coord[0] > 180) coord[0] = coord[0] - 360
           }

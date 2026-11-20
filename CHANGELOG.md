@@ -28,8 +28,12 @@ Mage adheres to [Semantic Versioning](http://semver.org/).
 * Third-party sign-in now tells the user when the browser blocks the sign-in window, instead of silently doing nothing
 * Clicking a third-party sign-in button again while its sign-in window is open no longer handles the sign-in twice, and abandoned sign-in attempts stop listening for a result
 * Third-party sign-in no longer misses its result when another page or browser extension posts a message while the sign-in window is open
+* The admin user details page lists only the user's teams instead of every team, and the team dashboard and bulk user import no longer include event teams
+* Reordering form fields in the admin form editor now persists the new order to other clients (observation view/edit, exports, mobile), which order fields by `id`; drag and drop again reassigns field ids in the new order
 
 ### Plugins
+#### Features
+* TAK plugin can now push Mage observations and user locations to a TAK Server as CoT events, with independent per-event toggles for each - see `plugins/tak/README.md`
 
 ## [6.7.1](https://github.com/ngageoint/mage-server/releases/tag/6.7.1)
 ### Service

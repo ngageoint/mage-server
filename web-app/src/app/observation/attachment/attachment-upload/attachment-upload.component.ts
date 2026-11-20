@@ -1,6 +1,11 @@
 import { HttpEvent, HttpEventType, HttpResponse, HttpResponseBase } from '@angular/common/http';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, effect, EventEmitter, inject, input, Output, signal } from '@angular/core';
 import { UntypedFormControl } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { FilenamePipe } from '../../../filename/filename.pipe';
 import { AttachmentAction } from '../../observation-edit/observation-edit-attachment/observation-edit-attachment-action';
 import { AttachmentService } from '../attachment.service';
 
@@ -11,9 +16,7 @@ export interface FileUpload {
   attachmentId: string,
   action: AttachmentAction,
   file: File,
-  preview?: string,
-  uploading?: boolean,
-  uploadProgress?: number
+  preview?: string
 }
 
 enum PreviewType {
@@ -24,45 +27,51 @@ enum PreviewType {
     selector: 'attachment-upload',
     templateUrl: './attachment-upload.component.html',
     styleUrls: ['./attachment-upload.component.scss'],
-    standalone: false
+    imports: [MatButtonModule, MatIconModule, MatProgressBarModule, MatProgressSpinnerModule, FilenamePipe]
 })
-export class AttachUploadComponent implements OnChanges {
-  @Input() attachment: FileUpload
-  @Input() url: string
+export class AttachUploadComponent {
+  private readonly attachmentService: AttachmentService = inject(AttachmentService)
+
+  attachment = input<FileUpload>()
+  url = input<string>()
 
   @Output() remove = new EventEmitter<{ id: number | string }>()
   @Output() upload = new EventEmitter<{ id: number | string, response: HttpResponseBase }>()
   @Output() error = new EventEmitter<{ id: number | string }>()
 
-  preview: PreviewType = PreviewType.LOADING
+  preview = signal<PreviewType>(PreviewType.LOADING)
   previewType = PreviewType
-  attachmentsToUpload = 0
+  uploading = signal(false)
+  uploadProgress = signal<number | null>(null)
   actions: typeof AttachmentAction = AttachmentAction
 
-  constructor(private changeDetector: ChangeDetectorRef, private attachmentService: AttachmentService) { }
+  constructor() {
+    effect(() => {
+      const attachment = this.attachment()
+      if (!attachment) return
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.attachment && this.attachment) {
-      if (this.attachment.file.type.match('image')) {
-        this.preview = PreviewType.LOADING
-        this.previewImage(this.attachment)
-          .then(() => { this.preview = PreviewType.IMAGE })
-          .catch(() => this.preview = PreviewType.UNKNOWN)
-      } else if (this.attachment.file.type.match('video')) {
-        this.preview = PreviewType.LOADING
-        this.previewVideo(this.attachment)
-          .then(() => { this.preview = PreviewType.VIDEO })
-          .catch(() => this.preview = PreviewType.UNKNOWN)
-      } else if (this.attachment.file.type.match('audio')) {
-        this.preview = PreviewType.AUDIO
+      if (attachment.file.type.match('image')) {
+        this.preview.set(PreviewType.LOADING)
+        this.previewImage(attachment)
+          .then(() => { this.preview.set(PreviewType.IMAGE) })
+          .catch(() => this.preview.set(PreviewType.UNKNOWN))
+      } else if (attachment.file.type.match('video')) {
+        this.preview.set(PreviewType.LOADING)
+        this.previewVideo(attachment)
+          .then(() => { this.preview.set(PreviewType.VIDEO) })
+          .catch(() => this.preview.set(PreviewType.UNKNOWN))
+      } else if (attachment.file.type.match('audio')) {
+        this.preview.set(PreviewType.AUDIO)
       } else {
-        this.preview = PreviewType.UNKNOWN
+        this.preview.set(PreviewType.UNKNOWN)
       }
-    }
+    })
 
-    if (changes.url && changes.url.currentValue) {
-      this.startUpload();
-    }
+    effect(() => {
+      if (this.url()) {
+        this.startUpload()
+      }
+    })
   }
 
   removeAttachment(id: number): void {
@@ -76,7 +85,6 @@ export class AttachUploadComponent implements OnChanges {
       reader.onload = (e: Event): void => {
         const target = e.target as FileReader;
         info.preview = target.result as string
-        this.changeDetector.detectChanges()
         resolve()
       }
 
@@ -101,12 +109,10 @@ export class AttachUploadComponent implements OnChanges {
           const image = canvas.toDataURL()
           info.preview = image
           URL.revokeObjectURL(url)
-          this.changeDetector.detectChanges()
           resolve()
         })
 
         video.addEventListener('error', () => {
-          this.changeDetector.detectChanges()
           reject()
         })
 
@@ -121,19 +127,20 @@ export class AttachUploadComponent implements OnChanges {
   }
 
   startUpload(): void {
-    if (!this.attachment || !this.url) return
+    const attachment = this.attachment()
+    if (!attachment || !this.url()) return
 
-    this.attachmentService.upload(this.attachment, this.url).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
+    this.attachmentService.upload(attachment, this.url()).subscribe((response: HttpEvent<HttpResponse<Object>>) => {
       if (response.type === HttpEventType.Response) {
-        this.attachment.uploading = false
+        this.uploading.set(false)
         if (response.status === 200) {
-          this.upload.emit({ id: this.attachment.id, response: response.body })
+          this.upload.emit({ id: attachment.id, response: response.body })
         } else {
-          this.error.emit({ id: this.attachment.id })
+          this.error.emit({ id: attachment.id })
         }
       } else if (response.type === HttpEventType.UploadProgress) {
-        this.attachment.uploading = true
-        this.attachment.uploadProgress = Math.round(100 * response.loaded / response.total);
+        this.uploading.set(true)
+        this.uploadProgress.set(Math.round(100 * response.loaded / response.total))
       }
     })
   }

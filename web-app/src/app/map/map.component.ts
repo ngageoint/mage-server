@@ -1,13 +1,12 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, OnDestroy, Output, ViewChild } from '@angular/core'
 import { LocationEvent, LocationState } from '../../app/map/controls/location.component'
-import { SearchEvent } from '../../app/map/controls/search.component'
 import { ZoomDirection, ZoomEvent as ZoomControlEvent } from '../../app/map/controls/zoom.component'
 import { LayerService } from '../layer/layer.service'
 import { MapLayerService, StyleEvent, ToggleEvent } from './layers/layer.service'
-import { MapService } from './map.service'
+import { FeatureEdit, FeatureEditDelegate, MapService } from './map.service'
 import { LocalStorageService } from '../http/local-storage.service'
 import { EventService } from '../event/event.service'
-import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent } from "leaflet"
+import { latLng, popup, tileLayer, Icon, Util, marker, TileLayer, geoJSON, GeoJSON as GeoJSONLayer, latLngBounds, LatLng, markerClusterGroup, MarkerClusterGroup, Map, Polyline, DomEvent, LocationEvent as LeafletLocationEvent, divIcon, DomUtil, Marker } from "leaflet"
 import { OpacityEvent, ZoomEvent as LayerZoomEvent } from './layers/layer.service'
 import { ReorderEvent } from './layers/layers.component'
 import { moveItemInArray } from '@angular/cdk/drag-drop'
@@ -18,12 +17,13 @@ import { COUNTRIES as countries } from './layers/static/layers'
 import 'leaflet-editable'
 import 'leaflet.markercluster'
 import { FeatureEditor } from './edit/FeatureEditor'
+import { PlacenameSearchResult } from '../geocoder/search/search.service'
 import GeoPackageLayers from './geopackage/GeoPackageLayers'
 import { FilterService } from '../filter/filter.service'
 import { GARSLayer } from './layers/gars/GARSLayer'
 import { MGRSLayer } from './layers/mgrs/MGRSLayer'
-import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
-import { MatDialog as MatDialog } from '@angular/material/dialog'
+import { GeoPackageLayer, GridOverlay, MapFeature, MapFeatureLayer, MapLayer, MapLayerGroup, MapLayerId, RasterLayer, RenderedMapLayer, RenderedRasterLayer, VectorLayer } from './entities.map-layer'
+import { MatDialog } from '@angular/material/dialog'
 import * as _ from 'lodash'
 import moment from 'moment';
 import { Subscription, interval } from 'rxjs'
@@ -31,6 +31,15 @@ import { ContactDialogComponent } from '../contact/contact-dialog.component'
 import { SessionService } from 'mage-web-app/http/session.service'
 
 Icon.Default.imagePath = '/'
+
+const GROUP_PANE_Z_INDEX: Record<MapLayerGroup, number> = {
+  base: 10000,
+  tile: 25000,
+  grid: 35000,
+  feature: 65000,
+  feed: 75000,
+  mage: 76000
+}
 
 @Component({
     selector: 'map',
@@ -41,13 +50,6 @@ Icon.Default.imagePath = '/'
 })
 export class MapComponent implements OnDestroy, AfterViewInit {
 
-  public static readonly PANE_Z_INDEX_BUCKET_SIZE = 10000
-  public static readonly BASE_PANE_Z_INDEX_OFFSET = 1 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly TILE_PANE_Z_INDEX_OFFSET = 2 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly GRID_PANE_Z_INDEX_OFFSET = 3 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly FEATURE_PANE_Z_INDEX_OFFSET = 6 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-  public static readonly MAGE_PANE_Z_INDEX_OFFSET = 7 * MapComponent.PANE_Z_INDEX_BUCKET_SIZE
-
   @Output() addObservation = new EventEmitter<any>()
 
   @ViewChild('map') mapElement!: ElementRef<any>
@@ -57,31 +59,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   private listenerTimeout?: ReturnType<typeof setTimeout>
 
   map!: Map
-  groups: Record<string, { offset: number, layers: RenderedMapLayer[] }> = {
-    'base': {
-      offset: MapComponent.BASE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'mage': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feed': {
-      offset: MapComponent.MAGE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'tile': {
-      offset: MapComponent.TILE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'feature': {
-      offset: MapComponent.FEATURE_PANE_Z_INDEX_OFFSET,
-      layers: []
-    },
-    'grid': {
-      offset: MapComponent.GRID_PANE_Z_INDEX_OFFSET,
-      layers: []
-    }
+  groups: Record<MapLayerGroup, RenderedMapLayer[]> = {
+    base: [],
+    tile: [],
+    grid: [],
+    feature: [],
+    feed: [],
+    mage: []
   }
   layers: Record<string, RenderedMapLayer> = {}
   geoPackageLayers: any
@@ -90,8 +74,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   locationLayer = locationMarker([0, 0], { color: '#136AEC', radius: 16 })
   locationState = LocationState.Off
   searchMarker: any
+  searchHighlight?: Marker
+  searchHighlightTimeout?: ReturnType<typeof setTimeout>
   featurePanes: string[] = []
-  BASE_LAYER_PANE = 'baseLayerPane'
 
   toggleSubscription: Subscription
   zoomSubscription: Subscription
@@ -103,13 +88,13 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   constructor(
     public dialog: MatDialog,
-    private mapService: MapService,
-    private sessionService: SessionService,
+    private readonly mapService: MapService,
+    private readonly sessionService: SessionService,
     mapLayerService: MapLayerService,
-    private layerService: LayerService,
-    private eventService: EventService,
-    private filterService: FilterService,
-    private localStorageService: LocalStorageService
+    private readonly layerService: LayerService,
+    private readonly eventService: EventService,
+    private readonly filterService: FilterService,
+    private readonly localStorageService: LocalStorageService
   ) {
     this.toggleSubscription = mapLayerService.toggle$.subscribe(event => this.layerTogged(event));
     this.zoomSubscription = mapLayerService.zoom$.subscribe(event => this.zoom(event));
@@ -150,10 +135,9 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     })
 
     // Spread out map panes
-    // To easily adjust zIndex across all types of layers each feature group,
-    // overlay map, etc, will be placed in its own map pane
-    const baseLayerPane = this.map.createPane(this.BASE_LAYER_PANE)
-    baseLayerPane.style.zIndex = `${100 * 100}`
+    Object.entries(GROUP_PANE_Z_INDEX).forEach(([group, zIndex]) => {
+      this.map.createPane(this.groupPaneName(group as MapLayerGroup)).style.zIndex = `${zIndex}`
+    })
 
     const panes = this.map.getPanes()
     panes.tilePane.style.zIndex = `${200 * 100}`
@@ -252,13 +236,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   reorder($event: ReorderEvent): void {
     moveItemInArray($event.layers, $event.previousIndex, $event.currentIndex)
-    const offset = this.groups[$event.group].offset
-
-    $event.layers.forEach((layer, index) => {
-      layer.zIndex = offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (index + 1)
-      const pane = this.map.getPanes()[layer.layer.options.pane]
-      pane.style.zIndex = `${layer.zIndex}`
-    })
+    this.restackGroup($event.group)
   }
 
   zoom($event: LayerZoomEvent): void {
@@ -284,18 +262,62 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  onSearch($event: SearchEvent) {
+  onSearch(result: PlacenameSearchResult) {
     this.onSearchClear()
 
     this.map.fitBounds(
       latLngBounds(
-        latLng($event.result.bbox[1], $event.result.bbox[0]),
-        latLng($event.result.bbox[3], $event.result.bbox[2])
+        latLng(result.bbox[1], result.bbox[0]),
+        latLng(result.bbox[3], result.bbox[2])
       )
     )
 
-    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent($event.result.name)
-    this.searchMarker = marker([$event.result.position[1], $event.result.position[0]])
+    this.addSearchMarker(result)
+  }
+
+  showSearchResultForEdit(result: PlacenameSearchResult, editor: FeatureEditor) {
+    this.clearSearchHighlight()
+
+    const resultBounds = latLngBounds(
+      latLng(result.bbox[1], result.bbox[0]),
+      latLng(result.bbox[3], result.bbox[2])
+    )
+    const position = latLng(result.position[1], result.position[0])
+    const shapeBounds = editor.getBounds()
+    const bounds = shapeBounds ? shapeBounds.extend(position) : resultBounds
+    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 17 })
+
+    this.addSearchHighlight(position, result.name)
+  }
+
+  private addSearchHighlight(position: LatLng, name: string) {
+    const html = DomUtil.create('div')
+    DomUtil.create('div', 'marker-pulse__ring', html)
+    DomUtil.create('div', 'search-highlight__dot', html)
+    DomUtil.create('div', 'search-highlight__label', html).textContent = name
+
+    this.searchHighlight = marker(position, {
+      icon: divIcon({ className: 'marker-pulse', html, iconSize: [0, 0] }),
+      interactive: false,
+      keyboard: false
+    }).addTo(this.map)
+
+    this.searchHighlightTimeout = setTimeout(() => this.clearSearchHighlight(), 4000)
+    this.map.on('click', this.clearSearchHighlight, this)
+  }
+
+  private clearSearchHighlight() {
+    clearTimeout(this.searchHighlightTimeout)
+    this.map.off('click', this.clearSearchHighlight, this)
+    if (this.searchHighlight) {
+      this.map.removeLayer(this.searchHighlight)
+      this.searchHighlight = undefined
+    }
+  }
+
+  private addSearchMarker(result: PlacenameSearchResult) {
+    const markerPopup = popup({ className: 'leaflet-material-popup' }).setContent(result.name)
+    this.searchMarker = marker([result.position[1], result.position[0]])
       .addTo(this.map)
       .bindPopup(markerPopup)
       .openPopup()
@@ -305,6 +327,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     if (this.searchMarker) {
       this.map.removeLayer(this.searchMarker)
     }
+    this.clearSearchHighlight()
   }
 
   onAddObservation() {
@@ -352,8 +375,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     // skip if the location has not changed
     if (
       this.locationState === LocationState.Off ||
-      (this.currentLocation &&
-        this.currentLocation.latitude === location.latlng.lat &&
+      (this.currentLocation?.latitude === location.latlng.lat &&
         this.currentLocation.longitude === location.latlng.lng &&
         this.currentLocation.accuracy === location.accuracy)
     ) {
@@ -393,11 +415,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
 
   // TODO move into leaflet service, this and map clip both use it
   createRasterLayer(layerInfo: RasterLayer) {
-    let paneName = this.BASE_LAYER_PANE
-    if (!layerInfo.base) {
-      paneName = `pane-${layerInfo.id}`
-      this.map.createPane(paneName)
-    }
+    const paneName = this.createLayerPane(layerInfo)
 
     let layer: TileLayer | TileLayer.WMS
     if (layerInfo.format === 'WMS') {
@@ -422,8 +440,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGeoPackageLayer(layerInfo: GeoPackageLayer) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
     if (layerInfo.renderAs === 'feature') {
       this.featurePanes.push(pane)
     }
@@ -435,8 +452,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGeoJsonLayer(layerInfo: VectorLayer) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
     this.featurePanes.push(pane)
 
     const withFeatures = { ...layerInfo, featureIdToLayer: {} }
@@ -534,8 +550,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   createGridLayer(layerInfo: GridOverlay) {
-    const pane = `pane-${layerInfo.id}`
-    this.map.createPane(pane)
+    const pane = this.createLayerPane(layerInfo)
 
     const layer = layerInfo.id === 'gars' ? new GARSLayer({ pane }) : new MGRSLayer({ pane })
     const rendered = { ...layerInfo, layer } as RenderedMapLayer
@@ -553,12 +568,26 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.layerTogged(toggleEvent)
     }
 
-    const groupName = this.getGroup(layerInfo)
-    const group = this.groups[groupName]
-    layerInfo.zIndex = group.offset + MapComponent.PANE_Z_INDEX_BUCKET_SIZE - (group.layers.length + 1)
-    const pane = this.map.getPanes()[layerInfo.layer.options.pane]
-    pane.style.zIndex = `${layerInfo.zIndex}`
-    group.layers.push(layerInfo)
+    const group = this.getGroup(layerInfo)
+    this.groups[group].push(layerInfo)
+    this.restackGroup(group)
+  }
+
+  private groupPaneName(group: MapLayerGroup): string {
+    return `${group}GroupPane`
+  }
+
+  private createLayerPane(layer: MapLayer): string {
+    const pane = `pane-${layer.id}`
+    this.map.createPane(pane, this.map.getPane(this.groupPaneName(this.getGroup(layer))))
+    return pane
+  }
+
+  private restackGroup(group: MapLayerGroup): void {
+    const layers = this.groups[group]
+    layers.forEach((layer, index) => {
+      this.map.getPanes()[layer.layer.options.pane].style.zIndex = `${layers.length - index}`
+    })
   }
 
   onFeaturesChanged({ id, added = [], updated = [], removed = [] }: { id: string, added?: MapFeature[], updated?: MapFeature[], removed?: Pick<MapFeature, 'id'>[] }) {
@@ -664,11 +693,8 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       this.map.removeLayer(layerInfo.layer)
       delete this.layers[id]
 
-      Object.values(this.groups).forEach((group) => {
-        group.layers = group.layers.filter(groupLayer => {
-          return layerInfo.layer !== groupLayer.layer;
-        });
-      });
+      const group = this.getGroup(layerInfo)
+      this.groups[group] = this.groups[group].filter(groupLayer => groupLayer !== layerInfo)
     }
   }
 
@@ -702,7 +728,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     return bucket ? bucket.color : null
   }
 
-  createFeature(feature: MapFeature, delegate: { geometryChanged?: (geometry: any) => void, vertexClick?: (vertex: any) => void }) {
+  createFeature(feature: MapFeature, delegate: FeatureEditDelegate): FeatureEdit {
     // TODO put Observations in its own pane maybe??
     // TODO pass in layer collection id 'Observations'
     let editor = new FeatureEditor(this.map, feature, delegate)
@@ -725,8 +751,15 @@ export class MapComponent implements OnDestroy, AfterViewInit {
         editor.stopEdit()
         editor = new FeatureEditor(this.map, feature, delegate)
       },
+      selectVertex: (index: number) => {
+        editor.selectVertex(index)
+      },
+      showSearchResult: (result: PlacenameSearchResult) => {
+        this.showSearchResultForEdit(result, editor)
+      },
       cancel: () => {
         editor.stopEdit()
+        this.clearSearchHighlight()
         if (layer?.feature) {
           this.onFeaturesChanged({
             id: 'observations',
@@ -738,6 +771,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
       },
       save: () => {
         const newFeature = editor.stopEdit()
+        this.clearSearchHighlight()
         if (layer?.feature) {
           (layer.feature as MapFeature).geometry = newFeature.geometry
           this.onFeaturesChanged({
@@ -755,7 +789,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     panes.forEach(pane => {
       const mapPane = this.map.getPanes()[pane]
       const opacity = mapPane.style.opacity || "1"
-      mapPane.style.opacity = `${parseFloat(opacity) * opacityFactor}`
+      mapPane.style.opacity = `${Number.parseFloat(opacity) * opacityFactor}`
     })
   }
 
@@ -775,7 +809,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
   }
 
   baseToggled(layer: RenderedRasterLayer): void {
-    const baseLayers = this.groups['base'].layers
+    const baseLayers = this.groups.base
     const previousBaseLayer = baseLayers.find(baseLayer => baseLayer.selected)
     if (previousBaseLayer) {
       previousBaseLayer.selected = false
@@ -797,7 +831,7 @@ export class MapComponent implements OnDestroy, AfterViewInit {
     }
   }
 
-  private getGroup(layer: RenderedMapLayer): string {
+  private getGroup(layer: MapLayer): MapLayerGroup {
     switch (layer.type) {
       case 'GeoPackage':
         return layer.renderAs === 'tile' ? 'tile' : 'feature'

@@ -51,6 +51,10 @@ export type FormField = {
   choices: FormFieldChoice[]
 }
 
+export function activeFormFields(fields: FormField[] | undefined): FormField[] {
+  return (fields ?? []).filter((field) => !field.archived).sort((a, b) => a.id - b.id)
+}
+
 type FormStyleProps = {
   fill?: string
   stroke?: string

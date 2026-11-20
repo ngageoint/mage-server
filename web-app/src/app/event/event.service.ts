@@ -29,7 +29,7 @@ import { MemberPage } from "./event.types";
 import { MageEvent, Form, FormField, EventId } from "../entities/event/entities.event";
 import { Layer } from "../entities/layer/entities.layer";
 import { Team } from "../entities/team/entities.team";
-import { Attachment, Observation, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
+import { Attachment, Observation, ObservationDraft, ObservationMapFeature, ObservationStateName } from "../entities/observation/entities.observation";
 import { EventObservationFilter } from "../filter/filter.types";
 
 export interface FetchResult<T> {
@@ -306,7 +306,7 @@ export class EventService {
     this.locationsTrigger$.next({ userInitiated: true });
   }
 
-  saveObservation(observation: Observation) {
+  saveObservation(observation: ObservationDraft) {
     const event = this.eventsById[observation.eventId];
     return this.observationService.saveObservationForEvent(event, observation)
       .pipe(
@@ -421,12 +421,12 @@ export class EventService {
     return form.fields.find((field: FormField) => field.name === fieldName);
   }
 
-  getForms(observation: Observation, options?: any) {
+  getForms(observation: Pick<Observation, 'eventId'>, options?: any) {
     const event = this.eventsById[observation.eventId];
     return this.getFormsForEvent(event, options);
   }
 
-  getFormsForEvent(event: MageEvent, options?: any) {
+  getFormsForEvent(event: MageEvent, options?: any): Form[] {
     options = options || {};
     let forms = event.forms;
     if (options.archived === false) {

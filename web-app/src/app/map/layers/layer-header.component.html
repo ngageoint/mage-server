@@ -16,12 +16,6 @@
       </mat-radio-button>
     }
 
-    <span>{{ layer().name }}</span>
+    <span class="item-name">{{ layer().name }}</span>
   </div>
-
-  @if (hasBounds()) {
-    <button class="item-action" matIconButton matTooltip="Zoom To Bounds" matTooltipPosition="below" (click)="zoom($event)">
-      <mat-icon>crop_free</mat-icon>
-    </button>
-  }
 </div>

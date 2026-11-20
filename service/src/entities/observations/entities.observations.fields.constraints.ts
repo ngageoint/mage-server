@@ -94,6 +94,19 @@ export const validateFieldTypeConstraint: Record<FormFieldType, (entry: FormFiel
   [FormFieldType.Radio]: validateEach(validateRequiredConstraint, validateChoicesConstraint),
 }
 
+const validateUserFieldTypeConstraint: Partial<Record<FormFieldType, FieldConstraintValidation>> = {
+  [FormFieldType.Dropdown]: validateEach(validateRequiredConstraint, validateTextFieldType),
+  [FormFieldType.MultiSelectDropdown]: validateEach(validateRequiredConstraint, validateMultiSelectFieldType),
+}
+
+export function validateUserFieldConstraint(entry: FormFieldEntry | undefined, field: FormField): FieldValidationResult {
+  const validate = validateUserFieldTypeConstraint[field.type]
+  if (!validate) {
+    return fieldValidation.failed('A user field must be a dropdown or multi-select dropdown.', FieldConstraintKeys.Value)
+  }
+  return validate(entry, field)
+}
+
 function validateCheckboxFieldType(entry: FormFieldEntry | undefined): FieldValidationResult {
   return isBoolean(entry) ? fieldValidation.passed() :
     fieldValidation.failed('The entry must be true or false.', FieldConstraintKeys.Value)

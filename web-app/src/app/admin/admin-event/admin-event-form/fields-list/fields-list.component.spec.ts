@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { MatDialog as MatDialog, MatDialogRef as MatDialogRef } from '@angular/material/dialog';
+import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { of } from 'rxjs';
 import { FieldsListComponent } from './fields-list.component';
 import { Field } from '../../helpers/observation-feed-helper';
@@ -234,6 +235,119 @@ describe('FieldsListComponent', () => {
             expect(result.length).toBe(1);
             expect(result[0].name).toBe('field1');
             expect(component.fieldsChange.emit).toHaveBeenCalled();
+        });
+    });
+
+    describe('onDrop', () => {
+        // Drops, then passes any emitted fields back in as the parent would.
+        function drop(previousIndex: number, currentIndex: number): void {
+            component.onDrop({ previousIndex, currentIndex } as CdkDragDrop<Field[]>);
+            if ((component.fieldsChange.emit as jasmine.Spy).calls.any()) {
+                setFields(latestEmittedFields());
+            }
+        }
+
+        function activeNamesInIdOrder(): string[] {
+            return component.getActiveFields().map(f => f.name || '');
+        }
+
+        it('should list active fields in id order regardless of array order', () => {
+            setFields([
+                { id: 2, name: 'field2', title: 'Third', type: 'textfield', required: false },
+                { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
+                { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
+            ]);
+
+            expect(activeNamesInIdOrder()).toEqual(['field0', 'field1', 'field2']);
+        });
+
+        it('should reassign ids to match the new order', () => {
+            setFields([
+                { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
+                { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false },
+                { id: 2, name: 'field2', title: 'Third', type: 'textfield', required: false }
+            ]);
+
+            drop(2, 0);
+
+            expect(activeNamesInIdOrder()).toEqual(['field2', 'field0', 'field1']);
+            expect(component.fields().find(f => f.name === 'field2')?.id).toBe(0);
+            expect(component.fields().find(f => f.name === 'field0')?.id).toBe(1);
+            expect(component.fields().find(f => f.name === 'field1')?.id).toBe(2);
+        });
+
+        it('should reuse the existing set of ids when ids have gaps', () => {
+            setFields([
+                { id: 1, name: 'field1', title: 'First', type: 'textfield', required: false },
+                { id: 4, name: 'field4', title: 'Second', type: 'textfield', required: false },
+                { id: 7, name: 'field7', title: 'Third', type: 'textfield', required: false }
+            ]);
+
+            drop(0, 2);
+
+            expect(activeNamesInIdOrder()).toEqual(['field4', 'field7', 'field1']);
+            expect(component.getActiveFields().map(f => f.id)).toEqual([1, 4, 7]);
+        });
+
+        it('should not change archived field ids', () => {
+            setFields([
+                { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
+                { id: 1, name: 'field1', title: 'Archived', type: 'textfield', required: false, archived: true },
+                { id: 2, name: 'field2', title: 'Second', type: 'textfield', required: false }
+            ]);
+
+            drop(1, 0);
+
+            expect(activeNamesInIdOrder()).toEqual(['field2', 'field0']);
+            expect(component.getActiveFields().map(f => f.id)).toEqual([0, 2]);
+            const archived = component.fields().find(f => f.archived);
+            expect(archived?.name).toBe('field1');
+            expect(archived?.id).toBe(1);
+        });
+
+        it('should not reuse an existing field name for a field added after reordering', () => {
+            setFields([
+                { id: 1, name: 'field1', title: 'First', type: 'textfield', required: false },
+                { id: 2, name: 'field2', title: 'Second', type: 'textfield', required: false }
+            ]);
+
+            drop(1, 0);
+
+            const dialogRef = {
+                afterClosed: () => of({ title: 'New', type: 'textfield', required: false })
+            } as MatDialogRef<any>;
+            mockDialog.open.and.returnValue(dialogRef);
+            component.addField();
+
+            const result = latestEmittedFields();
+            const names = result.map(f => f.name);
+            expect(new Set(names).size).toBe(names.length);
+            expect(result[result.length - 1].name).toBe('field3');
+        });
+
+        it('should emit the reordered fields', () => {
+            setFields([
+                { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
+                { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
+            ]);
+
+            drop(0, 1);
+
+            expect(latestEmittedFields().map(f => f.name)).toEqual(['field1', 'field0']);
+            expect(latestEmittedFields().map(f => f.id)).toEqual([0, 1]);
+        });
+
+        it('should do nothing when dropped in place', () => {
+            const fields: Field[] = [
+                { id: 0, name: 'field0', title: 'First', type: 'textfield', required: false },
+                { id: 1, name: 'field1', title: 'Second', type: 'textfield', required: false }
+            ];
+            setFields(fields);
+
+            drop(1, 1);
+
+            expect(component.fields()).toBe(fields);
+            expect(component.fieldsChange.emit).not.toHaveBeenCalled();
         });
     });
 

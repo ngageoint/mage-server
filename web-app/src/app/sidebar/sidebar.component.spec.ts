@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { NO_ERRORS_SCHEMA } from '@angular/core';
+import { NO_ERRORS_SCHEMA, SimpleChange } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { BehaviorSubject, Subject, of } from 'rxjs';
 import { SidebarComponent } from './sidebar.component';
@@ -178,6 +178,89 @@ describe('SidebarComponent', () => {
       component.observationBadge = 3;
       component.tabChanged(1);
       expect(component.observationBadge).toBe(3);
+    });
+  });
+
+  describe('new observation from the map', () => {
+    function clickMap(): void {
+      component.ngOnChanges({
+        observationLocation: new SimpleChange(null, { latLng: { lat: 1, lng: 2 } }, false)
+      });
+    }
+
+    it('creates a new observation', () => {
+      const createNewObservation = spyOn(component, 'createNewObservation');
+
+      clickMap();
+
+      expect(createNewObservation).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not create one while another new observation is open', () => {
+      const createNewObservation = spyOn(component, 'createNewObservation');
+      component.newObservation = { id: 'new' };
+
+      clickMap();
+
+      expect(createNewObservation).not.toHaveBeenCalled();
+    });
+
+    it('does not create one while an observation or clone is being edited', () => {
+      const createNewObservation = spyOn(component, 'createNewObservation');
+      component.editObservation = { id: 'new' } as any;
+
+      clickMap();
+
+      expect(createNewObservation).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('closing the observation editor', () => {
+    const original = { id: 'o1' } as Observation;
+    let mapService: jasmine.SpyObj<MapService>;
+
+    beforeEach(() => {
+      mapService = TestBed.inject(MapService) as jasmine.SpyObj<MapService>;
+      component.viewObservation = original;
+    });
+
+    it('shows a saved clone instead of the original', () => {
+      const saved = { id: 'o2' } as Observation;
+      component.editObservation = { id: 'new' } as any;
+
+      component.onObservationEditClose(saved);
+
+      expect(component.viewObservation).toBe(saved);
+      expect(component.editObservation).toBeNull();
+      expect(mapService.deselectFeatureInLayer).toHaveBeenCalledWith(original, 'observations');
+    });
+
+    it('updates the viewed observation after it is edited', () => {
+      const saved = { id: 'o1' } as Observation;
+      component.editObservation = { id: 'o1' } as any;
+
+      component.onObservationEditClose(saved);
+
+      expect(component.viewObservation).toBe(saved);
+      expect(mapService.deselectFeatureInLayer).not.toHaveBeenCalled();
+    });
+
+    it('keeps showing the original when a clone is cancelled', () => {
+      component.editObservation = { id: 'new' } as any;
+
+      component.onObservationEditClose();
+
+      expect(component.viewObservation).toBe(original);
+      expect(component.editObservation).toBeNull();
+    });
+
+    it('does not change the view when an observation created from the map is saved', () => {
+      component.newObservation = { id: 'new' };
+
+      component.onObservationEditClose({ id: 'o3' });
+
+      expect(component.viewObservation).toBe(original);
+      expect(component.newObservation).toBeNull();
     });
   });
 });

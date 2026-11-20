@@ -6,13 +6,3 @@ mat-list-item {
   cursor: pointer;
   font: var(--mat-sys-body-large);
 }
-
-.options-download {
-  --mat-list-list-item-leading-icon-color: var(--mat-sys-primary);
-  --mat-list-list-item-hover-leading-icon-color: var(--mat-sys-primary);
-}
-
-.options-delete {
-  --mat-list-list-item-leading-icon-color: var(--mat-sys-error);
-  --mat-list-list-item-hover-leading-icon-color: var(--mat-sys-error);
-}

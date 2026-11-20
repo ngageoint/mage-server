@@ -6,12 +6,12 @@
 <mat-sidenav-container class="map-container" hasBackdrop="false">
   <mat-sidenav #drawer mode="over" position="end" autoFocus="false">
     <map-layers-panel 
-      [mageLayers]="groups['mage'].layers" 
-      [feedLayers]="groups['feed'].layers"
-      [baseLayers]="groups['base'].layers" 
-      [tileOverlays]="groups['tile'].layers" 
-      [featureOverlays]="groups['feature'].layers"
-      [gridOverlays]="groups['grid'].layers"
+      [mageLayers]="groups.mage"
+      [feedLayers]="groups.feed"
+      [baseLayers]="groups.base"
+      [tileOverlays]="groups.tile"
+      [featureOverlays]="groups.feature"
+      [gridOverlays]="groups.grid"
       (onReorder)="reorder($event)">
     </map-layers-panel>
   </mat-sidenav>

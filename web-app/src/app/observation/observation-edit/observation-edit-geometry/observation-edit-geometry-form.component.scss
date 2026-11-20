@@ -3,10 +3,6 @@
   width: 100%;
 }
 
-.edit-location {
-  padding: 0 16px;
-}
-
 .chip-type {
   display: flex;
   align-items: center;
@@ -15,44 +11,55 @@
 }
 
 .chip-type__label {
+  flex: 1;
   margin-right: 16px;
   white-space: nowrap;
-  font: var(--mat-sys-label-small);
+  font: var(--mat-sys-title-medium);
+  color: var(--mat-sys-on-surface);
+}
+
+.chip-type__paste--active {
+  color: var(--mat-sys-primary);
+}
+
+.help {
+  margin: 0 0 24px 0;
+  font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
-  text-transform: uppercase;
 }
 
-.coordinates {
+.search {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.points {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+}
+
+.point {
   width: 100%;
-  align-items: flex-start;
 }
 
-.coordinate {
-  flex: 1 1 0;
-  min-width: 0;
+.point__error {
+  color: var(--mat-sys-error);
 }
 
-mat-form-field {
+.paste {
+  margin-bottom: 16px;
+}
+
+.paste__field {
   width: 100%;
-  min-width: 0;
 }
 
-.edit-location__actions {
+.paste__error {
+  color: var(--mat-sys-error);
+}
+
+.paste__actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 0;
-  padding-bottom: 0;
-}
-
-.edit-location__actions>button+button {
-  margin-left: 8px;
-}
-
-@media (max-width: 700px) {
-  .coordinates {
-    flex-direction: column;
-    gap: 0;
-  }
+  gap: 8px;
 }

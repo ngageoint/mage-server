@@ -8,7 +8,6 @@ export class LocalStorageService {
   pollingIntervalKey = "pollingInterval";
   mapPositionKey = "mapPosition";
   coordinateSystemViewKey = "coordinateSystemView";
-  coordinateSystemEditKey = "coordinateSystemEdit";
   timeZoneViewKey = "timeZoneView";
   timeZoneEditKey = "timeZoneEdit";
   timeFormatKey = "timeFormat";
@@ -96,17 +95,6 @@ export class LocalStorageService {
 
   setCoordinateSystemView(coordinateSystem: any) {
     return this.setLocalItem(this.coordinateSystemViewKey, coordinateSystem);
-  }
-
-  getCoordinateSystemEdit() {
-    return (
-      this.getLocalItem(this.coordinateSystemEditKey) ||
-      this.getCoordinateSystemView()
-    );
-  }
-
-  setCoordinateSystemEdit(coordinateSystem: any) {
-    return this.setLocalItem(this.coordinateSystemEditKey, coordinateSystem);
   }
 
   getTimeZoneView() {

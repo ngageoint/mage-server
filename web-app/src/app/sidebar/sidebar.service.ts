@@ -2,11 +2,15 @@ import { Injectable } from '@angular/core';
 import { Feature } from 'geojson';
 import { Subject } from 'rxjs';
 import { Feed } from '@ngageoint/mage.web-core-lib/feed';
-import { Observation } from '../entities/observation/entities.observation';
+import { Observation, ObservationDraft } from '../entities/observation/entities.observation';
 import { UserWithLocation } from '../entities/user/entities.user-location';
 
 export interface ObservationEvent {
   observation: Observation;
+}
+
+export interface EditObservationEvent {
+  observation: ObservationDraft;
 }
 
 export interface UserEvent {
@@ -32,11 +36,11 @@ export interface FeedItemEvent {
   providedIn: 'root'
 })
 export class SidebarService {
-  private viewUserSource = new Subject<UserEvent>()
-  private viewObservationSource = new Subject<ObservationEvent>()
-  private viewExportSource = new Subject<ExportEvent>()
+  private readonly viewUserSource = new Subject<UserEvent>()
+  private readonly viewObservationSource = new Subject<ObservationEvent>()
+  private readonly viewExportSource = new Subject<ExportEvent>()
 
-  private editObservationSource = new Subject<ObservationEvent>()
+  private readonly editObservationSource = new Subject<EditObservationEvent>()
 
   viewUser$ = this.viewUserSource.asObservable()
   viewObservation$ = this.viewObservationSource.asObservable()
@@ -44,7 +48,7 @@ export class SidebarService {
 
   editObservation$ = this.editObservationSource.asObservable()
 
-  private itemSource = new Subject<FeedItemEvent>()
+  private readonly itemSource = new Subject<FeedItemEvent>()
 
   item$ = this.itemSource.asObservable()
 
@@ -54,7 +58,7 @@ export class SidebarService {
     });
   }
 
-  edit(observation: Observation): void {
+  edit(observation: ObservationDraft): void {
     this.editObservationSource.next({
       observation: observation
     });

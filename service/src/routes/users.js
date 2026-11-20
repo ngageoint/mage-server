@@ -476,6 +476,11 @@ module.exports = function(app, security) {
 
       Authentication.updateAuthentication(req.user.authentication)
         .then(() => {
+          log.info('user changed own password', {
+            user: req.user.username,
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
           res.sendStatus(200);
         })
         .catch(err => next(err));
@@ -549,8 +554,10 @@ module.exports = function(app, security) {
         user.active = true;
       }
 
+      let enabled = false;
       let disabled = false;
       if (req.param('enabled') === true || req.param('enabled') === 'true') {
+        enabled = user.enabled !== true;
         user.enabled = true;
       } else if (
         req.param('enabled') === false ||
@@ -592,6 +599,15 @@ module.exports = function(app, security) {
             userId: updatedUser._id.toString(),
             activatedBy: req.user.username,
             activatedTime: new Date().toISOString()
+          });
+        }
+
+        if (enabled) {
+          log.info('user account enabled', {
+            user: updatedUser.username,
+            userId: updatedUser._id.toString(),
+            enabledBy: req.user.username,
+            enabledTime: new Date().toISOString()
           });
         }
 
@@ -656,6 +672,11 @@ module.exports = function(app, security) {
 
       Authentication.updateAuthentication(user.authentication)
         .then(() => {
+          log.info('user password changed', {
+            user: user.username,
+            changedBy: req.user.username,
+            changedTime: new Date().toISOString()
+          });
           res.sendStatus(200);
         })
         .catch(err => next(err));

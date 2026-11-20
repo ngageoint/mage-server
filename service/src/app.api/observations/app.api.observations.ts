@@ -99,8 +99,7 @@ export type ExoObservation = Omit<ObservationAttrs, 'attachments' | 'important' 
   user?: ExoObservationUserLite
   important?: ExoObservationImportantFlag
   state?: ObservationState
-  attachments: ExoAttachment[],
-  noGeometry?: boolean
+  attachments: ExoAttachment[]
 }
 
 export type ExoObservationMapView = Pick<ObservationAttrs, 'id' | 'type' | 'geometry'> & {

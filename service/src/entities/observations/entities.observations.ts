@@ -1,5 +1,5 @@
 import { BBox, Geometry } from 'geojson'
-import { validateFieldEntry } from './entities.observations.fields'
+import { validateFieldEntry, validateUserFieldEntry } from './entities.observations.fields'
 import { validateAttachmentsForField } from './entities.observations.fields.attachment'
 import { validateGeometryFieldType } from './entities.observations.fields.geometry'
 import {
@@ -36,8 +36,7 @@ export function copyObservationAttrs(from: ObservationAttrs): ObservationAttrs {
       ...from.properties,
       timestamp: new Date(from.properties.timestamp),
       forms: from.properties.forms.map(x => ({ ...x })),
-    },
-    noGeometry: !!from.noGeometry
+    }
   }
 }
 
@@ -182,7 +181,6 @@ export class Observation implements Readonly<ObservationAttrs> {
   readonly properties: Readonly<ObservationFeatureProperties>
   readonly attachments: readonly Attachment[]
   readonly pendingEvents: readonly PendingObservationDomainEvent[]
-  readonly noGeometry?: boolean
 
   constructor(...args: unknown[]) {
     if (args[0] !== ObservationConstructionToken) {
@@ -215,7 +213,6 @@ export class Observation implements Readonly<ObservationAttrs> {
     this.#attachmentsById = new Map(this.attachments.map(x => [x.id, x]))
     this.#validation = args[3] as ObservationValidationResult
     this.pendingEvents = (args[4] || []) as PendingObservationDomainEvent[]
-    this.noGeometry = !!attrs.noGeometry
   }
 
   get validation(): ObservationValidationResult {
@@ -1190,6 +1187,7 @@ function validateAttachment(attachment: Attachment, observation: ObservationAttr
 function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryError: FormEntryValidationError, validation: ObservationValidationContext): void {
   const formFields = form.fields || []
   const activeFields = formFields.filter(x => !x.archived)
+  const userFieldNames = new Set(form.userFields || [])
   activeFields.forEach(field => {
     if (field.type === FormFieldType.Attachment) {
       const attachmentFieldResult = validateAttachmentsForField(field, formEntry.id, validation.observationAttrs)
@@ -1203,7 +1201,9 @@ function validateFormFieldEntries(formEntry: FormEntry, form: Form, formEntryErr
       return
     }
     const fieldEntry = formEntry[field.name]
-    const fieldEntryResult = validateFieldEntry(fieldEntry, field)
+    const fieldEntryResult = userFieldNames.has(field.name) ?
+      validateUserFieldEntry(fieldEntry, field) :
+      validateFieldEntry(fieldEntry, field)
     if (fieldEntryResult.invalid) {
       const err = new FormFieldValidationError({
         fieldName: field.name,

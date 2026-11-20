@@ -434,9 +434,13 @@ function EventRoutes(app: express.Application, security: { authentication: authe
     '/api/events/:eventId/form/icons.zip',
     security.authentication.bearerAuthentication,
     middlewareAuthorizeAccess(MageEventPermission.READ_EVENT_ALL, EventAccessType.Read),
-    function (req, res) {
+    function (req, res, next) {
       new api.Icon(req.event!._id).getZipPath(function (err: any, zipPath: string) {
-        res.on('finish', function () {
+        if (err) {
+          fs.remove(zipPath, function () {});
+          return next(err);
+        }
+        res.on('close', function () {
           fs.remove(zipPath, function () {
             console.log('Deleted the temp icon zip %s', zipPath);
           });
@@ -574,6 +578,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer added to event', {
+          event: req.event!.name,
+          layerId: req.body.id,
+          addedBy: req.user!.username,
+          addedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }
@@ -588,6 +600,14 @@ function EventRoutes(app: express.Application, security: { authentication: authe
         if (err) {
           return next(err);
         }
+
+        log.info('layer removed from event', {
+          event: req.event!.name,
+          layerId: req.params.id,
+          removedBy: req.user!.username,
+          removedTime: new Date().toISOString()
+        });
+
         res.json(event);
       });
     }

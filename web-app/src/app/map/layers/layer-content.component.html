@@ -5,6 +5,14 @@
   </mat-slider>
 </div>
 
+@if (hasBounds()) {
+  <div class="zoom">
+    <button matButton (click)="zoom()">
+      <mat-icon>crop_free</mat-icon>Zoom to layer
+    </button>
+  </div>
+}
+
 @if (canOverrideStyle()) {
   <mat-slide-toggle class="style-override" [checked]="override()" (change)="overrideChanged($event.checked)">
     Override Style

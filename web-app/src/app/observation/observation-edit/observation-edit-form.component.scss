@@ -68,6 +68,12 @@
 
 .form-header-actions__expand {
   color: var(--mat-sys-on-surface-variant);
+  transform: rotate(0deg);
+  transition: transform 300ms ease-out;
+}
+
+.form-header-actions__expand--rotated {
+  transform: rotate(180deg);
 }
 
 .cdk-drag-handle {
@@ -83,7 +89,34 @@
 }
 
 .form-content {
+  display: grid;
+  grid-template-rows: 1fr;
   margin-top: 24px;
+}
+
+.form-content__content {
+  min-height: 0;
+}
+
+.form-content--enter .form-content__content,
+.form-content--leave .form-content__content {
+  overflow: hidden;
+}
+
+.form-content--enter {
+  animation: form-content-expand 300ms ease-out;
+}
+
+.form-content--leave {
+  animation: form-content-expand 300ms ease-in reverse;
+}
+
+@keyframes form-content-expand {
+  from {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+  }
 }
 
 .form-actions {

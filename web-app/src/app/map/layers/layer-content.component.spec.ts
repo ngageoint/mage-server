@@ -8,11 +8,12 @@ import { RenderedMapLayer } from '../entities.map-layer';
 const imageryLayer = { id: 1, name: 'Layer One', type: 'Imagery', layer: {} } as unknown as RenderedMapLayer;
 const defaultStyle = { stroke: '#000000FF', fill: '#00000011', width: 2 };
 const geoPackageLayer = { id: 'layer1', name: 'Layer One', type: 'GeoPackage', renderAs: 'feature', layer: {} } as unknown as RenderedMapLayer;
+const vectorLayer = { id: 'layer1', name: 'Layer One', type: 'vector', layer: { getBounds: () => null } } as unknown as RenderedMapLayer;
+const geoPackageBboxLayer = { id: 'layer1', name: 'Layer One', type: 'GeoPackage', renderAs: 'tile', bbox: [0, 0, 0, 0], layer: {} } as unknown as RenderedMapLayer;
 
 @Component({
     selector: `host-component`,
     template: `<layer-content [layer]="layer"></layer-content>`,
-    standalone: true,
     imports: [LayerContentComponent]
 })
 class TestHostComponent {
@@ -47,6 +48,34 @@ describe('LayerContentComponent', () => {
   it('should label the opacity slider', () => {
     const input: HTMLInputElement = fixture.nativeElement.querySelector('input[matSliderThumb]');
     expect(input.getAttribute('aria-label')).toEqual('Opacity');
+  });
+
+  it('should not show zoom for layers without bounds', () => {
+    expect(component.hasBounds()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.zoom')).toBeNull();
+  });
+
+  it('should show zoom for layers with getBounds', () => {
+    hostComponent.layer = vectorLayer;
+    fixture.detectChanges();
+    expect(component.hasBounds()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.zoom')).not.toBeNull();
+  });
+
+  it('should show zoom for GeoPackage layers with a bbox', () => {
+    hostComponent.layer = geoPackageBboxLayer;
+    fixture.detectChanges();
+    expect(component.hasBounds()).toBeTrue();
+  });
+
+  it('should zoom to layer', () => {
+    hostComponent.layer = vectorLayer;
+    fixture.detectChanges();
+    spyOn(component['layerService'], 'zoom');
+
+    fixture.nativeElement.querySelector('.zoom button').click();
+
+    expect(component['layerService'].zoom).toHaveBeenCalledWith(vectorLayer);
   });
 
   it('should only show style override for GeoPackage feature layers', () => {
