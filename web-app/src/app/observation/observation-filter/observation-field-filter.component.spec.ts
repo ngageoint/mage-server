@@ -166,6 +166,40 @@ describe('ObservationFieldFilterComponent', () => {
     });
   });
 
+  describe('keeping conditions while building', () => {
+    beforeEach(() => {
+      setForms();
+      selectField(component, 1, 'severity');
+      selectComparator(component, '=', 'is');
+      component.inputControl.setValue('high');
+      component.addOr();
+      fixture.detectChanges();
+    });
+
+    it('keeps committed conditions when a picked value hides the text input', () => {
+      selectField(component, 1, 'status');
+      selectComparator(component, '=', 'is');
+      selectValueOption(component, 'Open', 'Open');
+      fixture.detectChanges();
+      fixture.detectChanges();
+
+      expect(component.conditionGroups).toHaveSize(1);
+      expect(component.conditionGroups[0].conditions).toHaveSize(1);
+      expect(component.pendingValueDisplay).toBe('Open');
+    });
+
+    it('keeps committed and in-progress conditions when the incomplete error is shown', () => {
+      selectField(component, 1, 'severity');
+      fixture.componentRef.setInput('showIncompleteError', true);
+      fixture.detectChanges();
+      fixture.detectChanges();
+
+      expect(component.conditionGroups).toHaveSize(1);
+      expect(component.conditionGroups[0].conditions).toHaveSize(1);
+      expect(component.conditionState).toBe('comparator');
+    });
+  });
+
   describe('field/comparator/value selection', () => {
     beforeEach(() => setForms());
 
