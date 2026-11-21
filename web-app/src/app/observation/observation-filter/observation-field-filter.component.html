@@ -93,8 +93,8 @@
 
     @if (showInvalidNumberError) {
       <mat-error>Enter a valid number.</mat-error>
-    } @else if (showIncompleteError && hasIncompleteCondition) {
-      <mat-error>Finish or remove this condition.</mat-error>
+    } @else if (showIncompleteError() && hasIncompleteCondition) {
+      <mat-error>Complete this condition with Add, Or, or And, or remove it.</mat-error>
     }
   </mat-form-field>
 

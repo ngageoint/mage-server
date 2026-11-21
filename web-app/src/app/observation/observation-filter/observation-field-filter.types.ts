@@ -102,6 +102,12 @@ export const COMPARATORS_BY_TYPE: Record<string, Comparator[]> = {
 export const NULL_OPERATORS = ['IS NULL', 'IS NOT NULL']
 export const CHOICE_FIELD_TYPES = ['dropdown', 'multiselectdropdown', 'radio']
 
+export const INPUT_PLACEHOLDERS: Record<ConditionState, string> = {
+  field: 'Add Condition...',
+  comparator: 'Select operator...',
+  value: 'Enter value...',
+}
+
 export function buildFieldGroups(forms: any[]): FormGroup[] {
   return (forms || [])
     .filter(form => form.archived !== true)
