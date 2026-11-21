@@ -2,8 +2,7 @@ const fs = require('fs-extra')
   , path = require('path')
   , log = require('winston')
   , environment = require('../environment/env')
-  , LayerModel = require('../models/layer')
-  , CounterModel = require('../models/counter');
+  , LayerModel = require('../models/layer');
 
 class Layer {
   constructor(id) {
@@ -23,7 +22,7 @@ class Layer {
   }
 
   create(layer) {
-    return CounterModel.getNext('layer').then(id => {
+    return LayerModel.nextLayerId().then(id => {
       switch (layer.type) {
       case 'Feature':
         return createFeatureLayer(id, layer);
