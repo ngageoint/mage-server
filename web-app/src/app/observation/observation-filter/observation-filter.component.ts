@@ -48,7 +48,7 @@ export class ObservationFilterDialogComponent implements OnInit {
   readonly showIncompleteConditionError = signal(false)
   readonly timeZone = signal<'local' | 'gmt'>('local')
   readonly intervalChoice = signal<FilterChoice>(DEFAULT_OBSERVATION_FILTER.timeInterval.choice!)
-  
+
   defaultStartDate: Date
   startDate: Date
   defaultEndDate: Date

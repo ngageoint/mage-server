@@ -22,6 +22,7 @@ import {
   FilterCondition,
   FilterConditionGroup,
   FormGroup,
+  INPUT_PLACEHOLDERS,
   NULL_OPERATORS,
   TEXT_COMPARATORS,
   ValueOption,
@@ -104,7 +105,7 @@ export class ObservationFieldFilterComponent {
     if (this.pendingValue != null) return false
     const input = (this.inputControl.value || '').toString().trim()
     if (!input) return false
-    return isNaN(Number(input))
+    return Number.isNaN(Number(input))
   }
 
   // true whenever the user has started picking a field/operator/value
@@ -114,12 +115,7 @@ export class ObservationFieldFilterComponent {
   }
 
   get inputPlaceholder(): string {
-    switch (this.conditionState) {
-      case 'field': return 'Add Condition...'
-      case 'comparator': return 'Select operator...'
-      case 'value': return 'Enter value...'
-      default: return ''
-    }
+    return INPUT_PLACEHOLDERS[this.conditionState]
   }
 
   constructor() {
