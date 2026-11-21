@@ -1,0 +1,89 @@
+<details>
+  <summary>How the dynamic user guide works</summary>
+  <div class="explanation">
+    <h3>For developers: no AI required</h3>
+    <p>The guide update process uses deterministic Node scripts, application source and
+      explicitly configured screen captures. Generating, updating, checking, customizing
+      and reading guides requires no AI model, AI API, prompts or AI credentials, and
+      no Replit service. AI may help developers maintain content here in Replit, but
+      the resulting source and scripts work independently in a normal MAGE checkout.</p>
+
+    <h3>What the guide references</h3>
+    <ul>
+      <li><code>docs/user-guides.json</code> holds authored topics, instructions, image
+        placements and source dependencies. Template <code>data-guide</code> identifiers
+        link instructions to current button labels, accessible tooltips and icons.</li>
+      <li><code>scripts/generate-user-guides.cjs</code> resolves those references,
+        fingerprints tracked sources and produces the guide edition. Missing controls
+        fail generation rather than silently retaining an old label.</li>
+      <li><code>scripts/guide-scenes.cjs</code> defines navigation steps and expected views;
+        <code>scripts/guide-capture-fixtures.cjs</code> supplies fictional API records.
+        Captures are PNGs, with source and image hashes in
+        <code>docs/guide-captures.json</code>.</li>
+    </ul>
+
+    <h3>What updates automatically—and what does not</h3>
+    <p>Source-linked labels and icons update during generation. Changes to tracked
+      application views invalidate captures; the capture command rebuilds the real
+      Angular app and regenerates registered pictures. The generator does not invent
+      workflow instructions or discover every new screen, dialog, plugin or role.
+      Narrative text and coverage still require a maintainer.</p>
+    <ul>
+      <li><strong>Rename a control:</strong> keep its stable identifier; regenerate and
+        review the wording. If a control is removed or replaced, update its references.</li>
+      <li><strong>Change a covered view:</strong> refresh captures and inspect layout,
+        controls and captions against the new UI.</li>
+      <li><strong>Add a view, dialog or role:</strong> add a scenario and fictional fixtures,
+        link the picture to the appropriate instructions, then capture and review.</li>
+      <li><strong>Change a workflow:</strong> edit the authored steps and any affected
+        scenarios. Source fingerprints flag review; they cannot infer intended behavior.</li>
+      <li><strong>Edit guide text only:</strong> generate and review; unchanged app views
+        need no new capture.</li>
+    </ul>
+
+    <h3>Developer update checklist</h3>
+    <p>From <code>mage-server/web-app</code> (or <code>web-app</code> in a standalone
+      mage-server checkout), install the project's locked dependencies with a supported
+      Node version and build the core library if needed. Install Chrome/Chromium on the
+      build host, put it on PATH or set <code>CHROME_BIN</code> to its executable.</p>
+    <ol>
+      <li>Update the UI, guide instructions, source links and scenarios as needed.</li>
+      <li>Run <code>npm run guides:capture</code>, then <code>npm run guides:generate</code>.</li>
+      <li>Inspect changed pictures and read the affected instructions. Correct gaps before
+        acknowledging review; do not use review to suppress a failure.</li>
+      <li>Run <code>npm run guides:review</code> only after that review, then
+        <code>npm run guides:check</code> and <code>npm run guides:test</code>.
+        The review command acknowledges all current topics.</li>
+    </ol>
+    <p>Normal npm app build hooks check and refresh captures. The development guide watcher
+      regenerates content but does not refresh stale screenshots itself: run the capture
+      command when it reports stale pictures. Missing sources, stale captures and
+      unreviewed changes fail validation. Generated output is not a substitute for
+      reviewing the intended workflow.</p>
+
+    <h3>Real screens, fictional data and portable packaging</h3>
+    <p>Pictures render the actual compiled MAGE app in an isolated temporary browser
+      profile against fictional API fixtures—not live users, events, observations or
+      a database. Map pictures use MAGE's OpenStreetMap basemap at a fixed documentation
+      area, with attribution. Unregistered API calls fail; external capture requests
+      are restricted to the local fixture server and permitted public font/OSM tile
+      hosts. This is non-AI, not a claim of zero network dependencies.</p>
+    <p>Current packaged captures let Docker builds and installed MAGE use the guide
+      without a capture browser. Stale pictures must be refreshed on a developer
+      machine before packaging. Pictures represent the compiled source version,
+      not an unrelated older installation. See <code>docs/guide-screen-capture.md</code>
+      for the maintainer procedure.</p>
+
+    <h3>Administrator edits and offline editions</h3>
+    <p>Administrator overrides are stored separately from generated defaults:
+      section and form-field inclusion, edited text and uploaded pictures with chosen
+      placement survive regeneration. Global changes require the existing settings-update
+      permission; event changes also require access to that event. Event-specific
+      content is subject to event-read authorization. These choices change documentation,
+      not form behavior or application permissions. Manual text and uploaded pictures
+      still need manual maintenance when workflows change.</p>
+    <p>Offline downloads embed the selected edition and its pictures with the saved
+      customizations. Download again after updates; an existing offline file does not
+      update itself. Administrator editing instructions remain in the separate Admin Guide.</p>
+  </div>
+</details>

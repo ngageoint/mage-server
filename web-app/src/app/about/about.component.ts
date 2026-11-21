@@ -1,18 +1,19 @@
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Location } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { ApiService } from '../api/api.service';
+import { GuideMaintenanceComponent } from './guide-maintenance.component';
 
 @Component({
   selector: 'about',
   templateUrl: './about.component.html',
   styleUrls: ['./about.component.scss'],
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule]
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatToolbarModule, RouterLink, GuideMaintenanceComponent]
 })
 export class AboutComponent {
   private location: Location = inject(Location);

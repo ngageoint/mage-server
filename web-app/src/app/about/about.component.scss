@@ -1,5 +1,9 @@
 :host {
   --mat-card-elevated-container-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
 }
 
 mat-toolbar {
@@ -27,6 +31,8 @@ mat-toolbar {
   gap: 16px;
   flex: 1;
   overflow-y: auto;
+  box-sizing: border-box;
+  width: 100%;
 
   @media (max-width: 600px) {
     padding: 16px 5vw;

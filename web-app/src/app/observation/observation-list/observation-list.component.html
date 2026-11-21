@@ -20,7 +20,7 @@
         }
       </div>
     </div>
-    <button matIconButton (click)="openFilterDialog()">
+    <button matIconButton data-guide="map.filter" aria-label="Filter observations" (click)="openFilterDialog()">
       <mat-icon [class.material-icons-outlined]="!filterCount()" [matTooltip]="filterCount() | i18nPlural: filterPluralMapping">filter_alt</mat-icon>
     </button>
   </mat-toolbar>

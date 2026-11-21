@@ -66,6 +66,34 @@ describe('SessionService', () => {
     })
   })
 
+  describe('syncTokenFromStorage for new-tab guides', () => {
+    it('clears the previous user when another tab signs out', () => {
+      service.setToken('fictional-session')
+      service.setUser({ id: 'example-admin' })
+      localStorage.removeLocalItem('token')
+      service.syncTokenFromStorage()
+      expect(service.getToken()).toBeNull()
+      expect(service.user).toBeNull()
+    })
+
+    it('invalidates the previous user when another tab changes accounts', () => {
+      service.setToken('fictional-first-session')
+      service.setUser({ id: 'example-first' })
+      localStorage.setLocalItem('token', 'fictional-second-session')
+      service.syncTokenFromStorage()
+      expect(service.getToken()).toBe('fictional-second-session')
+      expect(service.user).toBeNull()
+    })
+
+    it('retains the verified user when the stored session is unchanged', () => {
+      service.setToken('fictional-session')
+      const user = { id: 'example-admin' }
+      service.setUser(user)
+      service.syncTokenFromStorage()
+      expect(service.user).toBe(user)
+    })
+  })
+
   describe('setUser / user getter', () => {
     it('user returns null before setUser', () => {
       expect(service.user).toBeNull()

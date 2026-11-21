@@ -23,6 +23,15 @@ export class SessionService {
     return this.tokenSubject.value
   }
 
+  /** A guide opens in a separate tab; invalidate its user when storage changes. */
+  syncTokenFromStorage(): void {
+    const token = this.localStorageService.getLocalItem(this.tokenKey) ?? null
+    if (token !== this.tokenSubject.value) {
+      this.userSubject.next(null)
+      this.tokenSubject.next(token)
+    }
+  }
+
   setToken(token: string): void {
     this.localStorageService.setLocalItem(this.tokenKey, token)
     this.tokenSubject.next(token)

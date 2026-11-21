@@ -1,0 +1,139 @@
+<mat-toolbar class="help-toolbar">
+  <a matButton [routerLink]="['/home']" class="return-home" aria-label="Return to MAGE">
+    <mat-icon>home</mat-icon><span>Return to MAGE</span>
+  </a>
+  <span class="help-title">User guide</span>
+  <span class="help-version">{{ guide.version }} &middot; {{ guide.edition }}</span>
+  <span class="spacer"></span>
+  <div class="help-actions">
+    <button matButton (click)="download(false)" [disabled]="!ready || !selected || !!editing" aria-label="Download current chapter">
+      <mat-icon>download</mat-icon><span class="lbl">Chapter</span>
+    </button>
+    <button matButton (click)="download(true)" [disabled]="!ready || !!editing" aria-label="Download all guide topics">
+      <mat-icon>library_books</mat-icon><span class="lbl">All topics</span>
+    </button>
+    <button matButton (click)="print()" [disabled]="!ready || !!editing" aria-label="Print or save current chapter as PDF">
+      <mat-icon>print</mat-icon><span class="lbl">Print / Save as PDF</span>
+    </button>
+  </div>
+</mat-toolbar>
+
+<div class="help-layout" [class.editing]="!!editing">
+  <aside class="help-nav" *ngIf="!editing" aria-label="Guide topics">
+    <label class="search">
+      <mat-icon>search</mat-icon>
+      <input type="search" placeholder="Search the guide" aria-label="Search the guide"
+        [value]="query" (input)="onSearch($any($event.target).value)">
+    </label>
+    <nav>
+      <button *ngFor="let t of guide.topics; let i = index; trackBy: trackById" class="topic"
+        [class.active]="t.id === selected?.id" [attr.aria-current]="t.id === selected?.id ? 'page' : null"
+        (click)="select(t)">
+        <span class="num">{{ i + 1 }}</span>
+        <mat-icon>{{ t.icon }}</mat-icon>
+        <span class="topic-title">{{ t.title }}</span>
+      </button>
+    </nav>
+    <div class="event-scope" *ngIf="user">
+      <label for="guide-event">Event forms guide</label>
+      <select id="guide-event" class="event-select" [value]="eventId || ''" (change)="selectEvent($any($event.target).value)">
+        <option value="">No event</option>
+        <option *ngFor="let e of events" [value]="eventKey(e)">{{ e.name }}</option>
+      </select>
+      <button *ngIf="moreEvents" matButton class="more-events" [disabled]="eventsLoading" (click)="loadEvents(eventsPage + 1)">Load more events</button>
+      <p *ngIf="eventsError" class="nav-note">Events could not be listed. <button matButton (click)="loadEvents(0)">Retry</button></p>
+      <p *ngIf="eventLoad === 'loading'" class="nav-note">Loading event forms...</p>
+      <p *ngIf="eventLoad === 'error'" class="nav-note">Event forms could not load. <button matButton class="retry-event" (click)="retryEvent()">Retry</button></p>
+    </div>
+    <div class="customize" *ngIf="canCustomize && ready && !sessionChecking">
+      <button matButton class="customize-guide" (click)="startEditing('global')"><mat-icon>edit_note</mat-icon>Customize guide content</button>
+      <button *ngIf="event && eventLoad === 'ready'" matButton class="customize-event" (click)="startEditing('event')"><mat-icon>dynamic_form</mat-icon>Customize event forms</button>
+      <a matButton href="assets/guides/mage-admin-guide.pdf" target="_blank" rel="noopener">Admin Guide (PDF)</a>
+      <a matButton href="assets/guides/mage-admin-guide.docx" download>Admin Guide (Word)</a>
+    </div>
+    <div class="nav-note guide-access" *ngIf="!canCustomize">
+      <p *ngIf="sessionChecking">Checking guide editing access…</p>
+      <p *ngIf="!sessionChecking && (sessionError || !user)">To edit this guide, sign in as an administrator with permission to update settings.</p>
+      <p *ngIf="!sessionChecking && user && !sessionError">Your account can read this guide but does not have guide-editing permission.</p>
+      <a *ngIf="sessionError || !user" matButton routerLink="/landing" target="_blank" rel="noopener">Sign in to MAGE</a>
+      <button matButton class="refresh-guide-access" [disabled]="sessionChecking" (click)="refreshSession()">Refresh editing access</button>
+    </div>
+  </aside>
+
+  <main class="help-main" *ngIf="editing">
+    <mage-guide-editor *ngIf="editing === 'global'" [topics]="source.topics" [state]="globalState!" scope="global"
+      scopeLabel="All readers" (saved)="onSaved('global', $event)" (cancelled)="editing = null"></mage-guide-editor>
+    <mage-guide-editor *ngIf="editing === 'event' && event" [topics]="eventSource" [state]="eventState!" [scope]="eventId!"
+      [scopeLabel]="event.name" (saved)="onSaved('event', $event)" (cancelled)="editing = null"></mage-guide-editor>
+  </main>
+
+  <main class="help-main" *ngIf="!editing">
+    <div *ngIf="globalLoad === 'loading'" class="loading" aria-busy="true">
+      <div class="skel h"></div><div class="skel"></div><div class="skel"></div><div class="skel short"></div>
+    </div>
+    <div *ngIf="globalLoad === 'error'" class="banner error load-error" role="alert">
+      <mat-icon>error</mat-icon>
+      <span>The guide configuration could not load, so the guide cannot be shown or downloaded yet.</span>
+      <button matButton class="retry" (click)="loadGlobal()">Retry</button>
+    </div>
+    <div *ngIf="status" class="banner" [class.error]="status.kind === 'error'" role="status" aria-live="polite">
+      <mat-icon>{{ status.kind === 'error' ? 'error' : 'check_circle' }}</mat-icon>
+      <span>{{ status.text }}</span>
+      <button matIconButton aria-label="Dismiss" (click)="status = null"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <div *ngIf="unknownTopic" class="banner">
+      <mat-icon>help_outline</mat-icon>
+      <span>No guide topic named "{{ unknownTopic }}". Showing {{ selected?.title }} instead.</span>
+    </div>
+
+    <section *ngIf="query.trim()" class="results" aria-label="Search results">
+      <h2>{{ matches.length }} result{{ matches.length === 1 ? '' : 's' }} for "{{ query }}"</h2>
+      <p *ngIf="!matches.length" class="empty">Nothing matched. Try a control name such as a button label, or browse the topics.</p>
+      <button *ngFor="let m of matches" class="result" (click)="select(m.topic)">
+        <span class="result-head"><mat-icon>{{ m.topic.icon }}</mat-icon>{{ m.topic.title }} <span class="sep">/</span> {{ m.section }}</span>
+        <span class="snippet">{{ m.snippet }}</span>
+      </button>
+    </section>
+
+    <article *ngIf="selected && !query.trim()" class="topic-body">
+      <header>
+        <div class="eyebrow"><mat-icon>{{ selected.icon }}</mat-icon>{{ selected.route }}</div>
+        <h1>{{ selected.title }}</h1>
+        <p class="summary">{{ selected.summary }}</p>
+        <div class="audience"><mat-icon>badge</mat-icon><span><strong>Who this is for:</strong> {{ selected.audience }}. Options you do not see may require a different role or event permission.</span></div>
+      </header>
+
+      <div *ngIf="selected.controls.length" class="controls">
+        <span class="controls-label">Controls in this topic</span>
+        <span *ngFor="let c of selected.controls" class="chip"><mat-icon>{{ c.icon }}</mat-icon>{{ c.label }}</span>
+      </div>
+
+      <section *ngFor="let s of selected.sections; let i = index" class="section">
+        <h2><span class="sec-num">{{ i + 1 }}</span>{{ s.title }}</h2>
+        <ng-container *ngFor="let img of imagesAt(s, 'paragraph:0')" [ngTemplateOutlet]="figureTpl" [ngTemplateOutletContext]="{ $implicit: img }"></ng-container>
+        <ng-container *ngFor="let p of s.body; let n = index">
+          <p>{{ p }}</p>
+          <ng-container *ngFor="let img of imagesAt(s, 'paragraph:' + (n + 1))" [ngTemplateOutlet]="figureTpl" [ngTemplateOutletContext]="{ $implicit: img }"></ng-container>
+        </ng-container>
+        <ol *ngIf="s.steps.length" class="steps">
+          <li *ngFor="let st of s.steps; let n = index">{{ st }}
+            <ng-container *ngFor="let img of imagesAt(s, 'step:' + (n + 1))" [ngTemplateOutlet]="figureTpl" [ngTemplateOutletContext]="{ $implicit: img }"></ng-container>
+          </li>
+        </ol>
+      </section>
+    </article>
+
+    <div *ngIf="ready && !guide.topics.length" class="empty-state">
+      <mat-icon>menu_book</mat-icon>
+      <p>No guide topics are included in this edition.</p>
+    </div>
+  </main>
+</div>
+
+<ng-template #figureTpl let-img>
+  <figure class="screen-ref">
+    <img [src]="img.dataUrl" [alt]="img.alt" loading="lazy">
+    <figcaption><span class="ref-tag">Screen reference</span> {{ img.caption }}</figcaption>
+  </figure>
+</ng-template>

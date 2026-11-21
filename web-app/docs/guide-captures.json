@@ -1,0 +1,197 @@
+{
+  "referenceOnly": true,
+  "sourceFingerprint": "60e1e17a6c3ec8c54d69660ac403f19dd97623b6711ea21654c3cd0c3195175f",
+  "viewport": {
+    "width": 1200,
+    "height": 800
+  },
+  "data": "Isolated fictional fixtures only; no operational data or credentials",
+  "screens": [
+    {
+      "id": "guide-customization",
+      "route": "/help",
+      "file": "docs/images/guide-customization.png",
+      "sha256": "24a3f09b3cbe0c41bc667f2dc44e86a28c5d3c6e140609ad19c517da4ada5acd"
+    },
+    {
+      "id": "form-observation-feed",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/form-observation-feed.png",
+      "sha256": "4a181925587e12f03876618327a2a3e93411b9936c37674972ebf836b3db8bf8"
+    },
+    {
+      "id": "about-guide",
+      "route": "/about",
+      "file": "docs/images/about-guide.png",
+      "sha256": "29ebdec4425d22915b44257a57bb311f9c726dba6f1c95d04d897ec89cc1832c"
+    },
+    {
+      "id": "about-guide-maintenance",
+      "route": "/about",
+      "file": "docs/images/about-guide-maintenance.png",
+      "sha256": "1bf701ebdb2df602d01005f11120f3e05f5de3560500a9a7f89b11f8df3bca77"
+    },
+    {
+      "id": "about-guide-maintenance-mobile",
+      "route": "/about",
+      "file": "docs/images/about-guide-maintenance-mobile.png",
+      "sha256": "1fcecf0cc91560a68c2336e7cee1c6699b780ee09600da7b7a1f8f8df1c4a33a"
+    },
+    {
+      "id": "overview-map",
+      "route": "/home",
+      "file": "docs/images/overview-map.png",
+      "sha256": "2dc3064eb8a3b7676eef4b8a89ea948d55f2da163228b611a38c471fe4ec0c8c"
+    },
+    {
+      "id": "map-layer-list",
+      "route": "/home",
+      "file": "docs/images/map-layer-list.png",
+      "sha256": "487116d2df2da84d92e7c243b6cc6a604cac656f96533142e11d544ddf27ebed"
+    },
+    {
+      "id": "observation-create",
+      "route": "/home",
+      "file": "docs/images/observation-create.png",
+      "sha256": "6193f2da1d7ed4b051f0c90ae3c836fa5be8cbcd3642f5bab7325f0276f230a2"
+    },
+    {
+      "id": "map-filter",
+      "route": "/home",
+      "file": "docs/images/map-filter.png",
+      "sha256": "2477db7ee54e3477cab16dee08e88e5a7486a9e2d5d831d60e226ea590ccf625"
+    },
+    {
+      "id": "users-list",
+      "route": "/admin/users",
+      "file": "docs/images/users-list.png",
+      "sha256": "be0ab90d7aa66f3fb667b884f35982c5f604ef3af29f8a013ac12249d94d9dfd"
+    },
+    {
+      "id": "user-create",
+      "route": "/admin/users",
+      "file": "docs/images/user-create.png",
+      "sha256": "266b33ebebd82342917bbb6523177e8ffc8a3bd7ce2149b5f37666ecf2159720"
+    },
+    {
+      "id": "user-details",
+      "route": "/admin/users/guide-user",
+      "file": "docs/images/user-details.png",
+      "sha256": "70f137251d11cc54ae4e77e4574d63687261d4d85ec72967d1165dd8f01fd34f"
+    },
+    {
+      "id": "form-details",
+      "route": "/admin/events/1",
+      "file": "docs/images/form-details.png",
+      "sha256": "cf45b9f297f9a5e60b10667d637417220cc302411622a2fd1b3ac4b3bfac1ea2"
+    },
+    {
+      "id": "form-create",
+      "route": "/admin/events/1/forms/new",
+      "file": "docs/images/form-create.png",
+      "sha256": "232f6bf70020c8600f9f3de0f4631e74dc5f131fec48925d2a7dc3bb30abd7c6"
+    },
+    {
+      "id": "form-fields",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/form-fields.png",
+      "sha256": "e985544dcc33c552f4f88cc3a943526c32c5337ddf741c7db6065e29d777ebfb"
+    },
+    {
+      "id": "field-text",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-text.png",
+      "sha256": "4e011668bb5fa352b616c14d5705d165f6e80e15a965c656976af31e4dd9792a"
+    },
+    {
+      "id": "field-textarea",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-textarea.png",
+      "sha256": "c240ad402aabfc043a734ef13d0f0604e57b4b84c9e5ece9fe78b0af32e088ed"
+    },
+    {
+      "id": "field-number",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-number.png",
+      "sha256": "32996d7ae15fb41b6fced44014a583e6b6652dba5168e9fa7ac07b089477c5db"
+    },
+    {
+      "id": "field-email",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-email.png",
+      "sha256": "c2ed97674edf696c4353321f3e6ce678394c45b6602f65b9a1ac88e6b2d105f2"
+    },
+    {
+      "id": "field-date",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-date.png",
+      "sha256": "039dad39f3930537c352e9a7e6d3a12755e1e674eb4b1eb880ca9516cf21e6d2"
+    },
+    {
+      "id": "field-checkbox",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-checkbox.png",
+      "sha256": "e6edc45f96a6bbc9f8931b964ee652791f5f2adf18c2b8779b86932ace3787f1"
+    },
+    {
+      "id": "field-radio",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-radio.png",
+      "sha256": "80ca05d61e728b5cddea7dcfe73cfccb859fe373d9dcc765d22f3697454df697"
+    },
+    {
+      "id": "field-select",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-select.png",
+      "sha256": "29c3b189c924969268ce43ef8222f03c1a7021ebeb147f8c43cdf2311e0dbaeb"
+    },
+    {
+      "id": "field-location",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-location.png",
+      "sha256": "adae722e7ed90b1e74015444c535708ffcc773520e6c05a23b27492eac391510"
+    },
+    {
+      "id": "field-attachment",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-attachment.png",
+      "sha256": "401e70b13ffe055143fed3ce816bf58eb24469bbc5c714b5cbdc3646ac6323a1"
+    },
+    {
+      "id": "field-user",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/field-user.png",
+      "sha256": "2e1abe14f286dc403dee03b75b06c5bd3f33117473728a2a6b503a9bdd0e3ff6"
+    },
+    {
+      "id": "form-symbology",
+      "route": "/admin/events/1/forms/1",
+      "file": "docs/images/form-symbology.png",
+      "sha256": "01f31e6f6a9093e47fd7bfe5e6de20fc53242be577eef71fad720bb35fb35613"
+    },
+    {
+      "id": "layers-list",
+      "route": "/admin/layers",
+      "file": "docs/images/layers-list.png",
+      "sha256": "4e63d69b581b9421fadea17e30857740216fb2884ef978a23c37f53ab926a735"
+    },
+    {
+      "id": "layer-create",
+      "route": "/admin/layers",
+      "file": "docs/images/layer-create.png",
+      "sha256": "1e090abaed596ee6f49b880be307465d62ae8d62c9cdaccc89abd3a6a07a6d79"
+    },
+    {
+      "id": "feeds-list",
+      "route": "/admin/feeds",
+      "file": "docs/images/feeds-list.png",
+      "sha256": "0d61e3aadfaa75b8e79b2770ce471a763ea03ea0c7c5b7165efd1cb0eb2a5f0e"
+    },
+    {
+      "id": "feed-configure",
+      "route": "/admin/feeds/new",
+      "file": "docs/images/feed-configure.png",
+      "sha256": "10bbb362d1bdfa41b01b234ace5b2c615ad2fe6622fedf41ccf2922063d7ed1d"
+    }
+  ]
+}
