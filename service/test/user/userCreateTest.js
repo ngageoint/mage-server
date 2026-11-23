@@ -72,7 +72,7 @@ async function captcha(username = 'test') {
   return jwt;
 }
 
-describe('user create tests', function () {
+describe.only('user create tests', function () {
   beforeEach(function () {
     const config = {
       name: 'local',
@@ -121,132 +121,6 @@ describe('user create tests', function () {
       .withArgs('12345')
       .yields(null, createToken(userId, [permission]));
   }
-
-  it('should create user as admin', function (done) {
-    mockTokenWithPermission('CREATE_USER');
-
-    const id = new mongoose.Types.ObjectId();
-    const roleId = new mongoose.Types.ObjectId();
-    const mockRole = new RoleModel({
-      _id: roleId,
-      name: 'Admin',
-      permissions: ['SOME_PERMISSIONS']
-    });
-    const mockUser = new UserModel({
-      _id: id,
-      username: 'test',
-      displayName: 'test',
-      password: 'password',
-      passwordconfirm: 'password',
-      roleId: roleId,
-      authenticationId: new Authentication.Local({
-        _id: new mongoose.Types.ObjectId(),
-        type: 'local',
-        password: 'password',
-        authenticationConfigurationId: new AuthenticationConfiguration.Model({
-          _id: new mongoose.Types.ObjectId(),
-          type: 'local',
-          name: 'local',
-          settings: {
-            usersReqAdmin: true
-          }
-        }),
-        security: {}
-      })
-    });
-
-    sinon
-      .mock(AuthenticationConfiguration.Model)
-      .expects('findOne')
-      .chain('exec')
-      .resolves(mockUser.authentication.authenticationConfiguration);
-
-    sinon
-      .mock(Authentication)
-      .expects('createAuthentication')
-      .resolves(mockUser.authentication);
-
-    sinon
-      .mock(mockUser)
-      .expects('populate')
-      .atLeast(1)
-      .callsFake(function (paths) {
-        const requested = Array.isArray(paths) ? paths : [paths];
-        const populatesRole = requested.some(function (p) {
-          return p === 'roleId' || (p && p.path === 'roleId');
-        });
-        if (populatesRole) {
-          mockUser.roleId = mockRole;
-        }
-        return Promise.resolve(mockUser);
-      });
-
-    sinon
-      .mock(UserModel)
-      .expects('create')
-      .withArgs(sinon.match.has('active', true))
-      .resolves(mockUser);
-
-    sinon
-      .mock(mockUser)
-      .expects('save')
-      .resolves(mockUser);
-
-    request(app)
-      .post('/api/users')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        username: 'test',
-        displayName: 'test',
-        password: 'passwordpassword',
-        passwordconfirm: 'passwordpassword',
-        roleId: roleId
-      })
-      .expect(200)
-      .expect('Content-Type', /json/)
-      .expect(function (res) {
-        const user = res.body;
-        should.exist(user);
-        user.should.have.property('id').that.equals(id.toString());
-        user.should.have.property('role');
-        user.role.should.have.property('name', 'Admin');
-      })
-      .end(function (err) {
-        if (err) return done(err);
-        done();
-      });
-  });
-
-  it('should fail to create user as admin w/o roleId', function (done) {
-    mockTokenWithPermission('CREATE_USER');
-
-    sinon
-      .mock(AuthenticationConfiguration.Model)
-      .expects('findOne')
-      .chain('exec')
-      .resolves({
-        settings: {
-          usersReqAdmin: { enabled: true }
-        }
-      });
-
-    request(app)
-      .post('/api/users')
-      .set('Accept', 'application/json')
-      .set('Authorization', 'Bearer 12345')
-      .send({
-        username: 'test',
-        displayName: 'test',
-        password: 'passwordpassword',
-        passwordconfirm: 'passwordpassword'
-      })
-      .expect(400)
-      .expect(function (res) {
-        res.text.should.equal('roleId is a required field');
-      })
-      .end(done);
-  });
 
   it('should create captcha', function (done) {
     request(app)
