@@ -1,4 +1,7 @@
 
+// TODO: this can be deleted when everything migrates to paging types from entities.global.ts and
+// adapters.db.mongoose.ts
+
 class PageInfo {
   constructor() {
     this.links = {

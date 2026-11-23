@@ -1,3 +1,6 @@
+
+// TODO: users-next: delete this module
+
 module.exports = function(options) {
 
   const crypto = require('crypto');
