@@ -19,8 +19,6 @@ export class PluginResourceUrl extends URL {
    * Return the plugin module path from the given URL which is the path
    * component of the URL with no leading slash.  Return `undefined` if the
    * given URL does not have the appropriate {@link PluginResourceUrl.pluginProtocol | protocol}.
-   * @param source
-   * @returns
    */
   static pluginPathOf(source: URL): string | undefined {
     if (source.protocol !== PluginResourceUrl.pluginProtocol) {
