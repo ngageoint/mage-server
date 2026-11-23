@@ -25,12 +25,12 @@
 
           <div class="color-field">
             <label class="color-field-label" for="headerTextColor">Header Text Color</label>
-            <color-picker [hexColor]="headerTextColor()" id="headerTextColor" (onColorChanged)="headerTextColor.set($event.color); setDirty(true)"></color-picker>
+            <color-picker [hexColor]="headerTextColor()" id="headerTextColor" (colorChanged)="headerTextColor.set($event.color); setDirty(true)"></color-picker>
           </div>
 
           <div class="color-field">
             <label class="color-field-label" for="headerBackgroundColor">Header Background Color</label>
-            <color-picker [hexColor]="headerBackgroundColor()" id="headerBackgroundColor" (onColorChanged)="headerBackgroundColor.set($event.color); setDirty(true)"></color-picker>
+            <color-picker [hexColor]="headerBackgroundColor()" id="headerBackgroundColor" (colorChanged)="headerBackgroundColor.set($event.color); setDirty(true)"></color-picker>
           </div>
         </div>
 
@@ -52,12 +52,12 @@
 
           <div class="color-field">
             <label class="color-field-label" for="footerTextColor">Footer Text Color</label>
-            <color-picker [hexColor]="footerTextColor()" id="footerTextColor" (onColorChanged)="footerTextColor.set($event.color); setDirty(true)"></color-picker>
+            <color-picker [hexColor]="footerTextColor()" id="footerTextColor" (colorChanged)="footerTextColor.set($event.color); setDirty(true)"></color-picker>
           </div>
 
           <div class="color-field">
             <label class="color-field-label" for="footerBackgroundColor">Footer Background Color</label>
-            <color-picker [hexColor]="footerBackgroundColor()" id="footerBackgroundColor" (onColorChanged)="footerBackgroundColor.set($event.color); setDirty(true)"></color-picker>
+            <color-picker [hexColor]="footerBackgroundColor()" id="footerBackgroundColor" (colorChanged)="footerBackgroundColor.set($event.color); setDirty(true)"></color-picker>
           </div>
         </div>
       </div>

@@ -21,7 +21,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ColorPickerModule } from '../../../color-picker/color-picker.module';
+import { ColorPickerComponent } from '../../../color-picker/color-picker.component';
 
 @Component({
   selector: 'security-banner',
@@ -37,7 +37,7 @@ import { ColorPickerModule } from '../../../color-picker/color-picker.module';
     MatInputModule,
     MatIconModule,
     MatSlideToggleModule,
-    ColorPickerModule
+    ColorPickerComponent
   ]
 })
 export class SecurityBannerComponent implements OnInit, OnDestroy {
