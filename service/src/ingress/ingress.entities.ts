@@ -1,4 +1,7 @@
-import { UserId } from '../entities/users/entities.users'
+import { RoleId } from '../entities/authorization/entities.authorization'
+import { MageEventId } from '../entities/events/entities.events'
+import { TeamId } from '../entities/teams/entities.teams'
+import { User, UserAccountSeedSpec, UserId } from '../entities/users/entities.users'
 
 export const AuthenticationProtocolId = {
   Local: 'local',
@@ -14,7 +17,7 @@ export const AuthenticationProtocolId = {
  * that the user is valid.  Authentication protocols are OpenID Connect, OAuth, SAML, LDAP, and Mage's own local
  * password authentication database.
  */
-export type AuthenticationProtocolId = keyof typeof AuthenticationProtocolId
+export type AuthenticationProtocolId = typeof AuthenticationProtocolId[keyof typeof AuthenticationProtocolId]
 
 export type IdentityProviderId = string
 
@@ -33,11 +36,24 @@ export type IdentityProvider = {
   // protocolSettings: Record<string, any>
   // enabled: boolean
   // lastUpdated: Date
-  // userEnrollmentPolicy: UserEnrollmentPolicy
+  userEnrollmentPolicy: UserEnrollmentPolicy
   // deviceEnrollmentPolicy: DeviceEnrollmentPolicy
   // textColor?: string
   // buttonColor?: string
   // icon?: Buffer
+}
+
+/**
+ * Enrollment policy defines rules and effects to apply when a new user establishes a Mage account.
+ */
+export type UserEnrollmentPolicy = {
+  /**
+   * When true, an administrator must approve and activate new user accounts.
+   */
+  accountApprovalRequired: boolean
+  assignRole: RoleId
+  assignToTeams: TeamId[]
+  assignToEvents: MageEventId[]
 }
 
 /**
@@ -67,6 +83,38 @@ export type UserIdentity = {
 export type AuthenticationBinding = {
   userId: UserId
   identities: Map<IdentityProviderId, UserIdentity>
+}
+
+/**
+ * An identity provider account is the result of mapping a specific IDP account fields
+ * to a subset of Mage user account fields.  This includes the basic user profile
+ * attributes most identity providers track, most importantly a unique `username`.
+ * Different identity providers and authentication protocols define their own user
+ * profile schema that they will need to map to this Mage type.
+ */
+export type IdentityProviderAccount = Pick<User, 'username' | 'displayName' | 'email' | 'phones'>
+  & {
+  /**
+   * Commonly the same as `username`
+   */
+  idpAccountId?: string
+  idpAccountAttrs?: Record<string, any>
+}
+
+/**
+ * Return a new user object from the given identity provider account information suitable to persist as a newly
+ * enrolled user.  The enrollment policy for the identity provider determines the `active` flag and assigned role for
+ * the new user.
+ */
+export function createEnrollmentCandidateUser(idpAccount: IdentityProviderAccount, idp: IdentityProvider): UserAccountSeedSpec {
+  const policy = idp.userEnrollmentPolicy
+  return {
+    ...idpAccount,
+    active: !policy.accountApprovalRequired,
+    roleId: policy.assignRole,
+    enabled: true,
+    authenticationId: null,
+  }
 }
 
 export type IdentityProviderRepository = {
