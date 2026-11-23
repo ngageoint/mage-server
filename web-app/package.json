@@ -103,10 +103,10 @@
   },
   "devDependencies": {
     "@angular-builders/custom-webpack": "^20.0.0",
-    "@angular-devkit/build-angular": "20.3.31",
+    "@angular-devkit/build-angular": "^20.3.43",
     "@angular-devkit/core": "20.3.31",
     "@angular-devkit/schematics": "^20.3.31",
-    "@angular/cli": "20.3.31",
+    "@angular/cli": "^20.3.43",
     "@angular/compiler-cli": "20.3.33",
     "@angular/language-service": "20.3.33",
     "@rollup/plugin-commonjs": "^29.0.0",
@@ -123,7 +123,7 @@
     "ajv": "^8.18.0",
     "ajv-keywords": "^5.1.0",
     "copyfiles": "2.4.1",
-    "html-loader": "0.5.5",
+    "html-loader": "^5.1.0",
     "html-webpack-plugin": "5.5.0",
     "jasmine-core": "4.5.0",
     "karma": "6.4.1",
@@ -137,7 +137,7 @@
     "rimraf": "3.0.2",
     "tslint": "6.1.3",
     "typescript": "~5.9.3",
-    "webpack": "5.75.0",
+    "webpack": "^5.113.0",
     "webpack-bundle-analyzer": "4.7.0"
   }
 }
