@@ -33,6 +33,11 @@ export interface User {
    * The user avatar appears in list views and user profile views.
    */
   avatar?: Avatar | null | undefined
+  /**
+   * A user can set a message to notify others of the user's current status.
+   * TODO: A timestamp on the status message seems useful, and maybe expiration logic.
+   */
+  status?: string | null | undefined
   roleId: string
   /**
    * TODO: Invert this relationship key to keep the user account entity clean and
@@ -40,18 +45,13 @@ export interface User {
    * allow the potential for multiple identity providers to map to one Mage account,
    * and facilitate migrating accounts from one identity provider to another.
    */
-  authenticationId: string
-  /**
-   * A user can set a message to notify others of the user's current status.
-   * TODO: A timestamp on the status message seems useful, and maybe expiration logic.
-   */
-  status?: string | null | undefined
+  authenticationId: string | null
 }
 
 export type UserExpanded = Omit<User, 'roleId' | 'authenticationId'>
   & {
     role: Role
-    authentication: Authentication
+    authentication: Authentication | null
   }
 
 export interface Phone {
@@ -63,10 +63,6 @@ export interface Phone {
  * A user's icon is what appears on the map to mark the user's location.
  */
 export interface UserIcon {
-  /**
-   * TODO: This might be irrelevant after the icon is actually saved and could be
-   * a candidate to remove from the model.
-   */
   type: UserIconType
   text?: string
   color?: string
@@ -75,9 +71,19 @@ export interface UserIcon {
   relativePath?: string
 }
 
+/**
+ * Indicate how the admin created the icon.
+ */
 export enum UserIconType {
   None = 'none',
+  /**
+   * The admin uploaded a static icon image.
+   */
   Upload = 'upload',
+  /**
+   * The admin created and uploaded a static icon with text and a chosen color
+   * using the web app's canvas tool.
+   */
   Create = 'create',
 }
 
@@ -132,7 +138,7 @@ export class UserAccountSeed implements Readonly<UserAccountSeedSpec> {
   get icon(): UserIcon | null | undefined { return this.#seed.icon }
   get avatar(): Avatar | null | undefined { return this.#seed.avatar }
   get roleId(): string { return this.#seed.roleId }
-  get authenticationId(): string { return this.#seed.authenticationId }
+  get authenticationId(): string | null { return this.#seed.authenticationId }
 
   #seed: UserAccountSeedSpec
 
