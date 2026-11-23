@@ -1000,7 +1000,7 @@ async function initExportsAppLayer(
 async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']> {
   const localIdpService = createLocalIdentityProviderService(repos.localIdpRepo)
   const usersPermissions = new RoleBasedUsersPermissionService()
-  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, repos.ingress.idpRepo, repos.ingress.authBindingRepo, localIdpService, usersPermissions)
+  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, repos.roles.roleRepo, repos.ingress.idpRepo, repos.ingress.authBindingRepo, localIdpService, usersPermissions)
   const searchUsers = createSearchUsersOperation(repos.users.userRepo, usersPermissions)
   return {
     enrollLocalUserByProxy,
