@@ -47,7 +47,7 @@ const UserSchema = new Schema(
     roleId: { type: Schema.Types.ObjectId, ref: 'Role', required: true },
     status: { type: String, required: false, index: 'sparse' },
     recentEventIds: [{ type: Number, ref: 'Event' }],
-    authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: true }
+    authenticationId: { type: Schema.Types.ObjectId, ref: 'Authentication', required: false, default: null },
   },
   {
     versionKey: false,
