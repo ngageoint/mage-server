@@ -4,6 +4,14 @@ export interface EntityIdFactory<T = string> {
   nextId(): Promise<T>
 }
 
+/**
+ * Generates increasing numeric sequences, keyed by name. For
+ * assigning human-readable incrementing IDs to layers and forms.
+ */
+export interface SequenceRepository {
+  nextValue(sequenceName: string): Promise<number>
+}
+
 export const PendingEntityId = Symbol('PendingEntityId')
 export type PendingEntityId = typeof PendingEntityId
 
