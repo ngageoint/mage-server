@@ -1,5 +1,12 @@
 import { URL } from 'url'
 
+/**
+ * Result is a utility type that defines a discriminated union for strong type inference of success and error states.
+ */
+export type Result<T, E = Error> =
+  | { ok: true, value: T }
+  | { ok: false, error: E, message?: string | undefined | null }
+
 export interface EntityIdFactory<T = string> {
   nextId(): Promise<T>
 }

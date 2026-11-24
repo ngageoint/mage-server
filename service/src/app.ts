@@ -1,5 +1,8 @@
 import environment from './environment/env';
 import { MongooseIdentityProviderRepository, MongooseAuthenticationBindingRepository } from './ingress/ingress.adapters.db.mongoose'
+import { EnrollmentAppLayer } from './ingress/ingress.enrollment.adapters.controllers.web'
+import { EnrollLocalUserByProxy, EnrollLocalUserByProxyRequest } from './ingress/ingress.enrollment.app.api'
+import { createEnrollLocalUserByProxyOperation } from './ingress/ingress.enrollment.app.impl'
 import { IdentityProviderRepository, AuthenticationBindingRepository } from './ingress/ingress.entities'
 import {
   createLocalIdpModels,
@@ -112,7 +115,7 @@ import {
   UsersAppLayer,
   UsersRoutes
 } from './adapters/users/adapters.users.controllers.web';
-import { createEnrollLocalUserByProxyOperation, createSearchUsersOperation } from './app.impl/users/app.impl.users'
+import { createSearchUsersOperation } from './app.impl/users/app.impl.users'
 import { RoleBasedUsersPermissionService, RoleBasedUserPreferencesPermissionService } from './permissions/permissions.users';
 import { UserPreferencesAppLayer, UserPreferencesRoutes } from './adapters/preferences/adapters.preferences.controllers.web';
 import { GetEventPreferences } from './app.impl/preferences/app.impl.preferences';
@@ -469,7 +472,7 @@ type DatabaseLayer = {
 }
 
 type AppLayer = {
-  teams: TeamsAppLayer
+  enrollment: EnrollmentAppLayer
   events: {
     addFeedToEvent: eventsApi.AddFeedToEvent
     listEventFeeds: eventsApi.ListEventFeeds
@@ -523,6 +526,7 @@ type AppLayer = {
   systemInfo: SystemInfoAppLayer
   settings: SettingsAppLayer
   searchIndex: SearchIndexAppLayer
+  teams: TeamsAppLayer
 }
 
 async function initDatabase(): Promise<DatabaseLayer> {
@@ -810,6 +814,7 @@ async function initRepositories(
 }
 
 async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook[]): Promise<AppLayer> {
+  const enrollment = await initEnrollmentAppLayer(repos)
   const events = await initEventsAppLayer(repos)
   const exports = await initExportsAppLayer(repos, log.child({ component: 'export' }))
   const locations = await initLocationsAppLayer(repos)
@@ -825,6 +830,7 @@ async function initAppLayer(repos: Repositories, attachmentHooks: AttachmentHook
   const searchIndex = await initSearchIndexAppLayer(repos)
 
   return {
+    enrollment,
     events,
     exports,
     locations,
@@ -998,14 +1004,25 @@ async function initExportsAppLayer(
 }
 
 async function initUsersAppLayer(repos: Repositories): Promise<AppLayer['users']> {
-  const localIdpService = createLocalIdentityProviderService(repos.localIdpRepo)
   const usersPermissions = new RoleBasedUsersPermissionService()
-  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(repos.users.userRepo, repos.roles.roleRepo, repos.ingress.idpRepo, repos.ingress.authBindingRepo, localIdpService, usersPermissions)
   const searchUsers = createSearchUsersOperation(repos.users.userRepo, usersPermissions)
   return {
-    enrollLocalUserByProxy,
     searchUsers
   }
+}
+
+async function initEnrollmentAppLayer(repos: Repositories): Promise<AppLayer['enrollment']> {
+  const userPermissions = new RoleBasedUsersPermissionService()
+  const localIdpService = createLocalIdentityProviderService(repos.localIdpRepo)
+  const enrollLocalUserByProxy = createEnrollLocalUserByProxyOperation(
+    repos.users.userRepo,
+    repos.roles.roleRepo,
+    repos.ingress.idpRepo,
+    repos.ingress.authBindingRepo,
+    localIdpService,
+    userPermissions,
+  )
+  return { enrollLocalUserByProxy }
 }
 
 function initUserPreferencesAppLayer(repos: Repositories): UserPreferencesAppLayer {

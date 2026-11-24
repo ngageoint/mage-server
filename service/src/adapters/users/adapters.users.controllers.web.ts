@@ -2,9 +2,6 @@ import express from 'express'
 import zod from 'zod'
 import { invalidInput, InvalidInputError } from '../../app.api/app.api.errors'
 import {
-  EnrollLocalUserByProxy,
-  EnrollLocalUserByProxyRequest,
-  LocalUserProxyEnrollmentAccount,
   SearchUsers,
   UserSearchRequest
 } from '../../app.api/users/app.api.users'
@@ -17,7 +14,6 @@ import { invalidInputErrorForZodError } from '../adapters.dto.zod'
 
 export interface UsersAppLayer {
   searchUsers: SearchUsers
-  enrollLocalUserByProxy: EnrollLocalUserByProxy
 }
 
 const UserIconFormSchema = zod.object({
@@ -133,31 +129,6 @@ export function UsersRoutes(
    * TODO: inject this setting instead of reading env directly
    */
   const userContentUpload = Upload({ fileSize: opts.userContentMaxSize });
-
-  routes.route('/')
-    .post(
-      async (req: express.Request, res: express.Response, next: express.NextFunction): Promise<any> => {
-        const accountSpec = parseAccountFormFromBody(req.body)
-        if (accountSpec instanceof Error) {
-          return next(accountSpec)
-        }
-        const enrollment: LocalUserProxyEnrollmentAccount = {
-          username: accountSpec.username,
-          roleId: accountSpec.roleId,
-          displayName: accountSpec.displayName || accountSpec.username,
-          email: accountSpec.email,
-          phone: accountSpec.phone,
-          password: accountSpec.password,
-        }
-        const appReq: EnrollLocalUserByProxyRequest = createAppRequest(req, { account: enrollment })
-        const appRes = await app.enrollLocalUserByProxy(appReq)
-        if (appRes.error) {
-          return next(appRes.error)
-        }
-        const account = appRes.success
-        return res.json(account)
-      }
-    )
 
   routes.route('/search')
     .get(async (req, res, next) => {
