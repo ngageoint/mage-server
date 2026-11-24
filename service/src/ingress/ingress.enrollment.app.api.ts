@@ -8,7 +8,7 @@ import {
 import { AppRequest, AppResponse } from '../app.api/app.api.global'
 import { Role } from '../entities/authorization/entities.authorization'
 import { User } from '../entities/users/entities.users'
-import { LocalIdpAccount } from '../local-idp/local-idp.entities'
+import { LocalIdpAccount, LocalIdpAccountSecurityStatus } from '../local-idp/local-idp.entities'
 import { IdentityProvider } from './ingress.entities'
 
 export type ExoUserAccount = Omit<User, 'avatar'> & {
@@ -18,7 +18,29 @@ export type ExoUserAccount = Omit<User, 'avatar'> & {
   avatarUrl?: string
 }
 
-export type RedactedLocalIdpAccount = Omit<LocalIdpAccount, 'hashedPassword' | 'previousHashedPasswords'>
+export type RedactedLocalIdpAccount = Omit<LocalIdpAccount, 'hashedPassword' | 'previousHashedPasswords'> & {
+  hashedPassword?: null | undefined,
+  previousHashedPasswords?: null | undefined,
+}
+
+export function redactLocalIdpAccount(from: LocalIdpAccount): RedactedLocalIdpAccount {
+  return {
+    id: from.id,
+    username: from.username,
+    createdAt: new Date(from.createdAt),
+    lastUpdated: new Date(from.lastUpdated),
+    security: copyLocalAccountSecurityStatus(from.security),
+  }
+}
+
+export function copyLocalAccountSecurityStatus(from: LocalIdpAccountSecurityStatus): LocalIdpAccountSecurityStatus {
+  return {
+    invalidLoginAttempts: from.invalidLoginAttempts,
+    locked: from.locked,
+    lockedUntil: from.lockedUntil ? new Date(from.lockedUntil) : null,
+    numberOfTimesLocked: from.numberOfTimesLocked,
+  }
+}
 
 /**
  * This type joins a user account with associated authentication and authorization

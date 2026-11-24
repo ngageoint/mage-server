@@ -13,6 +13,7 @@ import { RoleRepository } from '../entities/authorization/entities.authorization
 import { DuplicateUsernameError, UserAccountSeed, UserRepository } from '../entities/users/entities.users'
 import { LocalIdpErrorCode } from '../local-idp/local-idp.entities'
 import { LocalIdpError, MageLocalIdentityProviderService } from '../local-idp/local-idp.services.api'
+import { redactLocalIdpAccount } from './ingress.enrollment.app.api'
 import { AuthenticationBindingRepository, IdentityProviderRepository, UserIdentity } from './ingress.entities'
 import * as api from './ingress.enrollment.app.api'
 
@@ -91,7 +92,7 @@ export function createEnrollLocalUserByProxyOperation(
       account: mageAccount,
       authentication: {
         identityProvider: localIdp,
-        local: localIdpAccount
+        local: redactLocalIdpAccount(localIdpAccount)
       },
       authorization: { role }
     })

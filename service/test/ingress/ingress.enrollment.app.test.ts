@@ -1,5 +1,6 @@
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
+import { omit } from 'lodash'
 import assert from 'node:assert'
 import { ErrPermissionDenied } from '../../lib/app.api/app.api.errors'
 import { AppRequestContext } from '../../lib/app.api/app.api.global'
@@ -18,6 +19,9 @@ import { RoleRepository } from '../../lib/entities/authorization/entities.author
 import { AuthenticationProtocolId } from '../../lib/ingress/ingress.entities'
 import { EnrollLocalUserByProxy, ExoUserEnrollmentResult } from '../../lib/ingress/ingress.enrollment.app.api'
 import { createEnrollLocalUserByProxyOperation } from '../../lib/ingress/ingress.enrollment.app.impl'
+import { Role } from '../../lib/entities/authorization/entities.authorization'
+import { IdentityProvider } from '../../lib/ingress/ingress.entities'
+import { LocalIdpAccount } from '../../lib/local-idp/local-idp.entities'
 
 describe.only('user account administration', function() {
 
@@ -34,7 +38,7 @@ describe.only('user account administration', function() {
     let authBindingRepo: SubstituteOf<AuthenticationBindingRepository>
     let localIdpService: SubstituteOf<MageLocalIdentityProviderService>
     let permissions: SubstituteOf<UsersPermissionService>
-    let enroll: EnrollLocalUserByProxy
+    let enrollLocalUser: EnrollLocalUserByProxy
 
     beforeEach(function() {
       userRepo = Sub.for<UserRepository>()
@@ -43,12 +47,12 @@ describe.only('user account administration', function() {
       authBindingRepo = Sub.for<AuthenticationBindingRepository>()
       localIdpService = Sub.for<MageLocalIdentityProviderService>()
       permissions = Sub.for<UsersPermissionService>()
-      enroll = createEnrollLocalUserByProxyOperation(userRepo, roleRepo, idpRepo, authBindingRepo, localIdpService, permissions)
+      enrollLocalUser = createEnrollLocalUserByProxyOperation(userRepo, roleRepo, idpRepo, authBindingRepo, localIdpService, permissions)
     })
 
     it('requires CREATE_USER permission', async function() {
       permissions.ensureCreateUserPermission(context).resolves(permissionDenied(UsersPermission.CREATE_USER, 'skinner'))
-      const enrollResult = await enroll({
+      const enrollResult = await enrollLocalUser({
         account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypatty' },
         context
       })
@@ -60,7 +64,7 @@ describe.only('user account administration', function() {
     it('fails if the user name already exists', async function() {
       permissions.ensureCreateUserPermission(context).resolves(null)
       userRepo.createUser(Arg.all()).resolves({ error: new DuplicateUsernameError('anyone') })
-      const enrollResult = await enroll({
+      const enrollResult = await enrollLocalUser({
         account: { roleId: 'agent', username: 'squidward', displayName: 'Squidward', password: 'crabbypatty' },
         context
       })
@@ -70,7 +74,8 @@ describe.only('user account administration', function() {
 
     it('creates a local idp account and binding', async function() {
       permissions.ensureCreateUserPermission(context).resolves(null)
-      const user: User = {
+      const now = Date.now()
+      const user: User = Object.freeze({
         id: 'user1',
         username: 'smith',
         displayName: 'Agent Smith',
@@ -81,38 +86,60 @@ describe.only('user account administration', function() {
         icon: null,
         roleId: 'guest',
         authenticationId: null,
-        createdAt: new Date(),
-        lastUpdated: new Date(),
-      }
+        createdAt: new Date(now),
+        lastUpdated: new Date(now),
+      })
       const userSeed = UserAccountSeed.prepare(user)
       userRepo.createUser(Arg.all()).resolves({ user })
-      const savedBinding: AuthenticationBinding = {
+      const localIdp: IdentityProvider = Object.freeze({
+        id: 'local1',
+        name: 'local',
+        title: 'Mage Username/Password',
+        protocol: AuthenticationProtocolId.Local,
+        userEnrollmentPolicy: {
+          accountApprovalRequired: false,
+          assignRole: 'guest',
+          assignToEvents: [],
+          assignToTeams: [],
+        }
+      })
+      idpRepo.findIdpByName('local').resolves(localIdp)
+      const localIdpAccount: LocalIdpAccount = Object.freeze<LocalIdpAccount>({
+        id: 'local:1',
+        username: 'smith',
+        hashedPassword: 'libertybiberty',
+        previousHashedPasswords: [],
+        security: {
+          invalidLoginAttempts: 0,
+          locked: false,
+          lockedUntil: null,
+          numberOfTimesLocked: 0,
+        },
+        createdAt: new Date(now),
+        lastUpdated: new Date(now),
+      })
+      localIdpService.createAccount(Arg.all()).resolves(localIdpAccount)
+      const savedBinding: AuthenticationBinding = Object.freeze({
         userId: 'user1',
         identities: new Map<IdentityProviderId, UserIdentity>([
           ['local1', { idpId: 'local1', idpAccountId: 'user1', created: new Date(), updated: new Date() }]
         ])
-      }
+      })
       authBindingRepo.saveBindingIdentity(Arg.all()).resolves(savedBinding)
-      const enrollResult = await enroll({
-        account: { roleId: 'agent', username: 'smith', displayName: 'Agent Smith', password: 'morpheus' },
+      const role: Role = Object.freeze({ id: 'guest', name: 'Guest', permissions: ['read'] })
+      roleRepo.findById('guest').resolves(role)
+
+      const enrollResult = await enrollLocalUser({
+        account: { roleId: 'guest', username: 'smith', displayName: 'Agent Smith', password: 'morpheus' },
         context
       })
+
       assert(!enrollResult.error, 'unexpected enrollment error')
       const expectedResult: ExoUserEnrollmentResult = {
         account: user,
         authentication: {
-          identityProvider: {
-            id: 'local',
-            name: 'local',
-            title: 'Mage Username/Password',
-            protocol: AuthenticationProtocolId.Local,
-            userEnrollmentPolicy: {
-              accountApprovalRequired: false,
-              assignRole: 'guest',
-              assignToEvents: [],
-              assignToTeams: [],
-            }
-          }
+          identityProvider: localIdp,
+          local: omit(localIdpAccount, 'hashedPassword', 'previousHashedPasswords')
         },
         authorization: {
           role: {
@@ -127,7 +154,6 @@ describe.only('user account administration', function() {
         expect(actual.toJSON()).to.deep.equal(userSeed.toJSON())
         return true
       }))
-      expect.fail('todo')
     })
 
     it('does not create a mage account if creating a local idp account fails', async function() {
