@@ -24,7 +24,7 @@
     "@angular/router": "^20.3.0",
     "@ngageoint/mage.web-core-lib": "file:../../../web-app/dist/core-lib",
     "rxjs": "~7.8.2",
-    "tslib": "2.8.1",
+    "tslib": "2.9.1",
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
