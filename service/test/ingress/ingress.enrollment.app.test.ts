@@ -1,24 +1,23 @@
 import { Substitute as Sub, SubstituteOf, Arg } from '@fluffy-spoon/substitute'
 import { expect } from 'chai'
 import assert from 'node:assert'
-import { ErrPermissionDenied } from '../../../lib/app.api/app.api.errors'
-import { AppRequestContext } from '../../../lib/app.api/app.api.global'
-import { UsersPermissionService } from '../../../lib/app.api/users/app.api.users'
-import { createEnrollLocalUserByProxyOperation } from '../../../lib/app.impl/users/app.impl.users'
-import { UserRepository } from '../../../lib/entities/users/entities.users'
-import { permissionDenied } from '../../../lib/app.api/app.api.errors'
-import { UsersPermission } from '../../../lib/entities/authorization/entities.permissions'
-import { ErrEntityNotUnique } from '../../../lib/app.api/app.api.errors'
-import { DuplicateUsernameError } from '../../../lib/entities/users/entities.users'
-import { EnrollLocalUserByProxy } from '../../../lib/app.api/users/app.api.users'
-import { User } from '../../../lib/entities/users/entities.users'
-import { AuthenticationBindingRepository, IdentityProviderRepository } from '../../../lib/ingress/ingress.entities'
-import { MageLocalIdentityProviderService } from '../../../lib/local-idp/local-idp.services.api'
-import { AuthenticationBinding, IdentityProviderId, UserIdentity } from '../../../lib/ingress/ingress.entities'
-import { UserAccountSeed } from '../../../lib/entities/users/entities.users'
-import { ExoUserManagementComposite } from '../../../lib/app.api/users/app.api.users'
-import { RoleRepository } from '../../../lib/entities/authorization/entities.authorization'
-import { AuthenticationProtocolId } from '../../../lib/ingress/ingress.entities'
+import { ErrPermissionDenied } from '../../lib/app.api/app.api.errors'
+import { AppRequestContext } from '../../lib/app.api/app.api.global'
+import { UsersPermissionService } from '../../lib/app.api/users/app.api.users'
+import { UserRepository } from '../../lib/entities/users/entities.users'
+import { permissionDenied } from '../../lib/app.api/app.api.errors'
+import { UsersPermission } from '../../lib/entities/authorization/entities.permissions'
+import { ErrEntityNotUnique } from '../../lib/app.api/app.api.errors'
+import { DuplicateUsernameError } from '../../lib/entities/users/entities.users'
+import { User } from '../../lib/entities/users/entities.users'
+import { AuthenticationBindingRepository, IdentityProviderRepository } from '../../lib/ingress/ingress.entities'
+import { MageLocalIdentityProviderService } from '../../lib/local-idp/local-idp.services.api'
+import { AuthenticationBinding, IdentityProviderId, UserIdentity } from '../../lib/ingress/ingress.entities'
+import { UserAccountSeed } from '../../lib/entities/users/entities.users'
+import { RoleRepository } from '../../lib/entities/authorization/entities.authorization'
+import { AuthenticationProtocolId } from '../../lib/ingress/ingress.entities'
+import { EnrollLocalUserByProxy, ExoUserEnrollmentResult } from '../../lib/ingress/ingress.enrollment.app.api'
+import { createEnrollLocalUserByProxyOperation } from '../../lib/ingress/ingress.enrollment.app.impl'
 
 describe.only('user account administration', function() {
 
@@ -99,8 +98,8 @@ describe.only('user account administration', function() {
         context
       })
       assert(!enrollResult.error, 'unexpected enrollment error')
-      const expectedResult: ExoUserManagementComposite = {
-        user,
+      const expectedResult: ExoUserEnrollmentResult = {
+        account: user,
         authentication: {
           identityProvider: {
             id: 'local',
