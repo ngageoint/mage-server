@@ -198,7 +198,6 @@ class AngularModule { }
 @NgModule({
   declarations: [
     AddObservationComponent,
-    ContactDialogComponent,
     CoordinateSystemComponent,
     ExportComponent,
     ExportCreateComponent,
@@ -232,6 +231,7 @@ class AngularModule { }
   imports: [
     AngularModule,
     ColorPickerModule,
+    ContactDialogComponent,
     DatetimePickerComponent,
     EventMemberFilterComponent,
     LayersComponent,
