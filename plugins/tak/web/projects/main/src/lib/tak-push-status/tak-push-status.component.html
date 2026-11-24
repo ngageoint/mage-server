@@ -35,6 +35,13 @@
             <mat-slide-toggle [checked]="status.locationSharingEnabled" [disabled]="isSaving" (change)="onLocationToggle($event.checked)">
               Share user locations to TAK
             </mat-slide-toggle>
+            <mat-slide-toggle
+              [checked]="status.deleteSyncEnabled"
+              [disabled]="isSaving || !status.enabled"
+              [matTooltip]="status.enabled ? '' : 'Turn on \'Share observations to TAK\' first'"
+              (change)="onDeleteSyncToggle($event.checked)">
+              Sync deletions to TAK
+            </mat-slide-toggle>
           </div>
 
           <div class="warning-row" *ngIf="(status.enabled || status.locationSharingEnabled) && !status.connectionConfigured">
@@ -52,12 +59,23 @@
           </dl>
 
           <div class="recently-synced">
-            <div class="recently-synced-title">Recently synced</div>
-            <p class="recently-synced-empty" *ngIf="!status.recentlySynced.length">No observations synced yet.</p>
+            <div class="recent-list-title">Recently synced</div>
+            <p class="recent-list-empty" *ngIf="!status.recentlySynced.length">No observations synced yet.</p>
             <ul *ngIf="status.recentlySynced.length">
               <li *ngFor="let item of status.recentlySynced">
                 <span class="observation-id">{{ item.observationId }}</span>
-                <span class="synced-at">{{ item.syncedAt | date:'MMM d, HH:mm' }}</span>
+                <span class="recent-list-at">{{ item.syncedAt | date:'MMM d, HH:mm' }}</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="recently-removed">
+            <div class="recent-list-title">Recently removed</div>
+            <p class="recent-list-empty" *ngIf="!status.recentlyRemoved.length">No observations removed yet.</p>
+            <ul *ngIf="status.recentlyRemoved.length">
+              <li *ngFor="let item of status.recentlyRemoved">
+                <span class="observation-id">{{ item.observationId }}</span>
+                <span class="recent-list-at">{{ item.removedAt | date:'MMM d, HH:mm' }}</span>
               </li>
             </ul>
           </div>

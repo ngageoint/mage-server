@@ -13,7 +13,11 @@ const TakPushSettingsSchema = new mongoose.Schema({
   // flag - a continuous live position feed is a materially bigger privacy
   // footprint than a deliberately-submitted observation, so turning one on
   // must never silently turn on the other. Defaults off.
-  locationSharingEnabled: { type: Boolean, required: true, default: false }
+  locationSharingEnabled: { type: Boolean, required: true, default: false },
+  // Independent of `enabled`, same reasoning as locationSharingEnabled - an
+  // admin may want this configured before turning sharing back on. Defaults
+  // off.
+  deleteSyncEnabled: { type: Boolean, required: true, default: false }
 }, {
   timestamps: { createdAt: 'createdAt', updatedAt: 'updatedAt' }
 })
@@ -69,6 +73,20 @@ export class MongooseTakPushSettingsRepository implements TakPushSettingsReposit
     const document = await this.model.findOneAndUpdate(
       { eventId },
       { $set: { eventId, locationSharingEnabled: enabled } },
+      { upsert: true, new: true }
+    )
+    return document!
+  }
+
+  async isDeleteSyncEnabled(eventId: MageEventId): Promise<boolean> {
+    const attrs = await this.findSettings(eventId)
+    return attrs?.deleteSyncEnabled ?? false
+  }
+
+  async setDeleteSyncEnabled(eventId: MageEventId, enabled: boolean): Promise<TakPushSettingsAttrs> {
+    const document = await this.model.findOneAndUpdate(
+      { eventId },
+      { $set: { eventId, deleteSyncEnabled: enabled } },
       { upsert: true, new: true }
     )
     return document!

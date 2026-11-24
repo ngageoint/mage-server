@@ -55,10 +55,13 @@
     margin: 16px 0;
   }
 
-  .recently-synced {
+  // Shared by the "recently synced" and "recently removed" lists - same
+  // layout, just different wrapper margins and item content.
+  .recently-synced,
+  .recently-removed {
     margin-top: 20px;
 
-    .recently-synced-title {
+    .recent-list-title {
       font-size: 12px;
       font-weight: 600;
       color: rgba(0, 0, 0, 0.54);
@@ -67,7 +70,7 @@
       margin-bottom: 8px;
     }
 
-    .recently-synced-empty {
+    .recent-list-empty {
       margin: 0;
       font-size: 13px;
       color: rgba(0, 0, 0, 0.5);
@@ -98,7 +101,7 @@
       color: rgba(0, 0, 0, 0.8);
     }
 
-    .synced-at {
+    .recent-list-at {
       color: rgba(0, 0, 0, 0.5);
       white-space: nowrap;
     }

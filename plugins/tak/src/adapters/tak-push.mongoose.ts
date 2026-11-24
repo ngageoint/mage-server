@@ -38,6 +38,7 @@ export interface TakPushRepository {
   findAllForEvent(eventId: MageEventId): Promise<TakPushAttrs[]>
   findRecentForEvent(eventId: MageEventId, limit: number): Promise<TakPushAttrs[]>
   recordPush(eventId: MageEventId, observationId: ObservationId, takUid: string, syncedAt: Date, callsign: string): Promise<TakPushAttrs>
+  deleteByObservation(eventId: MageEventId, observationId: ObservationId): Promise<void>
 }
 
 export class MongooseTakPushRepository implements TakPushRepository {
@@ -72,5 +73,9 @@ export class MongooseTakPushRepository implements TakPushRepository {
       { upsert: true, new: true }
     )
     return toAttrs<TakPushAttrs>(document!)
+  }
+
+  async deleteByObservation(eventId: MageEventId, observationId: ObservationId): Promise<void> {
+    await this.model.deleteOne({ eventId, observationId })
   }
 }

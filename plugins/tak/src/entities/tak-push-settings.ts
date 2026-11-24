@@ -5,6 +5,10 @@ export interface TakPushSettingsAttrs {
   enabled: boolean
   enabledAt?: Date
   locationSharingEnabled: boolean
+  // Independent of `enabled`, same reasoning as locationSharingEnabled - an
+  // admin may want this configured before turning sharing back on. Defaults
+  // off.
+  deleteSyncEnabled: boolean
 }
 
 export interface TakPushSettingsRepository {
@@ -13,4 +17,6 @@ export interface TakPushSettingsRepository {
   findAllEnabled(): Promise<TakPushSettingsAttrs[]>
   isLocationSharingEnabled(eventId: MageEventId): Promise<boolean>
   setLocationSharingEnabled(eventId: MageEventId, enabled: boolean): Promise<TakPushSettingsAttrs>
+  isDeleteSyncEnabled(eventId: MageEventId): Promise<boolean>
+  setDeleteSyncEnabled(eventId: MageEventId, enabled: boolean): Promise<TakPushSettingsAttrs>
 }

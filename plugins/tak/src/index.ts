@@ -15,6 +15,7 @@ import { AxiosTakTransport } from './transport.axios'
 import { TakPushModel, MongooseTakPushRepository } from './adapters/tak-push.mongoose'
 import { TakPushIneligibleModel, MongooseTakPushIneligibleRepository } from './adapters/tak-push-ineligible.mongoose'
 import { TakPushSettingsModel, MongooseTakPushSettingsRepository } from './adapters/tak-push-settings.mongoose'
+import { TakPushRemovalModel, MongooseTakPushRemovalRepository } from './adapters/tak-push-removal.mongoose'
 import { TakPushController } from './push/controller'
 import { TakLocationPushController } from './push/location-controller'
 import { createTakConnectionResolver, createTakSendTargetResolver } from './push/resolve-connection'
@@ -66,6 +67,9 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
     const ineligibleRepository = new MongooseTakPushIneligibleRepository(
       TakPushIneligibleModel(dbConnection, `${packageName}/push-ineligible`)
     )
+    const removalRepository = new MongooseTakPushRemovalRepository(
+      TakPushRemovalModel(dbConnection, `${packageName}/push-removal`)
+    )
 
     const resolveConnection = createTakConnectionResolver(
       mageEventRepository,
@@ -79,7 +83,8 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
       observationRepositoryForEvent,
       settingsRepository,
       trackingRepository,
-      ineligibleRepository
+      ineligibleRepository,
+      removalRepository
     )
     // start() guards its own polling loop internally, but this is a
     // fire-and-forget call at plugin boot with nothing else to catch a
@@ -131,17 +136,21 @@ const hooks: InitPluginHook<typeof InjectedServices> = {
               res.json(status)
             })
             .post(async (req, res) => {
-              const { eventId, enabled, locationSharingEnabled } = req.body
+              const { eventId, enabled, locationSharingEnabled, deleteSyncEnabled } = req.body
               const hasEnabled = typeof enabled === 'boolean'
               const hasLocationSharingEnabled = typeof locationSharingEnabled === 'boolean'
-              if (typeof eventId !== 'number' || (!hasEnabled && !hasLocationSharingEnabled)) {
-                return res.status(400).json({ error: 'eventId (number) and at least one of enabled/locationSharingEnabled (boolean) are required' })
+              const hasDeleteSyncEnabled = typeof deleteSyncEnabled === 'boolean'
+              if (typeof eventId !== 'number' || (!hasEnabled && !hasLocationSharingEnabled && !hasDeleteSyncEnabled)) {
+                return res.status(400).json({ error: 'eventId (number) and at least one of enabled/locationSharingEnabled/deleteSyncEnabled (boolean) are required' })
               }
               if (hasEnabled) {
                 await pushController.setEnabled(eventId, enabled)
               }
               if (hasLocationSharingEnabled) {
                 await pushController.setLocationSharingEnabled(eventId, locationSharingEnabled)
+              }
+              if (hasDeleteSyncEnabled) {
+                await pushController.setDeleteSyncEnabled(eventId, deleteSyncEnabled)
               }
               const status = await pushController.findPushStatusForEvent(eventId)
               res.json(status)
