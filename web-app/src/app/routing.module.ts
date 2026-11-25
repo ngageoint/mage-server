@@ -18,6 +18,10 @@ const appRoutes: Routes = [
       import('./about/about.component').then((m) => m.AboutComponent)
   },
   {
+    path: 'help',
+    loadChildren: () => import('./help/help.module').then((m) => m.HelpModule)
+  },
+  {
     path: 'profile',
     loadComponent: () =>
       import('./user/profile/profile.component').then((m) => m.ProfileComponent),

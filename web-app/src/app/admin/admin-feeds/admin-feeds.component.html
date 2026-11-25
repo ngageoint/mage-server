@@ -1,7 +1,7 @@
 <ng-template #breadcrumbActions>
   @if (hasFeedCreatePermission) {
     <div class="nav-actions">
-      <button matButton="filled" [routerLink]="['./new']">
+      <button matButton="filled" data-guide="feeds.new" [routerLink]="['./new']">
         <mat-icon>add</mat-icon>New Feed
       </button>
     </div>

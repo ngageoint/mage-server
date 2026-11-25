@@ -1,7 +1,7 @@
 <ng-template #breadcrumbActions>
   @if (hasLayerCreatePermission) {
     <div class="nav-actions">
-      <button matButton="filled" (click)="newLayer()">
+      <button matButton="filled" data-guide="layers.new" (click)="newLayer()">
         <mat-icon>add</mat-icon>New Layer
       </button>
     </div>

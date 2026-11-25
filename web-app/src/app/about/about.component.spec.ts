@@ -3,14 +3,14 @@ import { AboutComponent } from './about.component';
 import { ApiService } from '../api/api.service';
 import { of } from 'rxjs';
 import { Location } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 
 describe('AboutComponent', () => {
   let component: AboutComponent;
   let fixture: ComponentFixture<AboutComponent>;
   let mockApiService: jasmine.SpyObj<ApiService>;
   let mockLocation: jasmine.SpyObj<Location>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let navigate: jasmine.Spy;
 
   const MOCK_CONTACT_INFO = {
     email: 'admin@example.com',
@@ -40,17 +40,18 @@ describe('AboutComponent', () => {
 
   beforeEach(async () => {
     mockApiService = jasmine.createSpyObj('ApiService', ['getApi']);
+    mockApiService.getApi.and.returnValue(of(MOCK_API_RESPONSE_WITH_CONTACT));
     mockLocation = jasmine.createSpyObj('Location', ['back']);
-    mockRouter = jasmine.createSpyObj('Router', ['navigate']);
 
     await TestBed.configureTestingModule({
       imports: [AboutComponent],
       providers: [
         { provide: ApiService, useValue: mockApiService },
         { provide: Location, useValue: mockLocation },
-        { provide: Router, useValue: mockRouter }
+        provideRouter([])
       ]
     }).compileComponents();
+    navigate = spyOn(TestBed.inject(Router), 'navigate').and.resolveTo(true);
   });
 
   it('should create', () => {
@@ -97,6 +98,23 @@ describe('AboutComponent', () => {
 
     component.onBack();
 
-    expect(mockRouter.navigate).toHaveBeenCalledWith(['home']);
+    expect(navigate).toHaveBeenCalledWith(['home']);
+  });
+
+  it('keeps the guide entry in a safe new tab alongside a native developer disclosure', () => {
+    createComponent(MOCK_API_RESPONSE_NO_CONTACT);
+    const link: HTMLAnchorElement = fixture.nativeElement.querySelector('a[aria-label="Open the user guide in a new tab"]');
+    expect(link.target).toBe('_blank');
+    expect(link.rel).toBe('noopener noreferrer');
+    const details: HTMLDetailsElement = fixture.nativeElement.querySelector('mage-guide-maintenance details');
+    expect(details.open).toBeFalse();
+    expect(details.querySelector('summary')?.textContent).toContain('How the dynamic user guide works');
+    details.open = true;
+    const text = details.textContent || '';
+    for (const expected of ['no Replit service', 'guides:capture', 'guides:generate',
+      'guides:review', 'guides:check', 'guides:test', 'fictional API fixtures',
+      'all current topics', 'Manual text', 'Download again']) {
+      expect(text).withContext(expected).toContain(expected);
+    }
   });
 });

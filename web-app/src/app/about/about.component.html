@@ -66,6 +66,17 @@
         </a>
       </div>
       <div class="sub-section">
+        <div class="sub-label">Help</div>
+        <div class="section-text">
+          Step-by-step guides for the map, observations and administration, with offline downloads.
+        </div>
+        <a matButton="outlined" [routerLink]="['/help']" target="_blank" rel="noopener noreferrer" aria-label="Open the user guide in a new tab">
+          <mat-icon>menu_book</mat-icon>
+          Open user guide
+        </a>
+        <mage-guide-maintenance />
+      </div>
+      <div class="sub-section">
         <div class="sub-label">Attributions</div>
         <div class="section-text">
           Mage is built with the MEAN stack:
