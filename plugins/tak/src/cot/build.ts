@@ -8,6 +8,11 @@ import { Observation } from '@ngageoint/mage.service/lib/entities/observations/e
  */
 const STALE_TTL_MS = 60 * 60 * 1000
 
+// Shared with build-delete.ts - a delete notice has to reference the
+// original marker's type to tell TAK clients what kind of thing they're
+// forgetting.
+export const MARKER_COT_TYPE = 'b-m-p-s-m'
+
 const builder = new XMLBuilder({ ignoreAttributes: false, attributeNamePrefix: '@_' })
 
 export interface BuiltCotEvent {
@@ -57,7 +62,7 @@ export function buildCotEventXml(observation: Observation, eventName: string): B
     event: {
       '@_version': '2.0',
       '@_uid': uid,
-      '@_type': 'b-m-p-s-m',
+      '@_type': MARKER_COT_TYPE,
       '@_how': 'h-g-i-g-o',
       '@_time': now.toISOString(),
       '@_start': now.toISOString(),

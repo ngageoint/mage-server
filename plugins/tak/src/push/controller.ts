@@ -1,15 +1,20 @@
 import { MageEvent, MageEventId } from '@ngageoint/mage.service/lib/entities/events/entities.events'
 import { Observation, ObservationAttrs, ObservationRepositoryForEvent } from '@ngageoint/mage.service/lib/entities/observations/entities.observations'
-import { buildCotEventXml } from '../cot/build'
+import { buildCotEventXml, MARKER_COT_TYPE } from '../cot/build'
+import { buildDeleteCotEventXml } from '../cot/build-delete'
 import { sendCotEvent } from '../transport.tcp'
 import { TakPushRepository } from '../adapters/tak-push.mongoose'
 import { TakPushIneligibleRepository } from '../entities/tak-push-ineligible'
 import { TakPushSettingsRepository } from '../entities/tak-push-settings'
+import { TakPushRemovalRepository } from '../adapters/tak-push-removal.mongoose'
 import { TakSendTargetResolver } from './resolve-connection'
 
 export const PAGE_SIZE = 1000
 const DEFAULT_POLL_INTERVAL_MS = 30_000
 const RECENT_SYNC_LIMIT = 5
+// ObservationState['name'] is 'active' | 'archive' - archiving is MAGE's only
+// "delete" for an observation; the document itself is never removed.
+const ARCHIVED_STATE_NAME = 'archive'
 
 export interface RecentlySyncedObservation {
   observationId: string
@@ -17,13 +22,21 @@ export interface RecentlySyncedObservation {
   syncedAt: Date
 }
 
+export interface RecentlyRemovedObservation {
+  observationId: string
+  callsign: string
+  removedAt: Date
+}
+
 export interface TakPushStatus {
   enabled: boolean
   locationSharingEnabled: boolean
+  deleteSyncEnabled: boolean
   connectionConfigured: boolean
   pushedCount: number
   lastSyncedAt: Date | null
   recentlySynced: RecentlySyncedObservation[]
+  recentlyRemoved: RecentlyRemovedObservation[]
 }
 
 // Drives the MAGE observation -> TAK push feature for events that have
@@ -40,9 +53,11 @@ export class TakPushController {
     private readonly settingsRepository: TakPushSettingsRepository,
     private readonly trackingRepository: TakPushRepository,
     private readonly ineligibleRepository: TakPushIneligibleRepository,
+    private readonly removalRepository: TakPushRemovalRepository,
     private readonly log: Pick<Console, 'warn' | 'error'> = console,
     private readonly send: typeof sendCotEvent = sendCotEvent,
-    private readonly buildCot: typeof buildCotEventXml = buildCotEventXml
+    private readonly buildCot: typeof buildCotEventXml = buildCotEventXml,
+    private readonly buildDelete: typeof buildDeleteCotEventXml = buildDeleteCotEventXml
   ) { }
 
   // Starts the self-rescheduling polling loop: on each tick, push every
@@ -108,6 +123,14 @@ export class TakPushController {
     await this.settingsRepository.setLocationSharingEnabled(eventId, enabled)
   }
 
+  async isDeleteSyncEnabled(eventId: MageEventId): Promise<boolean> {
+    return this.settingsRepository.isDeleteSyncEnabled(eventId)
+  }
+
+  async setDeleteSyncEnabled(eventId: MageEventId, enabled: boolean): Promise<void> {
+    await this.settingsRepository.setDeleteSyncEnabled(eventId, enabled)
+  }
+
   async pushEventObservations(eventId: MageEventId): Promise<void> {
     const target = await this.resolveSendTarget(eventId)
     if (!target) {
@@ -137,12 +160,14 @@ export class TakPushController {
   }
 
   async findPushStatusForEvent(eventId: MageEventId): Promise<TakPushStatus> {
-    const [ enabled, locationSharingEnabled, target, tracked, recent ] = await Promise.all([
+    const [ enabled, locationSharingEnabled, deleteSyncEnabled, target, tracked, recent, recentlyRemoved ] = await Promise.all([
       this.settingsRepository.isEnabled(eventId),
       this.settingsRepository.isLocationSharingEnabled(eventId),
+      this.settingsRepository.isDeleteSyncEnabled(eventId),
       this.resolveSendTarget(eventId),
       this.trackingRepository.findAllForEvent(eventId),
-      this.trackingRepository.findRecentForEvent(eventId, RECENT_SYNC_LIMIT)
+      this.trackingRepository.findRecentForEvent(eventId, RECENT_SYNC_LIMIT),
+      this.removalRepository.findRecentForEvent(eventId, RECENT_SYNC_LIMIT)
     ])
     const lastSyncedAt = tracked.reduce<Date | null>(
       (latest, x) => !latest || x.lastSyncedAt > latest ? x.lastSyncedAt : latest,
@@ -151,10 +176,12 @@ export class TakPushController {
     return {
       enabled,
       locationSharingEnabled,
+      deleteSyncEnabled,
       connectionConfigured: !!target,
       pushedCount: tracked.length,
       lastSyncedAt,
-      recentlySynced: recent.map(x => ({ observationId: x.observationId, callsign: x.callsign, syncedAt: x.lastSyncedAt }))
+      recentlySynced: recent.map(x => ({ observationId: x.observationId, callsign: x.callsign, syncedAt: x.lastSyncedAt })),
+      recentlyRemoved: recentlyRemoved.map(x => ({ observationId: x.observationId, callsign: x.callsign, removedAt: x.removedAt }))
     }
   }
 
@@ -166,6 +193,10 @@ export class TakPushController {
     port: number
   ): Promise<void> {
     try {
+      if (attrs.states[0]?.name === ARCHIVED_STATE_NAME) {
+        await this.pushArchivedObservation(eventId, attrs, host, port)
+        return
+      }
       const tracked = await this.trackingRepository.findByObservation(eventId, attrs.id)
       if (tracked && tracked.lastSyncedAt >= attrs.lastModified) {
         return
@@ -195,5 +226,20 @@ export class TakPushController {
     catch (err) {
       this.log.error(`tak push: failed to push observation ${attrs.id} for event ${eventId}`, err)
     }
+  }
+
+  // Archiving is MAGE's only "delete" for an observation - the document
+  // itself is never removed. An archived observation is never (re)pushed as
+  // a live marker regardless of the toggle below; the toggle only controls
+  // whether TAK is actively told to drop it.
+  private async pushArchivedObservation(eventId: MageEventId, attrs: ObservationAttrs, host: string, port: number): Promise<void> {
+    const tracked = await this.trackingRepository.findByObservation(eventId, attrs.id)
+    if (!tracked || !await this.settingsRepository.isDeleteSyncEnabled(eventId)) {
+      return
+    }
+    const xml = this.buildDelete(tracked.takUid, MARKER_COT_TYPE)
+    await this.send(host, port, xml)
+    await this.trackingRepository.deleteByObservation(eventId, attrs.id)
+    await this.removalRepository.recordRemoval(eventId, attrs.id, tracked.callsign, new Date())
   }
 }

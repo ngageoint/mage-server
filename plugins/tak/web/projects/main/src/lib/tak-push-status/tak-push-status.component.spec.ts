@@ -12,10 +12,12 @@ const EVENTS: MageEventSummary[] = [
 const STATUS: TakPushStatus = {
   enabled: true,
   locationSharingEnabled: false,
+  deleteSyncEnabled: false,
   connectionConfigured: true,
   pushedCount: 3,
   lastSyncedAt: '2026-01-01T00:00:00.000Z',
-  recentlySynced: []
+  recentlySynced: [],
+  recentlyRemoved: []
 };
 
 describe('TakPushStatusComponent', () => {
@@ -24,7 +26,7 @@ describe('TakPushStatusComponent', () => {
   let service: jasmine.SpyObj<TakPushStatusService>;
 
   beforeEach(waitForAsync(() => {
-    service = jasmine.createSpyObj('TakPushStatusService', ['getEvents', 'getStatus', 'setEnabled', 'setLocationSharingEnabled']);
+    service = jasmine.createSpyObj('TakPushStatusService', ['getEvents', 'getStatus', 'setEnabled', 'setLocationSharingEnabled', 'setDeleteSyncEnabled']);
     service.getEvents.and.returnValue(of(EVENTS));
     service.getStatus.and.returnValue(of(STATUS));
 
@@ -159,6 +161,41 @@ describe('TakPushStatusComponent', () => {
     service.getStatus.calls.reset();
 
     component.onLocationToggle(true);
+
+    expect(component.isSaving).toBe(false);
+    expect(service.getStatus).toHaveBeenCalledWith(1);
+  });
+
+  it('ignores a delete-sync toggle when no event is selected', () => {
+    fixture.detectChanges();
+
+    component.onDeleteSyncToggle(true);
+
+    expect(service.setDeleteSyncEnabled).not.toHaveBeenCalled();
+  });
+
+  it('saves a delete-sync toggle change and applies the returned status', () => {
+    const toggledStatus = { ...STATUS, deleteSyncEnabled: true };
+    service.setDeleteSyncEnabled.and.returnValue(of(toggledStatus));
+    fixture.detectChanges();
+    component.selectedEventId = 1;
+    component.onEventChange();
+
+    component.onDeleteSyncToggle(true);
+
+    expect(service.setDeleteSyncEnabled).toHaveBeenCalledWith(1, true);
+    expect(component.status).toEqual(toggledStatus);
+    expect(component.isSaving).toBe(false);
+  });
+
+  it('re-fetches the real status if saving a delete-sync toggle change fails', () => {
+    service.setDeleteSyncEnabled.and.returnValue(throwError(() => new Error('boom')));
+    fixture.detectChanges();
+    component.selectedEventId = 1;
+    component.onEventChange();
+    service.getStatus.calls.reset();
+
+    component.onDeleteSyncToggle(true);
 
     expect(component.isSaving).toBe(false);
     expect(service.getStatus).toHaveBeenCalledWith(1);

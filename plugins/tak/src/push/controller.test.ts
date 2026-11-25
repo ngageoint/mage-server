@@ -4,21 +4,26 @@ import { TakServerServiceType } from '../tak'
 
 const TAK_CONFIG = { baseUrl: 'http://tak.example.com', cotPort: 8088 }
 
-const fakeAttrs = (id: string, lastModified: Date): any => ({ id, lastModified, geometry: { type: 'Point', coordinates: [ 0, 0 ] }, properties: { forms: [] } })
+const fakeAttrs = (id: string, lastModified: Date, states: any[] = []): any =>
+  ({ id, lastModified, geometry: { type: 'Point', coordinates: [ 0, 0 ] }, properties: { forms: [] }, states })
 
 const makeController = (overrides: {
   hasConnection?: boolean
   observations?: any[]
   tracked?: Record<string, { lastSyncedAt: Date, callsign?: string }>
   ineligible?: Record<string, { lastCheckedAt: Date }>
+  removals?: Record<string, { callsign: string, removedAt: Date }>
   send?: jest.Mock
   buildCot?: jest.Mock
+  buildDelete?: jest.Mock
   enabledEvents?: number[]
+  deleteSyncEnabled?: boolean
 } = {}) => {
   const hasConnection = overrides.hasConnection ?? true
   const observations = overrides.observations ?? []
   const tracked = overrides.tracked ?? {}
   const ineligible = overrides.ineligible ?? {}
+  const removals = overrides.removals ?? {}
 
   const fakeEvent = { id: 1, name: 'Test Event', feedIds: hasConnection ? [ 'feed-1' ] : [], formFor: jest.fn(() => ({ primaryFeedField: undefined })) }
 
@@ -44,7 +49,9 @@ const makeController = (overrides: {
     setEnabled: jest.fn(async () => ({ eventId: 1, enabled: true })),
     findAllEnabled: jest.fn(async () => (overrides.enabledEvents ?? []).map(eventId => ({ eventId, enabled: true }))),
     isLocationSharingEnabled: jest.fn(async () => false),
-    setLocationSharingEnabled: jest.fn(async () => ({ eventId: 1, enabled: true, locationSharingEnabled: true }))
+    setLocationSharingEnabled: jest.fn(async () => ({ eventId: 1, enabled: true, locationSharingEnabled: true })),
+    isDeleteSyncEnabled: jest.fn(async () => overrides.deleteSyncEnabled ?? false),
+    setDeleteSyncEnabled: jest.fn(async () => ({ eventId: 1, enabled: true, deleteSyncEnabled: true }))
   }
   const trackingRepository = {
     findByObservation: jest.fn(async (eventId: number, observationId: string) =>
@@ -57,7 +64,8 @@ const makeController = (overrides: {
       .map(([ observationId, t ]) => ({ eventId, observationId, takUid: `MAGE-${observationId}`, callsign: t.callsign ?? `Callsign-${observationId}`, firstPushedAt: t.lastSyncedAt, lastSyncedAt: t.lastSyncedAt }))
       .sort((a, b) => b.lastSyncedAt.getTime() - a.lastSyncedAt.getTime())
       .slice(0, limit)),
-    recordPush: jest.fn(async () => ({}))
+    recordPush: jest.fn(async () => ({})),
+    deleteByObservation: jest.fn(async () => undefined)
   }
   const ineligibleRepository = {
     findByObservation: jest.fn(async (eventId: number, observationId: string) =>
@@ -65,9 +73,20 @@ const makeController = (overrides: {
     ),
     recordIneligible: jest.fn(async (eventId: number, observationId: string, checkedAt: Date) => ({ eventId, observationId, lastCheckedAt: checkedAt }))
   }
+  const removalRepository = {
+    recordRemoval: jest.fn(async (eventId: number, observationId: string, callsign: string, removedAt: Date) => {
+      removals[observationId] = { callsign, removedAt }
+      return { eventId, observationId, callsign, removedAt }
+    }),
+    findRecentForEvent: jest.fn(async (eventId: number, limit: number) => Object.entries(removals)
+      .map(([ observationId, r ]) => ({ eventId, observationId, callsign: r.callsign, removedAt: r.removedAt }))
+      .sort((a, b) => b.removedAt.getTime() - a.removedAt.getTime())
+      .slice(0, limit))
+  }
   const log = { warn: jest.fn(), error: jest.fn() }
   const send = overrides.send ?? jest.fn(async () => undefined)
   const buildCot = overrides.buildCot ?? jest.fn((observation: any) => ({ uid: `MAGE-${observation.id}`, xml: `<event uid="MAGE-${observation.id}"/>`, callsign: `Callsign-${observation.id}` }))
+  const buildDelete = overrides.buildDelete ?? jest.fn((uid: string) => `<event uid="${uid}" stale="expired"/>`)
 
   const resolveConnection = createTakConnectionResolver(
     mageEventRepository as any,
@@ -83,12 +102,17 @@ const makeController = (overrides: {
     settingsRepository as any,
     trackingRepository as any,
     ineligibleRepository as any,
+    removalRepository as any,
     log as any,
     send,
-    buildCot
+    buildCot,
+    buildDelete
   )
 
-  return { controller, mageEventRepository, observationRepositoryForEvent, settingsRepository, trackingRepository, ineligibleRepository, log, send, buildCot }
+  return {
+    controller, mageEventRepository, observationRepositoryForEvent, settingsRepository, trackingRepository,
+    ineligibleRepository, removalRepository, log, send, buildCot, buildDelete
+  }
 }
 
 describe('TakPushController', () => {
@@ -111,6 +135,16 @@ describe('TakPushController', () => {
 
     expect(settingsRepository.isLocationSharingEnabled).toHaveBeenCalledWith(1)
     expect(settingsRepository.setLocationSharingEnabled).toHaveBeenCalledWith(1, true)
+  })
+
+  it('isDeleteSyncEnabled/setDeleteSyncEnabled delegate to the settings repository', async () => {
+    const { controller, settingsRepository } = makeController()
+
+    await controller.isDeleteSyncEnabled(1)
+    await controller.setDeleteSyncEnabled(1, true)
+
+    expect(settingsRepository.isDeleteSyncEnabled).toHaveBeenCalledWith(1)
+    expect(settingsRepository.setDeleteSyncEnabled).toHaveBeenCalledWith(1, true)
   })
 
   it('warns and does nothing when the event has no TAK Server connection configured', async () => {
@@ -164,6 +198,50 @@ describe('TakPushController', () => {
     await controller.pushEventObservations(1)
 
     expect(send).toHaveBeenCalled()
+  })
+
+  it('sends a removal CoT and deletes tracking when a tracked observation is archived and delete-sync is enabled', async () => {
+    const archived = fakeAttrs('obs-1', new Date('2026-01-05'), [ { id: 's1', name: 'archive' } ])
+    const { controller, send, buildDelete, trackingRepository, removalRepository } = makeController({
+      observations: [ archived ],
+      tracked: { 'obs-1': { lastSyncedAt: new Date('2026-01-01'), callsign: 'Fuel Depot' } },
+      deleteSyncEnabled: true
+    })
+
+    await controller.pushEventObservations(1)
+
+    expect(buildDelete).toHaveBeenCalledWith('MAGE-obs-1', 'b-m-p-s-m')
+    expect(send).toHaveBeenCalled()
+    expect(trackingRepository.deleteByObservation).toHaveBeenCalledWith(1, 'obs-1')
+    expect(removalRepository.recordRemoval).toHaveBeenCalledWith(1, 'obs-1', 'Fuel Depot', expect.any(Date))
+  })
+
+  it('does not resend, delete, or record a removal for a tracked archived observation when delete-sync is disabled', async () => {
+    const archived = fakeAttrs('obs-1', new Date('2026-01-05'), [ { id: 's1', name: 'archive' } ])
+    const { controller, send, trackingRepository, removalRepository } = makeController({
+      observations: [ archived ],
+      tracked: { 'obs-1': { lastSyncedAt: new Date('2026-01-01') } },
+      deleteSyncEnabled: false
+    })
+
+    await controller.pushEventObservations(1)
+
+    expect(send).not.toHaveBeenCalled()
+    expect(trackingRepository.deleteByObservation).not.toHaveBeenCalled()
+    expect(removalRepository.recordRemoval).not.toHaveBeenCalled()
+  })
+
+  it('does nothing for an archived observation that was never tracked, regardless of delete-sync', async () => {
+    const archived = fakeAttrs('obs-1', new Date(), [ { id: 's1', name: 'archive' } ])
+    const { controller, send, trackingRepository } = makeController({
+      observations: [ archived ],
+      deleteSyncEnabled: true
+    })
+
+    await controller.pushEventObservations(1)
+
+    expect(send).not.toHaveBeenCalled()
+    expect(trackingRepository.deleteByObservation).not.toHaveBeenCalled()
   })
 
   it('skips an observation the CoT builder rejects (e.g. non-Point geometry) and records it as ineligible', async () => {
@@ -235,14 +313,28 @@ describe('TakPushController', () => {
     expect(status).toEqual({
       enabled: true,
       locationSharingEnabled: false,
+      deleteSyncEnabled: false,
       connectionConfigured: true,
       pushedCount: 2,
       lastSyncedAt: new Date('2026-01-03'),
       recentlySynced: [
         { observationId: 'obs-2', callsign: 'Callsign-obs-2', syncedAt: new Date('2026-01-03') },
         { observationId: 'obs-1', callsign: 'Callsign-obs-1', syncedAt: new Date('2026-01-01') }
-      ]
+      ],
+      recentlyRemoved: []
     })
+  })
+
+  it('surfaces recently removed observations in push status', async () => {
+    const { controller } = makeController({
+      removals: { 'obs-1': { callsign: 'Fuel Depot', removedAt: new Date('2026-01-02') } }
+    })
+
+    const status = await controller.findPushStatusForEvent(1)
+
+    expect(status.recentlyRemoved).toEqual([
+      { observationId: 'obs-1', callsign: 'Fuel Depot', removedAt: new Date('2026-01-02') }
+    ])
   })
 
   it('limits recentlySynced to the 5 most recently synced observations', async () => {

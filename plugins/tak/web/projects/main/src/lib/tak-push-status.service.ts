@@ -20,13 +20,21 @@ export interface RecentlySyncedObservation {
   syncedAt: string;
 }
 
+export interface RecentlyRemovedObservation {
+  observationId: string;
+  callsign: string;
+  removedAt: string;
+}
+
 export interface TakPushStatus {
   enabled: boolean;
   locationSharingEnabled: boolean;
+  deleteSyncEnabled: boolean;
   connectionConfigured: boolean;
   pushedCount: number;
   lastSyncedAt: string | null;
   recentlySynced: RecentlySyncedObservation[];
+  recentlyRemoved: RecentlyRemovedObservation[];
 }
 
 @Injectable({
@@ -50,5 +58,9 @@ export class TakPushStatusService {
 
   setLocationSharingEnabled(eventId: number, enabled: boolean): Observable<TakPushStatus> {
     return this.http.post<TakPushStatus>(`${baseUrl}/settings`, { eventId, locationSharingEnabled: enabled });
+  }
+
+  setDeleteSyncEnabled(eventId: number, enabled: boolean): Observable<TakPushStatus> {
+    return this.http.post<TakPushStatus>(`${baseUrl}/settings`, { eventId, deleteSyncEnabled: enabled });
   }
 }

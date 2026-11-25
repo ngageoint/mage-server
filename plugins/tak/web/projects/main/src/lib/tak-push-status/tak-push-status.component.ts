@@ -41,6 +41,10 @@ export class TakPushStatusComponent implements OnInit {
     this.applyToggle(enabled, (eventId, value) => this.service.setLocationSharingEnabled(eventId, value));
   }
 
+  onDeleteSyncToggle(enabled: boolean): void {
+    this.applyToggle(enabled, (eventId, value) => this.service.setDeleteSyncEnabled(eventId, value));
+  }
+
   private applyToggle(enabled: boolean, save: (eventId: number, enabled: boolean) => Observable<TakPushStatus>): void {
     if (this.selectedEventId == null) {
       return;
